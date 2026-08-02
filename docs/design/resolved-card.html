@@ -1,0 +1,384 @@
+<title>The resolved recipe card — shorthand duration marks</title>
+<style>
+  :root {
+    --paper:#fbfaf5; --surface:#ffffff; --ink:#16211b; --ink-soft:#4a5a51; --ink-faint:#7d8b83;
+    --rule:#2f6b45; --rule-heavy:#1c4a2e; --rule-faint:#cfdbd2;
+    --clay:#a86b21; --clay-soft:#f2e6d2; --hairline:#e2e7e2;
+    --font-display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper:#10150f; --surface:#181f19; --ink:#e8efe7; --ink-soft:#a3b3a7; --ink-faint:#75857a;
+      --rule:#6cba86; --rule-heavy:#9ad8ad; --rule-faint:#2f3d33; --clay:#d9a45c; --clay-soft:#3a2f1c;
+      --hairline:#29332a; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --paper:#10150f; --surface:#181f19; --ink:#e8efe7; --ink-soft:#a3b3a7;
+    --ink-faint:#75857a; --rule:#6cba86; --rule-heavy:#9ad8ad; --rule-faint:#2f3d33; --clay:#d9a45c;
+    --clay-soft:#3a2f1c; --hairline:#29332a; color-scheme: dark; }
+  :root[data-theme="light"] { --paper:#fbfaf5; --surface:#ffffff; --ink:#16211b; --ink-soft:#4a5a51;
+    --ink-faint:#7d8b83; --rule:#2f6b45; --rule-heavy:#1c4a2e; --rule-faint:#cfdbd2; --clay:#a86b21;
+    --clay-soft:#f2e6d2; --hairline:#e2e7e2; color-scheme: light; }
+
+  body { background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.55; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:80rem; margin:0 auto; padding:clamp(1.75rem,4vw,3.5rem) clamp(1rem,3vw,2.5rem) 6rem; display:flex; flex-direction:column; gap:clamp(2.5rem,5vw,4rem); }
+
+  .sr { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
+
+  .eyebrow { font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--rule); }
+  h1 { font-family:var(--font-display); font-size:clamp(1.9rem,4.4vw,2.9rem); line-height:1.1; font-weight:600; text-wrap:balance; letter-spacing:-0.01em; }
+  .standfirst { font-size:clamp(1rem,1.6vw,1.12rem); color:var(--ink-soft); max-width:62ch; }
+  .masthead { display:flex; flex-direction:column; gap:1.1rem; }
+
+  h2 { font-family:var(--font-display); font-size:clamp(1.3rem,2.4vw,1.65rem); font-weight:600; letter-spacing:-0.01em; padding-bottom:0.5rem; border-bottom:2px solid var(--rule); }
+  .section { display:flex; flex-direction:column; gap:1.4rem; }
+  .lede { color:var(--ink-soft); max-width:68ch; }
+
+  /* ---------- card ---------- */
+  .card { background:var(--surface); border:1px solid var(--hairline); border-radius:5px; overflow:hidden; display:flex; flex-direction:column; }
+  .cardhead { padding:1.1rem 1.2rem 0.9rem; display:flex; flex-direction:column; gap:0.15rem; }
+  .cardhead h3 { font-family:var(--font-display); font-size:1.45rem; font-weight:600; letter-spacing:-0.01em; }
+  .cardhead .src { font-family:var(--font-mono); font-size:0.72rem; color:var(--ink-faint); }
+
+  /* ---------- glance bar ---------- */
+  .glance { display:flex; flex-wrap:wrap; border-top:1px solid var(--hairline); border-bottom:1px solid var(--hairline); background:color-mix(in srgb, var(--rule) 3%, var(--surface)); }
+  .g { flex:1 1 7rem; padding:0.8rem 1rem; border-right:1px solid var(--hairline); display:flex; flex-direction:column; gap:0.15rem; min-width:0; }
+  .g:last-child { border-right:0; }
+  .g b { font-family:var(--font-mono); font-size:1.26rem; font-weight:600; font-variant-numeric:tabular-nums; letter-spacing:-0.02em; white-space:nowrap; }
+  .g .lab { font-size:0.7rem; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.07em; font-family:var(--font-mono); display:flex; align-items:center; gap:0.3rem; }
+  .g.total b { color:var(--rule); }
+  .g.away b, .g.away .lab { color:var(--clay); }
+  .g.saved { background:color-mix(in srgb, var(--rule) 9%, var(--surface)); }
+  .g.saved b, .g.saved .lab { color:var(--rule); }
+
+  svg.ico { width:0.72rem; height:0.72rem; flex:none; overflow:visible; }
+
+  /* ---------- chart ---------- */
+  .scroller { overflow-x:auto; padding:1.3rem 1.2rem 1.5rem; }
+  .chart { display:grid; gap:2px; font-size:0.83rem; }
+  .cell { border:1.5px solid var(--rule); border-radius:2px; padding:0.4rem 0.5rem; min-width:0; overflow:hidden; background:var(--surface); }
+  .ing { font-variant-numeric:tabular-nums; display:flex; align-items:center; border-color:var(--rule-faint); }
+  .prelude { border:1.5px solid var(--rule-heavy); text-align:center; font-weight:600; padding:0.4rem; background:color-mix(in srgb, var(--rule) 7%, var(--surface)); }
+  .step { display:flex; flex-direction:column; align-items:flex-end; justify-content:flex-end; text-align:right; gap:0.3rem; font-weight:500; }
+
+  /* the shorthand mark — replaces "2 min hands-on" / "30-40 min - walk away" */
+  .mark { display:flex; align-items:center; justify-content:flex-end; gap:0.28rem; flex-wrap:wrap;
+          font-family:var(--font-mono); font-size:0.72rem; font-variant-numeric:tabular-nums;
+          color:var(--ink-faint); line-height:1; }
+  .step.unatt { border-color:var(--clay); background:color-mix(in srgb, var(--clay) 8%, var(--surface)); }
+  .step.unatt .mark { color:var(--clay); font-weight:600; }
+
+  .glyph { width:100%; height:6px; border-radius:2px; border:1px solid var(--rule-faint); overflow:hidden; display:flex; }
+  .glyph i { display:block; height:100%; }
+  .glyph i.att { background:var(--rule); }
+  .glyph i.un { background:repeating-linear-gradient(45deg, var(--clay) 0 4px, var(--clay-soft) 4px 8px); }
+  .glyph.none { border-style:dashed; }
+
+  /* ---------- before / after ---------- */
+  .ba { display:grid; grid-template-columns:repeat(auto-fit,minmax(17rem,1fr)); gap:1rem; }
+  .bacard { border:1px solid var(--hairline); border-radius:4px; background:var(--surface); overflow:hidden; }
+  .bacard > h3 { font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.08em; text-transform:uppercase; padding:0.6rem 0.9rem; border-bottom:1px solid var(--hairline); color:var(--ink-faint); display:flex; justify-content:space-between; gap:0.5rem; }
+  .bacard.bad > h3 { color:#c2503c; }
+  .bacard.good > h3 { color:var(--rule); }
+  .bademo { padding:1rem 0.9rem; display:flex; gap:2px; }
+  .bademo .cell { flex:1 1 0; min-height:5rem; }
+  .clip .mark { flex-wrap:nowrap; white-space:nowrap; }
+  .bacard p { padding:0 0.9rem 0.9rem; font-size:0.82rem; color:var(--ink-soft); }
+
+  /* ---------- legend / reference ---------- */
+  .tablewrap { overflow-x:auto; border:1px solid var(--hairline); border-radius:4px; background:var(--surface); }
+  table.spec { border-collapse:collapse; width:100%; font-size:0.86rem; }
+  table.spec th, table.spec td { text-align:left; padding:0.55rem 0.75rem; border-bottom:1px solid var(--hairline); vertical-align:middle; }
+  table.spec th { font-family:var(--font-mono); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--ink-faint); }
+  table.spec td.mk { font-family:var(--font-mono); white-space:nowrap; font-size:0.8rem; color:var(--ink); }
+  table.spec td.mk .inline { display:inline-flex; align-items:center; gap:0.3rem; }
+  table.spec code { font-family:var(--font-mono); font-size:0.85em; background:color-mix(in srgb, var(--rule) 10%, transparent); padding:0.05rem 0.3rem; border-radius:2px; }
+
+  .finding { background:var(--surface); border:1px solid var(--hairline); border-left:3px solid var(--rule); border-radius:3px; padding:1.05rem 1.15rem; display:flex; flex-direction:column; gap:0.55rem; }
+  .finding h3 { font-family:var(--font-display); font-size:1.05rem; font-weight:600; }
+  .finding p { font-size:0.9rem; color:var(--ink-soft); }
+  .finding code { font-family:var(--font-mono); font-size:0.85em; background:color-mix(in srgb, var(--rule) 10%, transparent); padding:0.05rem 0.3rem; border-radius:2px; color:var(--ink); }
+
+  .grey { filter:grayscale(1); }
+  footer { border-top:1px solid var(--hairline); padding-top:1.2rem; font-family:var(--font-mono); font-size:0.74rem; color:var(--ink-faint); display:flex; flex-wrap:wrap; gap:0.4rem 1.5rem; }
+  @media (max-width:40rem){ .g{flex-basis:33%;} }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important;} }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-clock" viewBox="0 0 16 16">
+      <circle cx="8" cy="8" r="6.1" fill="none" stroke="currentColor" stroke-width="1.7"/>
+      <path d="M8 4.5V8l2.5 1.7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-dot" viewBox="0 0 16 16">
+      <circle cx="8" cy="8" r="4.4" fill="currentColor"/>
+    </symbol>
+    <symbol id="i-merge" viewBox="0 0 16 16">
+      <path d="M2.2 2.8v2.6a3 3 0 0 0 3 3h8.4M2.2 13.2v-2.6a3 3 0 0 1 3-3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Modern Recipe Card UX · resolved design · rev 2</div>
+    <h1>Shorthand marks</h1>
+    <p class="standfirst">
+      <code>2 min hands-on</code> becomes <code>● 2m</code>. <code>30–40 min · walk away</code>
+      becomes <code>◷ 30–40m</code>. Roughly a 70% cut in character count, which also fixes a real
+      clipping bug — and drops a label that the bar underneath was already saying.
+    </p>
+  </header>
+
+  <!-- ============ before/after ============ -->
+  <section class="section">
+    <h2>Why the labels had to go</h2>
+    <p class="lede">
+      The old cell put a long right-aligned string above a fixed-width glyph. In a 4.6rem column the
+      string overflowed its leading edge and was silently clipped — <em>“2 min hands-on”</em>
+      rendered as <em>“n hands-on”</em>. Worse, it was redundant: solid fill versus hatch on the bar
+      below already carried the same distinction.
+    </p>
+
+    <div class="ba">
+      <div class="bacard bad">
+        <h3><span>Before</span><span>clipped · redundant</span></h3>
+        <div class="bademo clip">
+          <div class="cell step" style="max-width:7.2rem;">melt<span class="mark">2 min hands-on</span><span class="glyph"><i class="att" style="width:6%"></i></span></div>
+          <div class="cell step unatt" style="max-width:9rem;">bake 350°F<span class="mark">30–40 min · walk away</span><span class="glyph"><i class="un" style="width:100%"></i></span></div>
+        </div>
+        <p>21 characters in a cell that fits about 12. Right-aligned overflow clips at the left edge, so the surviving fragment is the least informative part of the string.</p>
+      </div>
+      <div class="bacard good">
+        <h3><span>After</span><span>fits · marks the exception only</span></h3>
+        <div class="bademo">
+          <div class="cell step" style="max-width:7.2rem;">melt<span class="mark"><svg class="ico"><use href="#i-dot"/></svg>2m<span class="sr">, 2 minutes hands-on</span></span><span class="glyph"><i class="att" style="width:6%"></i></span></div>
+          <div class="cell step unatt" style="max-width:9rem;">bake 350°F<span class="mark"><svg class="ico"><use href="#i-clock"/></svg>30–40m<span class="sr">, 30 to 40 minutes, unattended — you can walk away</span></span><span class="glyph"><i class="un" style="width:100%"></i></span></div>
+        </div>
+        <p>Six characters. Fits at every column width in the corpus, including the 4.6rem columns in shepherd's pie. Full text is preserved for screen readers.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ vocabulary ============ -->
+  <section class="section">
+    <h2>The mark vocabulary</h2>
+    <p class="lede">
+      Three marks total. The rule that keeps it small: <strong>label the exception, not the
+      default.</strong> Most steps need your hands — that's unremarkable and gets the quiet dot.
+      What a cook actually needs to spot from across the kitchen is the step that frees them.
+    </p>
+
+    <div class="tablewrap">
+      <table class="spec">
+        <thead><tr><th>Mark</th><th>Means</th><th>From</th><th>Read aloud as</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="mk"><span class="inline"><svg class="ico"><use href="#i-dot"/></svg> 2m</span></td>
+            <td>Hands-on. The default state.</td>
+            <td><code>effort: 'quick' | 'minutes'</code></td>
+            <td>“2 minutes hands-on”</td>
+          </tr>
+          <tr>
+            <td class="mk" style="color:var(--clay)"><span class="inline"><svg class="ico"><use href="#i-clock"/></svg> 30–40m</span></td>
+            <td>Unattended. <strong>You can walk away.</strong></td>
+            <td><code>effort: 'long-unattended'</code></td>
+            <td>“30 to 40 minutes, unattended — you can walk away”</td>
+          </tr>
+          <tr>
+            <td class="mk" style="color:var(--ink-faint)"><span class="inline"><svg class="ico"><use href="#i-dot"/></svg> —</span></td>
+            <td>Duration not recorded. Bar renders as a dashed empty track.</td>
+            <td><code>duration: undefined</code></td>
+            <td>“duration not recorded”</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="finding">
+      <h3>Duration shorthand</h3>
+      <p>
+        <code>2m</code> · <code>45m</code> · <code>1h</code> · <code>1h30</code> ·
+        <code>30–40m</code> (en dash, no spaces) · <code>&lt;1m</code>. Mono, tabular figures, so
+        digits align down a column. No unit words — the unit is unambiguous at this scale and the
+        word is the expensive part.
+      </p>
+      <p>
+        Icons are decorative in the accessibility tree (<code>aria-hidden</code>); every mark carries
+        a visually-hidden full sentence, so nothing is lost to a screen reader. That's the Phase 06
+        contract: <strong>the compression is visual only.</strong>
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ card 1 ============ -->
+  <section class="section">
+    <h2>Espresso brownies</h2>
+    <article class="card">
+      <div class="cardhead">
+        <h3>Espresso brownies</h3>
+        <div class="src">Cooking For Engineers format · 8×8-in pan</div>
+      </div>
+
+      <div class="glance">
+        <div class="g"><b>16</b><span class="lab">squares</span></div>
+        <div class="g"><b>9</b><span class="lab">ingredients</span></div>
+        <div class="g"><b>6</b><span class="lab">steps</span></div>
+        <div class="g total"><b>40m</b><span class="lab">total</span></div>
+        <div class="g"><b>7m</b><span class="lab"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>hands-on</span></div>
+        <div class="g away"><b>35m</b><span class="lab"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg>walk away</span></div>
+        <div class="g saved"><b>2m</b><span class="lab"><svg class="ico" aria-hidden="true"><use href="#i-merge"/></svg>saved</span></div>
+      </div>
+
+      <div class="scroller">
+        <div class="chart" style="grid-template-columns:15rem 5rem 5.5rem 6rem 7rem 8.5rem;">
+          <div class="cell prelude" style="grid-column:1/-1;">Butter and flour an 8×8-in pan</div>
+          <div class="cell prelude" style="grid-column:1/-1;">Preheat oven to 350°F / 176°C</div>
+
+          <div class="cell ing" style="grid-column:1; grid-row:3;">4 oz (115 g) unsalted butter</div>
+          <div class="cell ing" style="grid-column:1; grid-row:4;">1 cup (200 g) sugar</div>
+          <div class="cell ing" style="grid-column:1; grid-row:5;">¼ tsp (2.5 mL) vanilla extract</div>
+          <div class="cell ing" style="grid-column:1; grid-row:6;">1 shot (4 Tbs; 60 mL) espresso</div>
+          <div class="cell ing" style="grid-column:1; grid-row:7;">2 large (100 g) eggs</div>
+          <div class="cell ing" style="grid-column:1; grid-row:8;">½ cup (80 g) all-purpose flour</div>
+          <div class="cell ing" style="grid-column:1; grid-row:9;">⅓ cup (80 g) cocoa powder</div>
+          <div class="cell ing" style="grid-column:1; grid-row:10;">¼ tsp (1.3 g) baking soda</div>
+          <div class="cell ing" style="grid-column:1; grid-row:11;">¼ tsp (1.5 g) table salt</div>
+
+          <div class="cell step" style="grid-column:2; grid-row:3;">melt<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>2m<span class="sr">, 2 minutes hands-on</span></span><span class="glyph"><i class="att" style="width:6%"></i></span></div>
+          <div class="cell step" style="grid-column:3; grid-row:3/7;">mix<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>1m<span class="sr">, 1 minute hands-on</span></span><span class="glyph"><i class="att" style="width:3%"></i></span></div>
+          <div class="cell step" style="grid-column:4; grid-row:3/8;">mix<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>1m<span class="sr">, 1 minute hands-on</span></span><span class="glyph"><i class="att" style="width:3%"></i></span></div>
+          <div class="cell step" style="grid-column:4; grid-row:8/12;">sift together<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>2m<span class="sr">, 2 minutes hands-on</span></span><span class="glyph"><i class="att" style="width:6%"></i></span></div>
+          <div class="cell step" style="grid-column:5; grid-row:3/12;">fold in<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>1m<span class="sr">, 1 minute hands-on</span></span><span class="glyph"><i class="att" style="width:3%"></i></span></div>
+          <div class="cell step unatt" style="grid-column:6; grid-row:3/12;">bake 350°F / 176°C<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg>30–40m<span class="sr">, 30 to 40 minutes, unattended — you can walk away</span></span><span class="glyph"><i class="un" style="width:100%"></i></span></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ card 2 ============ -->
+  <section class="section">
+    <h2>Shepherd's pie — the density test</h2>
+    <p class="lede">Eleven step columns at 4.6rem each. This is the width the old label could not
+      survive; the shorthand fits with room to spare, and the single clay clock at the far right is
+      now the most findable thing on the chart.</p>
+
+    <article class="card">
+      <div class="cardhead">
+        <h3>Shepherd's pie</h3>
+        <div class="src">Main component shown · mashed potatoes prepared in parallel</div>
+      </div>
+
+      <div class="glance">
+        <div class="g"><b>6</b><span class="lab">servings</span></div>
+        <div class="g"><b>20</b><span class="lab">ingredients</span></div>
+        <div class="g"><b>15</b><span class="lab">steps</span></div>
+        <div class="g total"><b>70m</b><span class="lab">total</span></div>
+        <div class="g"><b>46m</b><span class="lab"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>hands-on</span></div>
+        <div class="g away"><b>30m</b><span class="lab"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg>walk away</span></div>
+        <div class="g saved"><b>22m</b><span class="lab"><svg class="ico" aria-hidden="true"><use href="#i-merge"/></svg>saved</span></div>
+      </div>
+
+      <div class="scroller">
+        <div class="chart" style="grid-template-columns:13rem repeat(10,4.6rem);">
+          <div class="cell prelude" style="grid-column:1/-1;">Preheat oven to 400°F / 204°C</div>
+
+          <div class="cell ing" style="grid-column:1; grid-row:2;">3 Tbs (45 mL) vegetable oil</div>
+          <div class="cell ing" style="grid-column:1; grid-row:3;">1 medium (110 g) onion</div>
+          <div class="cell ing" style="grid-column:1; grid-row:4;">1 medium (61 g) carrot</div>
+          <div class="cell ing" style="grid-column:1; grid-row:5;">1 medium (40 g) celery stalk</div>
+          <div class="cell ing" style="grid-column:1; grid-row:6;">1 lb (450 g) ground lamb</div>
+          <div class="cell ing" style="grid-column:1; grid-row:7;">1 Tbs (8 g) all-purpose flour</div>
+          <div class="cell ing" style="grid-column:1; grid-row:8;">1 tsp (1.2 g) dried rosemary</div>
+          <div class="cell ing" style="grid-column:1; grid-row:9;">1 tsp (1 g) dried thyme</div>
+          <div class="cell ing" style="grid-column:1; grid-row:10;">1 pinch ground nutmeg</div>
+          <div class="cell ing" style="grid-column:1; grid-row:11;">1 cup (235 mL) beef broth</div>
+          <div class="cell ing" style="grid-column:1; grid-row:12;">salt</div>
+          <div class="cell ing" style="grid-column:1; grid-row:13;">ground black pepper</div>
+          <div class="cell ing" style="grid-column:1; grid-row:14;">1¾ lb (800 g) mashed potatoes</div>
+          <div class="cell ing" style="grid-column:1; grid-row:15;">2 Tbs (28 g) butter</div>
+          <div class="cell ing" style="grid-column:1; grid-row:16;">paprika</div>
+
+          <div class="cell step" style="grid-column:2; grid-row:2;">heat<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>2m</span><span class="glyph"><i class="att" style="width:7%"></i></span></div>
+          <div class="cell step" style="grid-column:2; grid-row:3/6;">dice<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>5m</span><span class="glyph"><i class="att" style="width:17%"></i></span></div>
+          <div class="cell step" style="grid-column:3; grid-row:2/6;">med-low until tender<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>8m</span><span class="glyph"><i class="att" style="width:27%"></i></span></div>
+          <div class="cell step" style="grid-column:4; grid-row:2/7;">cook until meat is no longer pink<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>8m</span><span class="glyph"><i class="att" style="width:27%"></i></span></div>
+          <div class="cell step" style="grid-column:5; grid-row:2/8;">mix and cook<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>2m</span><span class="glyph"><i class="att" style="width:7%"></i></span></div>
+          <div class="cell step" style="grid-column:6; grid-row:2/12;">stir in and cook until liquid thickens<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>10m</span><span class="glyph"><i class="att" style="width:33%"></i></span></div>
+          <div class="cell step" style="grid-column:7; grid-row:2/14;">season to taste<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>1m</span><span class="glyph"><i class="att" style="width:3%"></i></span></div>
+          <div class="cell step" style="grid-column:8; grid-row:2/15;">cover with potatoes and fluff with fork<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>3m</span><span class="glyph"><i class="att" style="width:10%"></i></span></div>
+          <div class="cell step" style="grid-column:8; grid-row:15;">cut up into small pieces<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>1m</span><span class="glyph"><i class="att" style="width:3%"></i></span></div>
+          <div class="cell step" style="grid-column:9; grid-row:2/16;">drop butter pieces on top<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>1m</span><span class="glyph"><i class="att" style="width:3%"></i></span></div>
+          <div class="cell step" style="grid-column:10; grid-row:2/17;">cover with paprika<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>1m</span><span class="glyph"><i class="att" style="width:3%"></i></span></div>
+          <div class="cell step unatt" style="grid-column:11; grid-row:2/17;">bake 400°F / 205°C<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg>30m<span class="sr">, 30 minutes, unattended — you can walk away</span></span><span class="glyph"><i class="un" style="width:100%"></i></span></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ greyscale ============ -->
+  <section class="section">
+    <h2>Greyscale check</h2>
+    <p class="lede">With colour gone, the distinction rests on the clock glyph and the hatch — both
+      shape, neither hue. This is the test the clay accent must not be load-bearing for.</p>
+    <article class="card grey">
+      <div class="glance">
+        <div class="g"><b>16</b><span class="lab">squares</span></div>
+        <div class="g total"><b>40m</b><span class="lab">total</span></div>
+        <div class="g"><b>7m</b><span class="lab"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>hands-on</span></div>
+        <div class="g away"><b>35m</b><span class="lab"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg>walk away</span></div>
+        <div class="g saved"><b>2m</b><span class="lab"><svg class="ico" aria-hidden="true"><use href="#i-merge"/></svg>saved</span></div>
+      </div>
+      <div class="scroller">
+        <div class="chart" style="grid-template-columns:15rem 5rem 6rem 7rem 8.5rem;">
+          <div class="cell ing" style="grid-column:1; grid-row:1;">4 oz (115 g) unsalted butter</div>
+          <div class="cell ing" style="grid-column:1; grid-row:2;">1 cup (200 g) sugar</div>
+          <div class="cell ing" style="grid-column:1; grid-row:3;">¼ tsp (2.5 mL) vanilla extract</div>
+          <div class="cell ing" style="grid-column:1; grid-row:4;">1 shot (60 mL) espresso</div>
+          <div class="cell ing" style="grid-column:1; grid-row:5;">2 large (100 g) eggs</div>
+          <div class="cell ing" style="grid-column:1; grid-row:6;">½ cup (80 g) all-purpose flour</div>
+          <div class="cell ing" style="grid-column:1; grid-row:7;">⅓ cup (80 g) cocoa powder</div>
+          <div class="cell ing" style="grid-column:1; grid-row:8;">¼ tsp (1.3 g) baking soda</div>
+          <div class="cell ing" style="grid-column:1; grid-row:9;">¼ tsp (1.5 g) table salt</div>
+          <div class="cell step" style="grid-column:2; grid-row:1;">melt<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>2m</span><span class="glyph"><i class="att" style="width:6%"></i></span></div>
+          <div class="cell step" style="grid-column:3; grid-row:1/5;">mix<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>1m</span><span class="glyph"><i class="att" style="width:3%"></i></span></div>
+          <div class="cell step" style="grid-column:3; grid-row:6/10;">sift together<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>2m</span><span class="glyph"><i class="att" style="width:6%"></i></span></div>
+          <div class="cell step" style="grid-column:4; grid-row:1/10;">fold in<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-dot"/></svg>1m</span><span class="glyph"><i class="att" style="width:3%"></i></span></div>
+          <div class="cell step unatt" style="grid-column:5; grid-row:1/10;">bake 350°F / 176°C<span class="mark"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg>30–40m</span><span class="glyph"><i class="un" style="width:100%"></i></span></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="section">
+    <div class="finding">
+      <h3>What this changes in the plan</h3>
+      <p>
+        <strong>Phase 03</strong> gains a mark vocabulary in <code>packages/tokens</code> — three
+        symbols, a duration formatter, and the rule that icons are <code>aria-hidden</code> with a
+        visually-hidden sentence alongside. <code>formatDuration()</code> joins
+        <code>formatQuantity()</code> and <code>formatTemperature()</code> in <code>core</code>, so
+        every experiment track renders <code>30–40m</code> identically rather than inventing its own.
+      </p>
+      <p>
+        <strong>Phase 06</strong> gains an explicit acceptance criterion: the shorthand must read as
+        full prose to a screen reader. Visual compression must never reach the accessibility tree.
+      </p>
+      <p>
+        And a caution worth recording — <strong>marking only the exception assumes unattended steps
+        stay rare.</strong> They do across this corpus (one per recipe), but a braise or a bread
+        recipe could be mostly waiting, at which point the clay clocks stop being an accent and
+        become the field. Check against a long-ferment recipe before treating this as settled.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <span>Modern Recipe Card UX — resolved card, rev 2</span>
+    <span>Marks: ● hands-on · ◷ unattended · ⑂ parallel saving</span>
+    <span>Durations other than the bakes are estimates</span>
+  </footer>
+</div>

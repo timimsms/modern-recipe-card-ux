@@ -1,0 +1,790 @@
+<title>Q5 — Does a time axis improve or destroy the convergence grid?</title>
+<style>
+  :root {
+    --paper:      #fbfaf5;
+    --surface:    #ffffff;
+    --ink:        #16211b;
+    --ink-soft:   #4a5a51;
+    --ink-faint:  #7d8b83;
+    --rule:       #2f6b45;
+    --rule-heavy: #1c4a2e;
+    --rule-faint: #cfdbd2;
+    --clay:       #a86b21;
+    --clay-soft:  #f0e3cd;
+    --alarm:      #a33a2c;
+    --hairline:   #e2e7e2;
+
+    --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+    --step: 0.6rem;
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:      #10150f;
+      --surface:    #181f19;
+      --ink:        #e8efe7;
+      --ink-soft:   #a3b3a7;
+      --ink-faint:  #75857a;
+      --rule:       #6cba86;
+      --rule-heavy: #9ad8ad;
+      --rule-faint: #2f3d33;
+      --clay:       #d9a45c;
+      --clay-soft:  #3a2f1c;
+      --alarm:      #e0705c;
+      --hairline:   #29332a;
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #10150f;
+    --surface:    #181f19;
+    --ink:        #e8efe7;
+    --ink-soft:   #a3b3a7;
+    --ink-faint:  #75857a;
+    --rule:       #6cba86;
+    --rule-heavy: #9ad8ad;
+    --rule-faint: #2f3d33;
+    --clay:       #d9a45c;
+    --clay-soft:  #3a2f1c;
+    --alarm:      #e0705c;
+    --hairline:   #29332a;
+    color-scheme: dark;
+  }
+
+  :root[data-theme="light"] {
+    --paper:      #fbfaf5;
+    --surface:    #ffffff;
+    --ink:        #16211b;
+    --ink-soft:   #4a5a51;
+    --ink-faint:  #7d8b83;
+    --rule:       #2f6b45;
+    --rule-heavy: #1c4a2e;
+    --rule-faint: #cfdbd2;
+    --clay:       #a86b21;
+    --clay-soft:  #f0e3cd;
+    --alarm:      #a33a2c;
+    --hairline:   #e2e7e2;
+    color-scheme: light;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 78rem;
+    margin: 0 auto;
+    padding: clamp(1.75rem, 4vw, 4rem) clamp(1rem, 3vw, 2.5rem) 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead { display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--rule);
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.9rem, 4.4vw, 3rem);
+    line-height: 1.1;
+    font-weight: 600;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+
+  .standfirst {
+    font-size: clamp(1rem, 1.6vw, 1.14rem);
+    color: var(--ink-soft);
+    max-width: 60ch;
+  }
+
+  .statstrip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border: 1px solid var(--hairline);
+    border-radius: 3px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .stat {
+    flex: 1 1 8.5rem;
+    padding: 0.85rem 1rem;
+    border-right: 1px solid var(--hairline);
+    display: flex; flex-direction: column; gap: 0.15rem;
+  }
+  .stat:last-child { border-right: 0; }
+  .stat b {
+    font-family: var(--font-mono);
+    font-size: 1.3rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  .stat span {
+    font-size: 0.74rem;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-family: var(--font-mono);
+  }
+  .stat.hot b { color: var(--clay); }
+
+  /* ---------- sections ---------- */
+  h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.3rem, 2.4vw, 1.7rem);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--rule);
+  }
+  .section { display: flex; flex-direction: column; gap: 1.5rem; }
+  .lede { color: var(--ink-soft); max-width: 68ch; }
+
+  /* ---------- variant panel ---------- */
+  .variant {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .variant.reject { border-color: color-mix(in srgb, var(--alarm) 45%, var(--hairline)); }
+  .variant.ship   { border-color: color-mix(in srgb, var(--rule) 55%, var(--hairline)); }
+
+  .vhead {
+    display: flex; align-items: baseline; gap: 0.8rem; flex-wrap: wrap;
+    padding: 0.9rem 1.1rem;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .chip {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 0.78rem;
+    padding: 0.15rem 0.5rem;
+    border: 1px solid var(--rule);
+    color: var(--rule);
+    border-radius: 2px;
+  }
+  .reject .chip { border-color: var(--alarm); color: var(--alarm); }
+  .ship .chip { background: var(--rule); color: var(--surface); }
+  .vname { font-family: var(--font-display); font-size: 1.12rem; font-weight: 600; }
+  .vrule {
+    font-family: var(--font-mono); font-size: 0.76rem; color: var(--ink-faint);
+    margin-left: auto;
+  }
+  .verdict-tag {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 0.15rem 0.45rem; border-radius: 2px;
+  }
+  .verdict-tag.no { background: var(--alarm); color: #fff; }
+  .verdict-tag.yes { background: var(--rule); color: var(--surface); }
+
+  .scroller { overflow-x: auto; padding: 1.4rem 1.1rem; }
+
+  /* ---------- the chart ---------- */
+  .chart {
+    display: grid;
+    gap: 2px;                 /* separated regions => stray rules are structurally impossible */
+    min-width: 44rem;
+    font-size: 0.83rem;
+  }
+  .cell {
+    border: 1.5px solid var(--rule);
+    border-radius: 2px;
+    padding: 0.4rem 0.55rem;
+    min-width: 0;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .ing {
+    font-variant-numeric: tabular-nums;
+    display: flex; align-items: center;
+    color: var(--ink);
+    border-color: var(--rule-faint);
+  }
+  .prelude {
+    border: 1.5px solid var(--rule-heavy);
+    text-align: center;
+    font-weight: 600;
+    padding: 0.4rem;
+    background: color-mix(in srgb, var(--rule) 7%, var(--surface));
+  }
+  .step {
+    display: flex; flex-direction: column;
+    align-items: flex-end; justify-content: flex-end;  /* bottom-right anchor */
+    text-align: right;
+    gap: 0.3rem;
+    font-weight: 500;
+  }
+  .step .dur {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .step.unatt { border-color: var(--clay); background: color-mix(in srgb, var(--clay) 8%, var(--surface)); }
+  .step.unatt .dur { color: var(--clay); }
+  .step.crushed { font-size: 0.7rem; }
+
+  /* in-cell duration bar (variant E) */
+  .bar {
+    width: 100%; height: 5px; border-radius: 2px;
+    background: var(--rule-faint);
+    overflow: hidden;
+  }
+  .bar i { display: block; height: 100%; background: var(--rule); }
+  .bar.unatt i { background: repeating-linear-gradient(45deg, var(--clay) 0 3px, transparent 3px 6px), color-mix(in srgb, var(--clay) 30%, transparent); }
+  .bar.unknown { background: repeating-linear-gradient(90deg, var(--rule-faint) 0 3px, transparent 3px 6px); }
+
+  /* attended / unattended split (variant F) */
+  .split { width: 100%; height: 7px; border-radius: 2px; display: flex; overflow: hidden; border: 1px solid var(--rule-faint); }
+  .split .att { background: var(--rule); }
+  .split .un  { background: repeating-linear-gradient(45deg, var(--clay) 0 4px, var(--clay-soft) 4px 8px); }
+
+  /* timeline rail (variant D) */
+  .rail { display: flex; gap: 2px; min-width: 44rem; margin-top: 0.9rem; }
+  .seg {
+    border: 1.5px solid var(--rule); border-radius: 2px;
+    padding: 0.3rem 0.4rem; min-width: 0; overflow: hidden;
+    font-family: var(--font-mono); font-size: 0.68rem;
+    display: flex; flex-direction: column; gap: 0.1rem;
+  }
+  .seg.unatt { border-color: var(--clay); background: color-mix(in srgb, var(--clay) 8%, var(--surface)); color: var(--clay); }
+  .seg b { font-weight: 600; }
+  .railkey {
+    font-family: var(--font-mono); font-size: 0.7rem; color: var(--ink-faint);
+    margin-top: 0.5rem;
+  }
+  .key {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.05rem; height: 1.05rem; border-radius: 2px;
+    background: var(--rule); color: var(--surface);
+    font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700;
+    flex: none;
+  }
+  .key.unatt { background: var(--clay); }
+
+  /* ---------- captions ---------- */
+  .caption {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.5rem;
+    border-top: 1px solid var(--hairline);
+    padding: 0.9rem 1.1rem;
+    font-size: 0.86rem;
+  }
+  .caption div { display: flex; gap: 0.5rem; }
+  .caption dt {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-faint); flex: none; padding-top: 0.15rem;
+  }
+  .gain dt { color: var(--rule); }
+  .cost dt { color: var(--alarm); }
+  .mobile {
+    border-top: 1px dashed var(--hairline);
+    padding: 0.6rem 1.1rem;
+    font-family: var(--font-mono); font-size: 0.74rem; color: var(--ink-faint);
+  }
+  .mobile b { color: var(--ink-soft); font-weight: 600; }
+
+  .flag {
+    margin: 0 1.1rem 1.1rem;
+    padding: 0.7rem 0.9rem;
+    border-left: 3px solid var(--alarm);
+    background: color-mix(in srgb, var(--alarm) 6%, var(--surface));
+    font-size: 0.85rem;
+  }
+  .flag b { color: var(--alarm); }
+
+  /* ---------- degradation matrix ---------- */
+  .degrade { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem; }
+  .dcard {
+    border: 1px solid var(--hairline); border-radius: 4px; background: var(--surface);
+    padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem;
+  }
+  .dcard h3 { font-family: var(--font-mono); font-size: 0.76rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); }
+  .demo {
+    border: 1.5px solid var(--rule); border-radius: 2px; padding: 0.5rem;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 0.3rem;
+    min-height: 4.2rem; justify-content: flex-end; font-size: 0.82rem; text-align: right;
+  }
+  .demo.dashed { border-style: dashed; color: var(--ink-faint); }
+  .dcard p { font-size: 0.8rem; color: var(--ink-soft); }
+
+  /* ---------- greyscale proof ---------- */
+  .grey { filter: grayscale(1); }
+
+  /* ---------- verdict ---------- */
+  .ranking { display: flex; flex-direction: column; gap: 0.5rem; }
+  .rank {
+    display: grid; grid-template-columns: 2.2rem 1fr auto; gap: 0.9rem; align-items: center;
+    padding: 0.7rem 0.9rem; background: var(--surface);
+    border: 1px solid var(--hairline); border-radius: 3px;
+  }
+  .rank .lbl { font-family: var(--font-mono); font-weight: 700; color: var(--rule); }
+  .rank.out .lbl { color: var(--alarm); }
+  .rank p { font-size: 0.87rem; color: var(--ink-soft); }
+  .rank strong { color: var(--ink); font-weight: 600; }
+
+  .finding {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-left: 3px solid var(--rule);
+    border-radius: 3px;
+    padding: 1.1rem 1.2rem;
+    display: flex; flex-direction: column; gap: 0.6rem;
+  }
+  .finding h3 { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; }
+  .finding p { font-size: 0.9rem; color: var(--ink-soft); }
+  .finding code {
+    font-family: var(--font-mono); font-size: 0.85em;
+    background: color-mix(in srgb, var(--rule) 10%, transparent);
+    padding: 0.05rem 0.3rem; border-radius: 2px; color: var(--ink);
+  }
+
+  table.buckets { border-collapse: collapse; font-size: 0.85rem; width: 100%; }
+  table.buckets th, table.buckets td { text-align: left; padding: 0.45rem 0.7rem; border-bottom: 1px solid var(--hairline); }
+  table.buckets th { font-family: var(--font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-faint); }
+  table.buckets td:first-child { font-family: var(--font-mono); color: var(--rule); white-space: nowrap; }
+
+  footer {
+    border-top: 1px solid var(--hairline); padding-top: 1.2rem;
+    font-family: var(--font-mono); font-size: 0.74rem; color: var(--ink-faint);
+    display: flex; flex-wrap: wrap; gap: 0.4rem 1.5rem;
+  }
+
+  @media (max-width: 34rem) {
+    .caption { grid-template-columns: 1fr; gap: 0.6rem; }
+    .vrule { margin-left: 0; width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Modern Recipe Card UX · Design question Q5</div>
+    <h1>Does a time axis improve or destroy the convergence grid?</h1>
+    <p class="standfirst">
+      Column width in a Cooking For Engineers chart currently encodes nothing — it follows text
+      length. A 30-second step and a 40-minute bake get the same width. Six ways to fix that,
+      rendered on the same recipe, so the tradeoffs are visible rather than argued about.
+    </p>
+    <div class="statstrip">
+      <div class="stat"><b>9</b><span>ingredients</span></div>
+      <div class="stat"><b>6</b><span>steps</span></div>
+      <div class="stat"><b>7 min</b><span>hands-on</span></div>
+      <div class="stat hot"><b>35 min</b><span>unattended</span></div>
+      <div class="stat hot"><b>83%</b><span>of clock in 1 step</span></div>
+      <div class="stat"><b>1 of 6</b><span>steps with authored duration</span></div>
+    </div>
+    <p class="lede">
+      Test recipe: <strong>espresso brownies</strong> — the chart that went viral on Threads. Its
+      shape is the problem in miniature. Roughly seven minutes of hands-on work, then a 35-minute
+      bake that is 83% of wall-clock time and one sixth of the steps. And in the original source,
+      only that bake has an authored duration; every other number here is an estimate. Both facts
+      matter, and most of the six variants break on one or the other.
+    </p>
+  </header>
+
+  <!-- ============ A ============ -->
+  <section class="section">
+    <h2>The six variants</h2>
+
+    <article class="variant">
+      <div class="vhead">
+        <span class="chip">A</span>
+        <span class="vname">Topological — the control</span>
+        <span class="verdict-tag yes">baseline</span>
+        <span class="vrule">width = f(text)</span>
+      </div>
+      <div class="scroller">
+        <div class="chart" style="grid-template-columns: 15rem 5rem 5.5rem 6rem 7rem 8rem;">
+          <div class="cell prelude" style="grid-column: 1 / -1;">Butter and flour an 8×8-in pan</div>
+          <div class="cell prelude" style="grid-column: 1 / -1;">Preheat oven to 350°F / 176°C</div>
+
+          <div class="cell ing" style="grid-column:1; grid-row:3;">4 oz (115 g) unsalted butter</div>
+          <div class="cell ing" style="grid-column:1; grid-row:4;">1 cup (200 g) sugar</div>
+          <div class="cell ing" style="grid-column:1; grid-row:5;">¼ tsp (2.5 mL) vanilla extract</div>
+          <div class="cell ing" style="grid-column:1; grid-row:6;">1 shot (4 Tbs; 60 mL) espresso</div>
+          <div class="cell ing" style="grid-column:1; grid-row:7;">2 large (100 g) eggs</div>
+          <div class="cell ing" style="grid-column:1; grid-row:8;">½ cup (80 g) all-purpose flour</div>
+          <div class="cell ing" style="grid-column:1; grid-row:9;">⅓ cup (80 g) cocoa powder</div>
+          <div class="cell ing" style="grid-column:1; grid-row:10;">¼ tsp (1.3 g) baking soda</div>
+          <div class="cell ing" style="grid-column:1; grid-row:11;">¼ tsp (1.5 g) table salt</div>
+
+          <div class="cell step" style="grid-column:2; grid-row:3;">melt<span class="dur">2 min</span></div>
+          <div class="cell step" style="grid-column:3; grid-row:3 / 7;">mix<span class="dur">1 min</span></div>
+          <div class="cell step" style="grid-column:4; grid-row:3 / 8;">mix<span class="dur">1 min</span></div>
+          <div class="cell step" style="grid-column:4; grid-row:8 / 12;">sift together<span class="dur">2 min</span></div>
+          <div class="cell step" style="grid-column:5; grid-row:3 / 12;">fold in<span class="dur">1 min</span></div>
+          <div class="cell step unatt" style="grid-column:6; grid-row:3 / 12;">bake 350°F / 176°C<span class="dur">30–40 min</span></div>
+        </div>
+      </div>
+      <div class="caption">
+        <div class="gain"><dt>Gains</dt><dd>Maximum compactness; every step legible; duration present as text where it's needed. The dependency structure — two chains converging at <em>fold in</em> — reads instantly.</dd></div>
+        <div class="cost"><dt>Costs</dt><dd>Nothing encodes time. Nothing on this chart tells you that the bake is 83% of the wall clock, or that you get 35 minutes back to do something else.</dd></div>
+      </div>
+      <div class="mobile"><b>At 390px:</b> horizontal scroll, ~2.5 screens wide. Same as every variant here — the responsive ladder solves this separately, not the time axis.</div>
+    </article>
+
+    <!-- ============ B ============ -->
+    <article class="variant reject">
+      <div class="vhead">
+        <span class="chip">B</span>
+        <span class="vname">Linear time-proportional</span>
+        <span class="verdict-tag no">discard</span>
+        <span class="vrule">width ∝ duration</span>
+      </div>
+      <div class="scroller">
+        <div class="chart" style="grid-template-columns: 15rem 4.9% 2.4% 4.9% 2.4% 85.4%;">
+          <div class="cell prelude" style="grid-column: 1 / -1;">Butter and flour an 8×8-in pan</div>
+          <div class="cell prelude" style="grid-column: 1 / -1;">Preheat oven to 350°F / 176°C</div>
+
+          <div class="cell ing" style="grid-column:1; grid-row:3;">4 oz (115 g) unsalted butter</div>
+          <div class="cell ing" style="grid-column:1; grid-row:4;">1 cup (200 g) sugar</div>
+          <div class="cell ing" style="grid-column:1; grid-row:5;">¼ tsp (2.5 mL) vanilla extract</div>
+          <div class="cell ing" style="grid-column:1; grid-row:6;">1 shot (4 Tbs; 60 mL) espresso</div>
+          <div class="cell ing" style="grid-column:1; grid-row:7;">2 large (100 g) eggs</div>
+          <div class="cell ing" style="grid-column:1; grid-row:8;">½ cup (80 g) all-purpose flour</div>
+          <div class="cell ing" style="grid-column:1; grid-row:9;">⅓ cup (80 g) cocoa powder</div>
+          <div class="cell ing" style="grid-column:1; grid-row:10;">¼ tsp (1.3 g) baking soda</div>
+          <div class="cell ing" style="grid-column:1; grid-row:11;">¼ tsp (1.5 g) table salt</div>
+
+          <div class="cell step crushed" style="grid-column:2; grid-row:3;">melt</div>
+          <div class="cell step crushed" style="grid-column:3; grid-row:3 / 7;">mix</div>
+          <div class="cell step crushed" style="grid-column:4; grid-row:3 / 8;">mix</div>
+          <div class="cell step crushed" style="grid-column:4; grid-row:8 / 12;">sift</div>
+          <div class="cell step crushed" style="grid-column:5; grid-row:3 / 12;">fold</div>
+          <div class="cell step unatt" style="grid-column:6; grid-row:3 / 12;">bake 350°F / 176°C<span class="dur">30–40 min</span></div>
+        </div>
+      </div>
+      <div class="flag">
+        <b>Structural failure, not just an aesthetic one.</b> Columns are shared by parallel steps.
+        <em>mix</em> (1 min) and <em>sift together</em> (2 min) occupy the same column, so that column
+        can only take one width — it has to be <code>max()</code>, and the "proportional" axis is
+        already lying. Any recipe with parallel branches of differing length breaks this variant
+        before legibility even enters the argument.
+      </div>
+      <div class="caption">
+        <div class="gain"><dt>Gains</dt><dd>Genuinely conveys that the bake dominates. You cannot look at this and misjudge where the time goes.</dd></div>
+        <div class="cost"><dt>Costs</dt><dd>Five of six steps are unreadable slivers. 85% of the chart is one cell containing four words. The dependency structure — the entire reason for the format — is destroyed to encode one number.</dd></div>
+      </div>
+      <div class="mobile"><b>At 390px:</b> the quick steps fall below 1px. Unusable at any width, not just small ones.</div>
+    </article>
+
+    <!-- ============ C ============ -->
+    <article class="variant">
+      <div class="vhead">
+        <span class="chip">C</span>
+        <span class="vname">Compressed time scale</span>
+        <span class="verdict-tag no">the trap</span>
+        <span class="vrule">width ∝ √duration</span>
+      </div>
+      <div class="scroller">
+        <div class="chart" style="grid-template-columns: 15rem 13.2% 9.3% 13.2% 9.3% 55.1%;">
+          <div class="cell prelude" style="grid-column: 1 / -1;">Butter and flour an 8×8-in pan</div>
+          <div class="cell prelude" style="grid-column: 1 / -1;">Preheat oven to 350°F / 176°C</div>
+
+          <div class="cell ing" style="grid-column:1; grid-row:3;">4 oz (115 g) unsalted butter</div>
+          <div class="cell ing" style="grid-column:1; grid-row:4;">1 cup (200 g) sugar</div>
+          <div class="cell ing" style="grid-column:1; grid-row:5;">¼ tsp (2.5 mL) vanilla extract</div>
+          <div class="cell ing" style="grid-column:1; grid-row:6;">1 shot (4 Tbs; 60 mL) espresso</div>
+          <div class="cell ing" style="grid-column:1; grid-row:7;">2 large (100 g) eggs</div>
+          <div class="cell ing" style="grid-column:1; grid-row:8;">½ cup (80 g) all-purpose flour</div>
+          <div class="cell ing" style="grid-column:1; grid-row:9;">⅓ cup (80 g) cocoa powder</div>
+          <div class="cell ing" style="grid-column:1; grid-row:10;">¼ tsp (1.3 g) baking soda</div>
+          <div class="cell ing" style="grid-column:1; grid-row:11;">¼ tsp (1.5 g) table salt</div>
+
+          <div class="cell step" style="grid-column:2; grid-row:3;">melt<span class="dur">2 min</span></div>
+          <div class="cell step" style="grid-column:3; grid-row:3 / 7;">mix<span class="dur">1 min</span></div>
+          <div class="cell step" style="grid-column:4; grid-row:3 / 8;">mix<span class="dur">1 min</span></div>
+          <div class="cell step" style="grid-column:4; grid-row:8 / 12;">sift together<span class="dur">2 min</span></div>
+          <div class="cell step" style="grid-column:5; grid-row:3 / 12;">fold in<span class="dur">1 min</span></div>
+          <div class="cell step unatt" style="grid-column:6; grid-row:3 / 12;">bake 350°F / 176°C<span class="dur">30–40 min</span></div>
+        </div>
+      </div>
+      <div class="caption">
+        <div class="gain"><dt>Gains</dt><dd>Everything stays readable. Relative magnitude survives — the bake is visibly the long pole without swallowing the page.</dd></div>
+        <div class="cost"><dt>Costs</dt><dd>Still spends 55% of the chart on one step, and now the axis is <em>neither</em> honest nor free: √ means a 4× difference renders as 2×, so a reader who trusts the geometry is being quietly misled. Inherits B's shared-column problem in full.</dd></div>
+      </div>
+      <div class="mobile"><b>At 390px:</b> the compressed quick steps are the first thing to become unreadable when the chart is scaled to fit.</div>
+    </article>
+
+    <!-- ============ D ============ -->
+    <article class="variant">
+      <div class="vhead">
+        <span class="chip">D</span>
+        <span class="vname">Time rail</span>
+        <span class="verdict-tag no">too costly</span>
+        <span class="vrule">geometry untouched + proportional strip</span>
+      </div>
+      <div class="scroller">
+        <div class="chart" style="grid-template-columns: 15rem 5rem 5.5rem 6rem 7rem 8rem;">
+          <div class="cell prelude" style="grid-column: 1 / -1;">Butter and flour an 8×8-in pan</div>
+          <div class="cell prelude" style="grid-column: 1 / -1;">Preheat oven to 350°F / 176°C</div>
+
+          <div class="cell ing" style="grid-column:1; grid-row:3;">4 oz (115 g) unsalted butter</div>
+          <div class="cell ing" style="grid-column:1; grid-row:4;">1 cup (200 g) sugar</div>
+          <div class="cell ing" style="grid-column:1; grid-row:5;">¼ tsp (2.5 mL) vanilla extract</div>
+          <div class="cell ing" style="grid-column:1; grid-row:6;">1 shot (4 Tbs; 60 mL) espresso</div>
+          <div class="cell ing" style="grid-column:1; grid-row:7;">2 large (100 g) eggs</div>
+          <div class="cell ing" style="grid-column:1; grid-row:8;">½ cup (80 g) all-purpose flour</div>
+          <div class="cell ing" style="grid-column:1; grid-row:9;">⅓ cup (80 g) cocoa powder</div>
+          <div class="cell ing" style="grid-column:1; grid-row:10;">¼ tsp (1.3 g) baking soda</div>
+          <div class="cell ing" style="grid-column:1; grid-row:11;">¼ tsp (1.5 g) table salt</div>
+
+          <div class="cell step" style="grid-column:2; grid-row:3;"><span class="key">1</span>melt</div>
+          <div class="cell step" style="grid-column:3; grid-row:3 / 7;"><span class="key">2</span>mix</div>
+          <div class="cell step" style="grid-column:4; grid-row:3 / 8;"><span class="key">3</span>mix</div>
+          <div class="cell step" style="grid-column:4; grid-row:8 / 12;"><span class="key">4</span>sift together</div>
+          <div class="cell step" style="grid-column:5; grid-row:3 / 12;"><span class="key">5</span>fold in</div>
+          <div class="cell step unatt" style="grid-column:6; grid-row:3 / 12;"><span class="key unatt">6</span>bake 350°F / 176°C</div>
+        </div>
+        <div class="rail">
+          <div class="seg" style="flex: 2 1 0;"><b>1 melt</b>2 min</div>
+          <div class="seg" style="flex: 1 1 0;"><b>2</b>1 min</div>
+          <div class="seg" style="flex: 2 1 0;"><b>4 sift</b>2 min</div>
+          <div class="seg" style="flex: 1 1 0;"><b>3</b>1 min</div>
+          <div class="seg" style="flex: 1 1 0;"><b>5</b>1 min</div>
+          <div class="seg unatt" style="flex: 35 1 0;"><b>6 bake — unattended</b>30–40 min</div>
+        </div>
+        <div class="railkey">Rail is a true linear time axis. Chart columns are unchanged. The two are bound by the numbered keys.</div>
+      </div>
+      <div class="caption">
+        <div class="gain"><dt>Gains</dt><dd>The only variant where the time axis is <em>truly</em> linear and honest, because it lives in its own coordinate space. The dependency grid is completely unharmed.</dd></div>
+        <div class="cost"><dt>Costs</dt><dd>Two structures to read and mentally join. Leader lines would slant badly across a 6-column chart, so it falls back to numbered keys — which is a lookup task, exactly the "hunting" fatigue this project set out to remove. Adds ~25% vertical footprint.</dd></div>
+      </div>
+      <div class="mobile"><b>At 390px:</b> the rail and the chart scroll independently and lose alignment — the binding breaks precisely where it's needed most.</div>
+    </article>
+
+    <!-- ============ E ============ -->
+    <article class="variant ship">
+      <div class="vhead">
+        <span class="chip">E</span>
+        <span class="vname">In-cell duration bar</span>
+        <span class="verdict-tag yes">ship</span>
+        <span class="vrule">duration as glyph, geometry untouched</span>
+      </div>
+      <div class="scroller">
+        <div class="chart" style="grid-template-columns: 15rem 5rem 5.5rem 6rem 7rem 8rem;">
+          <div class="cell prelude" style="grid-column: 1 / -1;">Butter and flour an 8×8-in pan</div>
+          <div class="cell prelude" style="grid-column: 1 / -1;">Preheat oven to 350°F / 176°C</div>
+
+          <div class="cell ing" style="grid-column:1; grid-row:3;">4 oz (115 g) unsalted butter</div>
+          <div class="cell ing" style="grid-column:1; grid-row:4;">1 cup (200 g) sugar</div>
+          <div class="cell ing" style="grid-column:1; grid-row:5;">¼ tsp (2.5 mL) vanilla extract</div>
+          <div class="cell ing" style="grid-column:1; grid-row:6;">1 shot (4 Tbs; 60 mL) espresso</div>
+          <div class="cell ing" style="grid-column:1; grid-row:7;">2 large (100 g) eggs</div>
+          <div class="cell ing" style="grid-column:1; grid-row:8;">½ cup (80 g) all-purpose flour</div>
+          <div class="cell ing" style="grid-column:1; grid-row:9;">⅓ cup (80 g) cocoa powder</div>
+          <div class="cell ing" style="grid-column:1; grid-row:10;">¼ tsp (1.3 g) baking soda</div>
+          <div class="cell ing" style="grid-column:1; grid-row:11;">¼ tsp (1.5 g) table salt</div>
+
+          <div class="cell step" style="grid-column:2; grid-row:3;">melt<span class="dur">2 min</span><span class="bar"><i style="width:5.7%"></i></span></div>
+          <div class="cell step" style="grid-column:3; grid-row:3 / 7;">mix<span class="dur">1 min</span><span class="bar"><i style="width:2.9%"></i></span></div>
+          <div class="cell step" style="grid-column:4; grid-row:3 / 8;">mix<span class="dur">1 min</span><span class="bar"><i style="width:2.9%"></i></span></div>
+          <div class="cell step" style="grid-column:4; grid-row:8 / 12;">sift together<span class="dur">2 min</span><span class="bar"><i style="width:5.7%"></i></span></div>
+          <div class="cell step" style="grid-column:5; grid-row:3 / 12;">fold in<span class="dur">1 min</span><span class="bar"><i style="width:2.9%"></i></span></div>
+          <div class="cell step unatt" style="grid-column:6; grid-row:3 / 12;">bake 350°F / 176°C<span class="dur">30–40 min</span><span class="bar unatt"><i style="width:100%"></i></span></div>
+        </div>
+      </div>
+      <div class="caption">
+        <div class="gain"><dt>Gains</dt><dd>Costs nothing. Variant A's compactness and legibility survive completely intact; duration becomes a glyph scaled against the recipe's longest step, readable at a glance across the whole chart. Degrades to "no bar" when data is missing.</dd></div>
+        <div class="cost"><dt>Costs</dt><dd>Encodes magnitude only within one recipe, so bars aren't comparable across recipes. At bar-width resolution the four 1–2 min steps are nearly indistinguishable from each other.</dd></div>
+      </div>
+      <div class="mobile"><b>At 390px:</b> the bar survives at any cell width — it's the only variant whose time encoding is fully scale-independent.</div>
+    </article>
+
+    <!-- ============ F ============ -->
+    <article class="variant ship">
+      <div class="vhead">
+        <span class="chip">F</span>
+        <span class="vname">Attended vs. unattended</span>
+        <span class="verdict-tag yes">layer onto E</span>
+        <span class="vrule">√ scale + hands-on / walk-away split</span>
+      </div>
+      <div class="scroller">
+        <div class="chart" style="grid-template-columns: 15rem 5rem 5.5rem 6rem 7rem 8rem;">
+          <div class="cell prelude" style="grid-column: 1 / -1;">Butter and flour an 8×8-in pan</div>
+          <div class="cell prelude" style="grid-column: 1 / -1;">Preheat oven to 350°F / 176°C</div>
+
+          <div class="cell ing" style="grid-column:1; grid-row:3;">4 oz (115 g) unsalted butter</div>
+          <div class="cell ing" style="grid-column:1; grid-row:4;">1 cup (200 g) sugar</div>
+          <div class="cell ing" style="grid-column:1; grid-row:5;">¼ tsp (2.5 mL) vanilla extract</div>
+          <div class="cell ing" style="grid-column:1; grid-row:6;">1 shot (4 Tbs; 60 mL) espresso</div>
+          <div class="cell ing" style="grid-column:1; grid-row:7;">2 large (100 g) eggs</div>
+          <div class="cell ing" style="grid-column:1; grid-row:8;">½ cup (80 g) all-purpose flour</div>
+          <div class="cell ing" style="grid-column:1; grid-row:9;">⅓ cup (80 g) cocoa powder</div>
+          <div class="cell ing" style="grid-column:1; grid-row:10;">¼ tsp (1.3 g) baking soda</div>
+          <div class="cell ing" style="grid-column:1; grid-row:11;">¼ tsp (1.5 g) table salt</div>
+
+          <div class="cell step" style="grid-column:2; grid-row:3;">melt<span class="dur">2 min hands-on</span><span class="split"><i class="att" style="width:100%"></i></span></div>
+          <div class="cell step" style="grid-column:3; grid-row:3 / 7;">mix<span class="dur">1 min hands-on</span><span class="split"><i class="att" style="width:100%"></i></span></div>
+          <div class="cell step" style="grid-column:4; grid-row:3 / 8;">mix<span class="dur">1 min hands-on</span><span class="split"><i class="att" style="width:100%"></i></span></div>
+          <div class="cell step" style="grid-column:4; grid-row:8 / 12;">sift together<span class="dur">2 min hands-on</span><span class="split"><i class="att" style="width:100%"></i></span></div>
+          <div class="cell step" style="grid-column:5; grid-row:3 / 12;">fold in<span class="dur">1 min hands-on</span><span class="split"><i class="att" style="width:100%"></i></span></div>
+          <div class="cell step unatt" style="grid-column:6; grid-row:3 / 12;">bake 350°F / 176°C<span class="dur">30–40 min · walk away</span><span class="split"><i class="un" style="width:100%"></i></span></div>
+        </div>
+      </div>
+      <div class="caption">
+        <div class="gain"><dt>Gains</dt><dd>Answers the question a cook is actually asking — <em>when can I stop paying attention?</em> — which raw duration never does. Hatched fill and the "walk away" label are redundant encodings, so it survives greyscale and colour-vision deficiency.</dd></div>
+        <div class="cost"><dt>Costs</dt><dd>Needs a second authored field (<code>attended: boolean</code>) on top of duration. Some steps are genuinely both — a 15-minute simmer you stir occasionally — and the binary flattens that.</dd></div>
+      </div>
+      <div class="mobile"><b>At 390px:</b> survives fully. The hatch pattern is the most legible encoding on this page at small sizes.</div>
+    </article>
+  </section>
+
+  <!-- ============ degradation ============ -->
+  <section class="section">
+    <h2>What happens when the duration is unknown</h2>
+    <p class="lede">
+      This is the constraint that decides the question. In the real Cooking For Engineers source,
+      <strong>only the bake carries an authored duration</strong> — five of the six steps here have
+      none. Any variant that requires complete data is not a design, it's a data-entry mandate.
+      Below: how each treats <code>fold in</code> with no duration.
+    </p>
+    <div class="degrade">
+      <div class="dcard">
+        <h3>A · Topological</h3>
+        <div class="demo">fold in</div>
+        <p>Perfect. The duration was optional text; its absence is invisible.</p>
+      </div>
+      <div class="dcard">
+        <h3>B · Linear</h3>
+        <div class="demo dashed" style="border-color:var(--alarm); color:var(--alarm);">fold in<br><span style="font-size:0.72rem">width undefined</span></div>
+        <p><strong>Fails outright.</strong> There is no width to assign. Guessing a default silently fabricates a quantitative claim.</p>
+      </div>
+      <div class="dcard">
+        <h3>C · Compressed</h3>
+        <div class="demo dashed" style="border-color:var(--alarm); color:var(--alarm);">fold in<br><span style="font-size:0.72rem">width undefined</span></div>
+        <p><strong>Fails identically.</strong> Compression changes the function, not the requirement for an input.</p>
+      </div>
+      <div class="dcard">
+        <h3>D · Time rail</h3>
+        <div class="demo"><span class="key">5</span>fold in</div>
+        <p>Chart is fine; the step simply drops out of the rail. But a rail with gaps is no longer a timeline.</p>
+      </div>
+      <div class="dcard">
+        <h3>E · In-cell bar</h3>
+        <div class="demo">fold in<span class="bar unknown" style="width:100%"></span></div>
+        <p><strong>Degrades gracefully.</strong> A dashed empty track reads honestly as "not recorded" rather than "zero".</p>
+      </div>
+      <div class="dcard">
+        <h3>F · Attended split</h3>
+        <div class="demo">fold in<span class="dur" style="font-size:0.72rem">hands-on</span><span class="split"><i class="att" style="width:100%"></i></span></div>
+        <p><strong>Still works.</strong> Attended/unattended is knowable even when duration isn't — and it's the more useful half.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ greyscale ============ -->
+  <section class="section">
+    <h2>Greyscale proof — recommended variant</h2>
+    <p class="lede">E with F's attended/unattended layer, rendered with all colour removed. The
+      distinction has to survive on hatch and label alone, because people print recipes.</p>
+    <article class="variant grey">
+      <div class="scroller">
+        <div class="chart" style="grid-template-columns: 15rem 5rem 5.5rem 6rem 7rem 8rem;">
+          <div class="cell prelude" style="grid-column: 1 / -1;">Preheat oven to 350°F / 176°C</div>
+          <div class="cell ing" style="grid-column:1; grid-row:2;">4 oz (115 g) unsalted butter</div>
+          <div class="cell ing" style="grid-column:1; grid-row:3;">1 cup (200 g) sugar</div>
+          <div class="cell ing" style="grid-column:1; grid-row:4;">¼ tsp (2.5 mL) vanilla extract</div>
+          <div class="cell ing" style="grid-column:1; grid-row:5;">1 shot (4 Tbs; 60 mL) espresso</div>
+          <div class="cell ing" style="grid-column:1; grid-row:6;">2 large (100 g) eggs</div>
+          <div class="cell ing" style="grid-column:1; grid-row:7;">½ cup (80 g) all-purpose flour</div>
+          <div class="cell ing" style="grid-column:1; grid-row:8;">⅓ cup (80 g) cocoa powder</div>
+          <div class="cell ing" style="grid-column:1; grid-row:9;">¼ tsp (1.3 g) baking soda</div>
+          <div class="cell ing" style="grid-column:1; grid-row:10;">¼ tsp (1.5 g) table salt</div>
+
+          <div class="cell step" style="grid-column:2; grid-row:2;">melt<span class="dur">2 min</span><span class="split"><i class="att" style="width:100%"></i></span></div>
+          <div class="cell step" style="grid-column:3; grid-row:2 / 6;">mix<span class="dur">1 min</span><span class="split"><i class="att" style="width:100%"></i></span></div>
+          <div class="cell step" style="grid-column:4; grid-row:2 / 7;">mix<span class="dur">1 min</span><span class="split"><i class="att" style="width:100%"></i></span></div>
+          <div class="cell step" style="grid-column:4; grid-row:7 / 11;">sift together<span class="dur">2 min</span><span class="split"><i class="att" style="width:100%"></i></span></div>
+          <div class="cell step" style="grid-column:5; grid-row:2 / 11;">fold in<span class="dur">1 min</span><span class="split"><i class="att" style="width:100%"></i></span></div>
+          <div class="cell step unatt" style="grid-column:6; grid-row:2 / 11;">bake 350°F / 176°C<span class="dur">30–40 min · walk away</span><span class="split"><i class="un" style="width:100%"></i></span></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ verdict ============ -->
+  <section class="section">
+    <h2>Verdict</h2>
+
+    <div class="ranking">
+      <div class="rank"><span class="lbl">E+F</span><p><strong>Ship.</strong> In-cell duration bar, with the attended/unattended split layered on. Preserves the control's geometry entirely, encodes both time and — more usefully — when you can walk away, and degrades to silence when data is missing.</p><span class="verdict-tag yes">ship</span></div>
+      <div class="rank"><span class="lbl">A</span><p><strong>Keep as the fallback.</strong> E+F collapses to exactly this when no durations are authored, which is the common case. That's a feature, not a compromise.</p><span class="verdict-tag yes">fallback</span></div>
+      <div class="rank out"><span class="lbl">D</span><p><strong>Cut.</strong> The only honest linear axis, but it costs a second structure, a lookup task, and 25% more vertical space to deliver information E delivers for free.</p><span class="verdict-tag no">cut</span></div>
+      <div class="rank out"><span class="lbl">C</span><p><strong>Cut — and note why.</strong> This is the trap. It looks principled and measured, but it still distorts the primary encoding, still breaks on shared columns, and now misrepresents magnitude by a square root. A chart that is subtly wrong is worse than one that's obviously silent.</p><span class="verdict-tag no">cut</span></div>
+      <div class="rank out"><span class="lbl">B</span><p><strong>Discard outright.</strong> Structurally broken before aesthetics enter: parallel steps share a column and cannot have proportional widths simultaneously.</p><span class="verdict-tag no">discard</span></div>
+    </div>
+
+    <div class="finding">
+      <h3>The finding that matters most</h3>
+      <p>
+        Every variant that puts time into the <em>column geometry</em> — B, C, and D's rail — fails
+        on the same structural fact: <strong>a column is shared by every parallel branch that
+        reaches that depth</strong>, so it can carry only one width. The convergence grid's
+        horizontal axis is already fully committed to representing dependency depth. There is no
+        room in it for a second variable. Time has to live inside the cell, not in the grid.
+      </p>
+      <p>
+        That reframes the question. It was never "should width encode duration" — width
+        <em>cannot</em>, without breaking the format. It was "where else can duration go," and the
+        answer is a glyph.
+      </p>
+    </div>
+
+    <div class="finding">
+      <h3>Does this justify collecting duration data?</h3>
+      <p>
+        Only partly — and this is the part that should go back into the schema. E and F don't need
+        accurate minutes; they need <em>ordinal magnitude</em> and <em>one boolean</em>. A cook
+        reading a bar cannot distinguish 1 min from 2 min and doesn't need to. Requiring an authored
+        duration for every step of every recipe is a large, permanent authoring burden for precision
+        the design cannot render.
+      </p>
+      <p>Proposal: make precise <code>duration</code> optional, and add a cheap required field.</p>
+      <table class="buckets">
+        <thead><tr><th>Bucket</th><th>Meaning</th><th>Renders as</th></tr></thead>
+        <tbody>
+          <tr><td>quick</td><td>under ~2 min, part of the flow</td><td>short bar</td></tr>
+          <tr><td>minutes</td><td>a few minutes, hands-on</td><td>medium solid bar</td></tr>
+          <tr><td>long-unattended</td><td>you can leave</td><td>full hatched bar + "walk away"</td></tr>
+        </tbody>
+      </table>
+      <p>
+        Three ordinal buckets carry close to all of the decision-relevant signal at a fraction of
+        the cost, and <code>long-unattended</code> is exactly what the cook-mode parallelism banner
+        needs to say <em>"while this bakes, you can…"</em>. Precise durations stay optional, used
+        for timers rather than for layout.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <span>Modern Recipe Card UX — design question Q5</span>
+    <span>Test recipe: espresso brownies (Cooking For Engineers format)</span>
+    <span>Durations for all steps except the bake are estimates</span>
+  </footer>
+</div>
