@@ -25,11 +25,16 @@ have been explored visually and resolved; the rest are captured as ready-to-run 
 
 ## Resolved artifacts
 
-- **Q5 six-variant comparison** — https://claude.ai/code/artifact/8bedd288-18af-4b9d-a25a-5e2bd0c7b47f
-- **Resolved card (current design)** — https://claude.ai/code/artifact/0e465102-73e3-4731-be14-60f22daa7df2
+Sources are committed in [`../design/`](../design/) — self-contained HTML, open directly in a
+browser, no build step. **Read those rather than fetching the published copies.**
 
-The second is the visual reference Phase 03 builds against. Both are private artifacts owned by
-the user; `WebFetch` can read them back if the design details are needed and this doc isn't enough.
+| Local source | Published | What it is |
+| --- | --- | --- |
+| [`../design/resolved-card.html`](../design/resolved-card.html) | [artifact](https://claude.ai/code/artifact/0e465102-73e3-4731-be14-60f22daa7df2) | **The current design.** Phase 03's visual target. |
+| [`../design/q5-time-axis-variants.html`](../design/q5-time-axis-variants.html) | [artifact](https://claude.ai/code/artifact/8bedd288-18af-4b9d-a25a-5e2bd0c7b47f) | The six-variant study behind the Q5 finding. |
+
+The published artifacts are private to the user. To update one from a later session, pass its URL
+to the `Artifact` tool as `url` — otherwise a new URL is minted instead of updating in place.
 
 ## Open questions, in priority order
 
