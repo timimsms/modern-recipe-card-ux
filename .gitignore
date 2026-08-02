@@ -1,0 +1,42 @@
+# OS
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Node / pnpm workspace (see docs/planning/phases/PHASE-00-foundation.md)
+node_modules/
+.pnpm-store/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+
+# Build output
+dist/
+build/
+.output/
+.vite/
+.turbo/
+*.tsbuildinfo
+
+# Test & tooling
+coverage/
+playwright-report/
+playwright/.cache/
+test-results/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Locally saved copies of published artifacts.
+# The canonical, self-contained sources live in docs/design/ — keep those instead.
+sources/*.html
+sources/*_files/
