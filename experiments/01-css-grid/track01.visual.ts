@@ -488,8 +488,10 @@ test.describe('kitchen state', () => {
     await page.fill('#scale-any', '2.75')
     await page.locator('#scale-any').dispatchEvent('change')
 
+    // ½ cup × 2.75 is 1.375 cup, which is exactly 1 cup + 6 Tbs. `1⅓ cup` would be the nearest
+    // scoop-shaped lie.
     await expect(page.locator('.ing-text').filter({ hasText: 'all-purpose flour' })).toContainText(
-      '1⅓ cup',
+      '1 cup + 6 Tbs',
     )
     // No preset matches 2.75, and leaving the menu on "double" beside a 2.75× card is a lie.
     await expect(page.locator('#scale')).toHaveValue('')

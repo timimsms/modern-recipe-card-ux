@@ -140,3 +140,116 @@ describe('unit system (R6)', () => {
     expect(formatScaled(scaleQuantity(q(4, 'oz'), 1))).toBe('4 oz')
   })
 })
+
+/**
+ * PHASE-05's acceptance criterion: `espresso-brownies` at 2× and 0.5×, "verified against a
+ * hand-computed table". This is that table, checked by hand row by row.
+ *
+ * Doing it caught the one real error in the ladder. Halving `⅓ cup` gave `⅛ cup` — 25% short,
+ * and contradicting its own metric column, which correctly said 40 g. The ladder only climbed;
+ * it now steps down when a rung cannot say the number.
+ */
+describe('espresso-brownies, hand-checked', () => {
+  const rows: Array<[string, Quantity, string, string, string]> = [
+    [
+      'butter',
+      q(4, 'oz', { metric: { amount: 115, unit: 'g' } }),
+      '4 oz / 115 g',
+      '½ lb / 230 g',
+      '2 oz / 60 g',
+    ],
+    [
+      'sugar',
+      q(1, 'cup', { metric: { amount: 200, unit: 'g' } }),
+      '1 cup / 200 g',
+      '2 cup / 400 g',
+      '½ cup / 100 g',
+    ],
+    [
+      'vanilla',
+      q(0.25, 'tsp', { metric: { amount: 2.5, unit: 'mL' } }),
+      '¼ tsp / 2½ mL',
+      '½ tsp / 5 mL',
+      '⅛ tsp / 1.3 mL',
+    ],
+    [
+      'espresso',
+      q(4, 'Tbs', { metric: { amount: 60, unit: 'mL' } }),
+      '4 Tbs / 60 mL',
+      '½ cup / 120 mL',
+      '2 Tbs / 30 mL',
+    ],
+    [
+      'eggs',
+      q(2, 'count', { metric: { amount: 100, unit: 'g' } }),
+      '2 / 100 g',
+      '4 / 200 g',
+      '1 / 50 g',
+    ],
+    [
+      'flour',
+      q(0.5, 'cup', { metric: { amount: 80, unit: 'g' } }),
+      '½ cup / 80 g',
+      '1 cup / 160 g',
+      '¼ cup / 40 g',
+    ],
+    // ⅙ cup is 8 tsp, which is 2 Tbs + 2 tsp. It is not ⅛ cup, and 40 g agrees with it.
+    [
+      'cocoa',
+      q(1 / 3, 'cup', { metric: { amount: 80, unit: 'g' } }),
+      '⅓ cup / 80 g',
+      '⅔ cup / 160 g',
+      '2 Tbs + 2 tsp / 40 g',
+    ],
+    [
+      'baking soda',
+      q(0.25, 'tsp', { metric: { amount: 1.3, unit: 'g' } }),
+      '¼ tsp / 1.3 g',
+      '½ tsp / 3 g',
+      '⅛ tsp / 0.7 g',
+    ],
+    [
+      'salt',
+      q(0.25, 'tsp', { metric: { amount: 1.5, unit: 'g' } }),
+      '¼ tsp / 1½ g',
+      '½ tsp / 3 g',
+      '⅛ tsp / 0.8 g',
+    ],
+  ]
+
+  for (const [name, quantity, asWritten, doubled, halved] of rows) {
+    it(name, () => {
+      expect(at(quantity, 1)).toBe(asWritten)
+      expect(at(quantity, 2)).toBe(doubled)
+      expect(at(quantity, 0.5)).toBe(halved)
+    })
+  }
+})
+
+/** The rule the table above forced: a rung that cannot say the number hands it down one. */
+describe('stepping down the ladder', () => {
+  it('splits a cup fraction no scoop can measure', () => {
+    expect(at(q(1 / 3, 'cup'), 0.5)).toBe('2 Tbs + 2 tsp')
+  })
+
+  it('never leaves a fraction on a tablespoon, since half-tablespoons do not exist', () => {
+    // 4 tsp doubled is 8 tsp, which is 2⅔ Tbs — arithmetically right and unmeasurable.
+    expect(at(q(4, 'tsp'), 2)).toBe('2 Tbs + 2 tsp')
+  })
+
+  it('leaves fractions where a kitchen has them', () => {
+    expect(at(q(1, 'cup'), 0.5)).toBe('½ cup')
+    expect(at(q(0.5, 'tsp'), 0.5)).toBe('¼ tsp')
+  })
+
+  it('drops the whole part when there is none', () => {
+    // Not "0 cup + 2 Tbs + 2 tsp".
+    expect(at(q(1 / 3, 'cup'), 0.5)).not.toContain('0 cup')
+  })
+
+  // 1× is the author's own wording, ladder and all — running it through the snapper replaces
+  // the source's rounding with ours, which is the thing the authored-metric rule prevents.
+  it('leaves an already-awkward authored amount alone at 1×', () => {
+    expect(at(q(8, 'tsp'), 1)).toBe('8 tsp')
+  })
+})

@@ -128,6 +128,30 @@ function express(value: number, unit: Unit): Portion[] {
   const { ladder, index } = found
   const rung = ladder[index]!
   const above = rung.perNext ? ladder[index + 1] : undefined
+  const below = ladder[index - 1]
+
+  /**
+   * Step *down* when this rung cannot say the number.
+   *
+   * The ladder only ever climbed, so halving `⅓ cup` snapped to the nearest cup fraction and
+   * gave `⅛ cup` — 25% short, and flatly contradicted its own metric column, which correctly
+   * said 40 g. Two columns disagreeing is worse than either being wrong alone.
+   *
+   * Two ways a rung fails to say a number: the fraction is not one a kitchen can measure (⅙ of
+   * a cup), or the rung has no fractions at all (there is no ⅔ tablespoon). Either way the
+   * answer lives one rung down — ⅙ cup is `2 Tbs + 2 tsp`.
+   */
+  if (below?.perNext) {
+    const unmeasurable = Math.abs(snapFraction(value) - value) > 1e-6
+    const needsWhole = !rung.fractional && Math.abs(value - Math.round(value)) > 1e-6
+    if (unmeasurable || needsWhole) {
+      const whole = Math.floor(value)
+      const rest = value - whole
+      const smaller = express(rest * below.perNext, below.unit)
+      // `0 cup + 2 Tbs` is just `2 Tbs`.
+      return whole > 0 ? [{ amount: whole, unit }, ...smaller] : smaller
+    }
+  }
 
   // Climb on a clean fraction when the larger unit can be measured in parts: 8 Tbs is ½ cup,
   // which is one scoop, where "8 Tbs" is eight.
