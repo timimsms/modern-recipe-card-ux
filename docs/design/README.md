@@ -11,6 +11,8 @@ sources published as artifacts, so the published pages can be regenerated from t
 | --- | --- | --- |
 | [`q5-time-axis-variants.html`](q5-time-axis-variants.html) | Six treatments of step duration compared on the espresso brownies chart, with a missing-data matrix and a verdict. Resolved [Q5](../findings/Q5-time-axis.md). | [artifact](https://claude.ai/code/artifact/8bedd288-18af-4b9d-a25a-5e2bd0c7b47f) |
 | [`resolved-card.html`](resolved-card.html) | **The current reference design.** In-cell duration bar plus attended/unattended split, the derived at-a-glance bar, and the shorthand mark vocabulary. Shown on espresso brownies and shepherd's pie. | [artifact](https://claude.ai/code/artifact/0e465102-73e3-4731-be14-60f22daa7df2) |
+| [`q1-column-assignment.html`](q1-column-assignment.html) | Left-packed, right-packed and stretch-to-merge rendered from one layout function, with live-measured widths and a filler-reveal toggle. Resolved [Q1](../findings/Q1-column-assignment.md). | [artifact](https://claude.ai/code/artifact/cfba9c97-ffb0-47f0-aeee-84ccd512d123) |
+| [`i4-ingredient-reuse.html`](i4-ingredient-reuse.html) | Five reuse strategies × two cases (node reuse, leaf reuse), judged on kitchen safety first. Resolved [I4](../findings/I4-reuse.md). | [artifact](https://claude.ai/code/artifact/24f68ce2-5193-4443-9d01-29a1cfd8c42f) |
 
 `resolved-card.html` is the visual target for **Phase 03**. Where this file and the phase docs
 disagree, the phase docs win — these are explorations, not specifications.
@@ -28,8 +30,14 @@ reference for Phase 03:
 - **Theme tokens are defined three times** — `:root`, `@media (prefers-color-scheme: dark)`, and
   `:root[data-theme="…"]` — so a viewer's explicit toggle beats the OS preference in both
   directions.
-- **Every colour encoding is redundant** with hatch, weight, or label. Both files include a
+- **Every colour encoding is redundant** with hatch, weight, or label. Several of these files carry a
   greyscale check for exactly this reason.
+- **`<meta charset="utf-8">` on the first line.** Without it these render as mojibake when opened
+  from disk, which is the whole point of committing them. Added while building the Q1 study;
+  the two earlier files predate it.
+- **Never measure in `requestAnimationFrame`.** It does not fire in a background tab, so any figure
+  computed there silently stays blank. Read `scrollWidth` synchronously instead — it forces layout
+  and the number is real.
 
 ## Not committed here
 

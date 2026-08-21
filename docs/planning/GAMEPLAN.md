@@ -127,6 +127,15 @@ non-planar. Three escape hatches, each a schema-level decision:
 - **Duplicate leaf** — emit two rows ("2 Tbs butter", "2 Tbs butter, reserved") with a visual link.
 - **Non-planar edge** — draw an actual connector. Only tractable in the SVG track; a key differentiator for that experiment.
 
+**Resolved** — see [`../findings/I4-reuse.md`](../findings/I4-reuse.md). Two results change this
+section. First, **node reuse is not a layout problem**: when the shared thing is a preparation with
+its own method, it should be promoted to a component and referenced twice, which makes both tables
+trees again. `layout()` therefore only has to handle *leaf* reuse. Second, the default is a
+**reference chip**, not any of the three above — it is the only option that keeps one row for one
+quantity while remaining renderable in every track. Duplicate-leaf is a genuine kitchen safety
+hazard and must never be selected automatically. **The connector does not justify the SVG track on
+its own**; that track needs a different primary justification before Phase 07.
+
 **I5 — Cross-component reference.** Shepherd's pie consumes the *output* of the mashed
 potatoes component as an ingredient row. Model as a first-class `ComponentRef` leaf, not a string.
 
@@ -224,28 +233,35 @@ Sequencing notes:
 
 ## 9. Open questions
 
-- **Q1** — Is right-packed or stretch-to-merge the better default for column assignment,
-  or is it recipe-dependent? Resolved empirically in Phase 02.
+- **Q1** — ~~Is right-packed or stretch-to-merge the better default?~~ **Answered: right-packed,
+  unconditionally.** It is the only strategy where a column *means* something — steps remaining until
+  done — which is exactly what `PlacedCell.depth` and R5's shading rely on. No hybrid. The one cost
+  (a long blank run between an ingredient and its own step) is repaired in the renderer with a leader
+  rule, not in `GridPlan`. See [`../findings/Q1-column-assignment.md`](../findings/Q1-column-assignment.md).
 - **Q2** — Does the cook mode preserve enough parallelism to be honest, or does stepping
   through a tree one node at a time silently relinearize it? The mini-map is the proposed
   answer; it needs validation in Phase 04.
 - **Q3** — Is `<table>` with `rowspan`/`colspan` actually the most accessible substrate, given
   that assistive tech understands table navigation? Or does CSS Grid + explicit ARIA win?
   Phase 06 should test both against a real screen reader, not just axe.
-- **Q4** — Should authoring be JSON-only, or is a terse DSL (indentation-based tree) needed
-  for the corpus to grow past a handful of recipes? Deferred until Phase 01 transcription
-  reveals how painful raw JSON actually is.
+- **Q4** — ~~Should authoring be JSON-only, or is a terse DSL needed?~~ **Answered.** JSON, plus a
+  thin normalising layer — string fractions and bare input ids, resolved on load. No DSL; the flat
+  `steps` record was reported as the right call even at ten deep. See
+  [`../findings/Q4-authoring-ergonomics.md`](../findings/Q4-authoring-ergonomics.md), which also
+  records the schema gaps transcription exposed and one unplanned validator rule (**W5**, the
+  *labeled* implicit join that R3's existing check cannot see).
 - **Q5** — ~~Where does step *duration* fit?~~ **Provisionally answered:** width *cannot* encode
   duration — a column is shared by every parallel branch at that depth, so it can carry only one
   width, and the horizontal axis is already fully committed to dependency. Time goes inside the
   cell as a glyph. See [`../findings/Q5-time-axis.md`](../findings/Q5-time-axis.md); this adds an
   `Effort` field to the Phase 01 schema.
 
-Design prompts for the remaining visual questions — run these before committing to the
-corresponding phase:
+Design prompts for the visual questions — run these before committing to the corresponding phase.
+**All four are now run**; nothing gates Phase 02.
 
 | Question | Prompt | Status |
 | --- | --- | --- |
-| Q1 — column assignment | [`prompts/Q1-column-assignment-showcase.md`](prompts/Q1-column-assignment-showcase.md) | not yet run |
+| Q1 — column assignment | [`prompts/Q1-column-assignment-showcase.md`](prompts/Q1-column-assignment-showcase.md) | **run** → [finding](../findings/Q1-column-assignment.md) |
 | Q5 — time axis | [`prompts/Q5-time-axis-showcase.md`](prompts/Q5-time-axis-showcase.md) | **run** → [finding](../findings/Q5-time-axis.md) |
-| I4 — ingredient/step reuse | [`prompts/I4-ingredient-reuse-showcase.md`](prompts/I4-ingredient-reuse-showcase.md) | not yet run |
+| I4 — ingredient/step reuse | [`prompts/I4-ingredient-reuse-showcase.md`](prompts/I4-ingredient-reuse-showcase.md) | **run** → [finding](../findings/I4-reuse.md) |
+| Q4 — authoring ergonomics | answered by building, not by a showcase | **resolved** → [finding](../findings/Q4-authoring-ergonomics.md) |

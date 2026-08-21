@@ -1,0 +1,721 @@
+<meta charset="utf-8">
+<title>I4 — How should the grid handle an ingredient or step used twice?</title>
+<style>
+  :root {
+    --paper:#fbfaf5; --surface:#ffffff; --ink:#16211b; --ink-soft:#4a5a51; --ink-faint:#7d8b83;
+    --rule:#2f6b45; --rule-heavy:#1c4a2e; --rule-faint:#cfdbd2;
+    --clay:#a86b21; --clay-soft:#f2e6d2; --hairline:#e2e7e2;
+    --void:#eceee9; --alarm:#b5402c; --alarm-soft:#f7e4df;
+    --font-display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper:#10150f; --surface:#181f19; --ink:#e8efe7; --ink-soft:#a3b3a7; --ink-faint:#75857a;
+      --rule:#6cba86; --rule-heavy:#9ad8ad; --rule-faint:#2f3d33; --clay:#d9a45c; --clay-soft:#3a2f1c;
+      --hairline:#29332a; --void:#212a22; --alarm:#e0705a; --alarm-soft:#3a221d; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --paper:#10150f; --surface:#181f19; --ink:#e8efe7; --ink-soft:#a3b3a7;
+    --ink-faint:#75857a; --rule:#6cba86; --rule-heavy:#9ad8ad; --rule-faint:#2f3d33; --clay:#d9a45c;
+    --clay-soft:#3a2f1c; --hairline:#29332a; --void:#212a22; --alarm:#e0705a; --alarm-soft:#3a221d; color-scheme: dark; }
+  :root[data-theme="light"] { --paper:#fbfaf5; --surface:#ffffff; --ink:#16211b; --ink-soft:#4a5a51;
+    --ink-faint:#7d8b83; --rule:#2f6b45; --rule-heavy:#1c4a2e; --rule-faint:#cfdbd2; --clay:#a86b21;
+    --clay-soft:#f2e6d2; --hairline:#e2e7e2; --void:#eceee9; --alarm:#b5402c; --alarm-soft:#f7e4df; color-scheme: light; }
+
+  * { box-sizing:border-box; }
+  body { background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.55; -webkit-font-smoothing:antialiased; }
+  body.grey { filter:grayscale(1); }
+  .wrap { max-width:88rem; margin:0 auto; padding:clamp(1.75rem,4vw,3.5rem) clamp(1rem,3vw,2.5rem) 6rem; display:flex; flex-direction:column; gap:clamp(2.5rem,5vw,4rem); }
+
+  .eyebrow { font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--rule); }
+  h1 { font-family:var(--font-display); font-size:clamp(1.9rem,4.4vw,2.9rem); line-height:1.1; font-weight:600; text-wrap:balance; letter-spacing:-0.01em; }
+  .standfirst { font-size:clamp(1rem,1.6vw,1.12rem); color:var(--ink-soft); max-width:64ch; }
+  .masthead { display:flex; flex-direction:column; gap:1.1rem; }
+  h2 { font-family:var(--font-display); font-size:clamp(1.3rem,2.4vw,1.65rem); font-weight:600; letter-spacing:-0.01em; padding-bottom:0.5rem; border-bottom:2px solid var(--rule); }
+  .section { display:flex; flex-direction:column; gap:1.4rem; }
+  .lede { color:var(--ink-soft); max-width:70ch; }
+  p { margin:0; }
+
+  .controls { display:flex; flex-wrap:wrap; align-items:center; gap:0.9rem 1.4rem; padding:0.85rem 1rem;
+    background:var(--surface); border:1px solid var(--hairline); border-radius:4px; position:sticky; top:0; z-index:20; }
+  .controls label { display:flex; align-items:center; gap:0.5rem; font-family:var(--font-mono); font-size:0.76rem; cursor:pointer; }
+  input[type=checkbox] { accent-color:var(--rule); width:1rem; height:1rem; }
+  :focus-visible { outline:2px solid var(--clay); outline-offset:2px; }
+  .hint { font-family:var(--font-mono); font-size:0.74rem; color:var(--ink-faint); }
+
+  /* ---------- the matrix ---------- */
+  .matrix { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:1.1rem; align-items:start; }
+  @media (max-width:78rem){ .matrix { grid-template-columns:1fr; } }
+  .rowlabel { grid-column:1/-1; display:flex; flex-wrap:wrap; align-items:baseline; gap:0.5rem 0.9rem; margin-top:0.9rem; }
+  .rowlabel h3 { font-family:var(--font-display); font-size:1.2rem; font-weight:600; }
+  .rowlabel .n { font-family:var(--font-mono); font-size:0.74rem; color:var(--rule); }
+  .rowlabel .what { font-family:var(--font-mono); font-size:0.74rem; color:var(--ink-faint); }
+
+  .panel { background:var(--surface); border:1px solid var(--hairline); border-radius:5px; overflow:hidden; display:flex; flex-direction:column; min-width:0; }
+  .panel.na { border-style:dashed; }
+  .panelhead { display:flex; align-items:baseline; gap:0.6rem; padding:0.7rem 0.9rem; border-bottom:1px solid var(--hairline); }
+  .panelhead .case { font-family:var(--font-mono); font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-faint); }
+  .panelhead .dims { margin-left:auto; font-family:var(--font-mono); font-size:0.72rem; font-variant-numeric:tabular-nums; color:var(--ink); }
+  .panelhead .safety { font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.06em; text-transform:uppercase; padding:0.1rem 0.4rem; border-radius:2px; }
+  .safety.ok { color:var(--rule); background:color-mix(in srgb, var(--rule) 12%, transparent); }
+  .safety.risk { color:var(--alarm); background:var(--alarm-soft); }
+
+  .scroller { overflow-x:auto; padding:0.9rem; position:relative; }
+  /* Fits the panel and lets step text wrap, rather than sizing to max-content.
+     This comparison is about structure, and a chart that scrolls out of its own
+     panel cannot be compared with the one beside it. */
+  .chart { display:grid; gap:2px; font-size:0.74rem; width:100%; position:relative; }
+  .cell { border:1.5px solid var(--rule); border-radius:2px; padding:0.32rem 0.4rem; min-width:0; background:var(--surface); }
+  /* Sized so a full 5-column chart fits inside a half-width panel: the matrix is
+     only useful if a column can be read down without horizontal scrolling. */
+  .ing { border-color:var(--rule-faint); display:flex; align-items:center; min-width:9.5rem; font-variant-numeric:tabular-nums; }
+  .step { display:flex; flex-direction:column; align-items:flex-end; justify-content:flex-end; text-align:right; font-weight:500; min-width:4.6rem; gap:0.2rem; }
+  .filler { border:0; background:transparent; }
+
+  /* Shared-thing marking. Colour is never the only channel: every tied row also
+     carries a half-disc glyph and a written portion, and the tie draws a bracket. */
+  .ing.tied { border-color:var(--clay); border-left-width:4px; background:color-mix(in srgb, var(--clay) 6%, var(--surface)); }
+  .ing.tied.danger { border-color:var(--alarm); background:var(--alarm-soft); }
+  .glyph { font-family:var(--font-mono); font-size:0.9rem; color:var(--clay); margin-right:0.35rem; flex:none; }
+  .ing.tied.danger .glyph { color:var(--alarm); }
+  .portion { color:var(--ink-soft); }
+  .tiebracket { display:flex; align-items:center; justify-content:center; writing-mode:vertical-rl; font-family:var(--font-mono);
+    font-size:0.6rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--clay);
+    border:1.5px solid var(--clay); border-right:0; border-radius:3px 0 0 3px; padding:0.2rem 0.1rem; background:color-mix(in srgb, var(--clay) 8%, var(--surface)); }
+  .tiebracket.danger { color:var(--alarm); border-color:var(--alarm); background:var(--alarm-soft); }
+
+  .chip { display:inline-flex; align-items:center; gap:0.25rem; font-family:var(--font-mono); font-size:0.66rem;
+    color:var(--clay); border:1px solid var(--clay); border-radius:99px; padding:0.05rem 0.4rem;
+    background:color-mix(in srgb, var(--clay) 8%, var(--surface)); cursor:help; }
+  .chip:hover, .chip:focus-visible { background:color-mix(in srgb, var(--clay) 20%, var(--surface)); }
+  .ing.lit { box-shadow:0 0 0 3px color-mix(in srgb, var(--clay) 35%, transparent); }
+
+  .ghost { border-style:dashed; background:color-mix(in srgb, var(--alarm) 5%, var(--surface)); }
+  .ghost .glyph { color:var(--alarm); }
+
+  .divider { border-color:var(--clay); background:color-mix(in srgb, var(--clay) 7%, var(--surface)); }
+  .subtable { border:1px solid var(--rule-faint); border-radius:4px; padding:0.5rem; margin-bottom:0.6rem; }
+  .subtable .lab { font-family:var(--font-mono); font-size:0.64rem; letter-spacing:0.07em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:0.35rem; }
+
+  svg.wires { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; }
+  svg.wires path { fill:none; stroke:var(--clay); stroke-width:2; stroke-dasharray:5 3; }
+  svg.wires circle { fill:var(--clay); }
+
+  .cap { padding:0.75rem 0.9rem 0.9rem; border-top:1px solid var(--hairline); display:flex; flex-direction:column; gap:0.4rem; font-size:0.83rem; }
+  .cap p { display:flex; gap:0.5rem; align-items:baseline; }
+  .cap .k { font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.07em; text-transform:uppercase; flex:none; width:3.2rem; }
+  .cap .gain .k { color:var(--rule); }
+  .cap .cost .k { color:var(--clay); }
+  .cap .mob .k { color:var(--ink-faint); }
+  .cap .mob { color:var(--ink-soft); }
+  .naNote { padding:1.1rem 0.9rem; color:var(--ink-soft); font-size:0.86rem; display:flex; flex-direction:column; gap:0.5rem; }
+  .naNote strong { color:var(--ink); }
+
+  .finding { background:var(--surface); border:1px solid var(--hairline); border-left:3px solid var(--rule); border-radius:3px; padding:1.05rem 1.15rem; display:flex; flex-direction:column; gap:0.55rem; }
+  .finding.warn { border-left-color:var(--clay); }
+  .finding.stop { border-left-color:var(--alarm); }
+  .finding h3 { font-family:var(--font-display); font-size:1.08rem; font-weight:600; }
+  .finding p { font-size:0.9rem; color:var(--ink-soft); }
+  code { font-family:var(--font-mono); font-size:0.85em; background:color-mix(in srgb, var(--rule) 10%, transparent); padding:0.05rem 0.3rem; border-radius:2px; color:var(--ink); }
+
+  .tablewrap { overflow-x:auto; border:1px solid var(--hairline); border-radius:4px; background:var(--surface); }
+  table.spec { border-collapse:collapse; width:100%; font-size:0.85rem; }
+  table.spec th, table.spec td { text-align:left; padding:0.5rem 0.7rem; border-bottom:1px solid var(--hairline); vertical-align:top; }
+  table.spec tr:last-child td { border-bottom:0; }
+  table.spec th { font-family:var(--font-mono); font-size:0.64rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--ink-faint); white-space:nowrap; }
+  table.spec td.num { font-family:var(--font-mono); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .bad { color:var(--alarm); font-weight:600; }
+  .good { color:var(--rule); font-weight:600; }
+
+  footer { border-top:1px solid var(--hairline); padding-top:1.2rem; font-family:var(--font-mono); font-size:0.74rem; color:var(--ink-faint); display:flex; flex-wrap:wrap; gap:0.4rem 1.5rem; }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important;} }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="eyebrow">Finding I4 · layout engine · phase 02 · phase 07</div>
+    <h1>Real recipes are not trees. The grid assumes they are.</h1>
+    <p class="standfirst">
+      The convergence grid rests on one load-bearing assumption: a step's inputs occupy contiguous
+      rows. That holds only while every result feeds exactly one consumer. Write "reserve half for
+      later" and the recipe becomes a DAG, no row order makes both consumers adjacent, and the format
+      has no answer. Five answers are rendered below, against the two shapes the problem takes.
+    </p>
+  </header>
+
+  <div class="controls">
+    <label><input type="checkbox" id="grey"> Greyscale check</label>
+    <label><input type="checkbox" id="wires" checked> Draw connectors</label>
+    <span class="hint">Hover a reference chip to light up the row it points at.</span>
+  </div>
+
+  <section class="section">
+    <h2>The matrix</h2>
+    <p class="lede">
+      Left column: <strong>node reuse</strong> — one <em>step's output</em> feeds two branches that
+      re-converge. Right column: <strong>leaf reuse</strong> — one <em>ingredient</em> is consumed by
+      two steps at different depths. Read a column down to compare strategies; read a row across to
+      see whether a strategy holds up on both shapes. Two cells are marked
+      <em>cannot express</em> — that is a result, not an omission.
+    </p>
+    <div class="matrix" id="matrix"></div>
+  </section>
+
+  <section class="section">
+    <h2>Measured</h2>
+    <div class="tablewrap">
+      <table class="spec">
+        <thead><tr><th>Strategy</th><th>Node reuse</th><th>Leaf reuse</th><th>Can a cook read it as double?</th></tr></thead>
+        <tbody id="measured"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Verdict</h2>
+
+    <div class="finding">
+      <h3>Default to the reference chip. It is the only one that is safe, compact, and renderable everywhere.</h3>
+      <p>
+        It keeps <strong>one row for one quantity</strong>, which is the property that matters: a cook
+        cannot misread it as needing twice the ingredient, because the ingredient appears once and
+        states its own division. It is the smallest chart of the five on both cases, it needs no SVG,
+        and it degrades to plain text on a phone without losing the dependency.
+      </p>
+      <p>
+        Its real cost is honest and worth stating: the dependency becomes <em>textual</em> rather than
+        spatial, and the whole argument for this format is that structure is spatial. A chip is a
+        footnote where the grid usually draws a line.
+      </p>
+    </div>
+
+    <div class="finding warn">
+      <h3>Yes — the two cases want different answers, and the discriminator is not the graph.</h3>
+      <p>
+        This was the useful surprise. Both cases are the same shape to a graph algorithm: one node,
+        two consumers. But the right answer is decided by <strong>what the shared thing is</strong>,
+        not by the shape of the sharing.
+      </p>
+      <p>
+        In node reuse the shared thing is a <em>preparation with its own recipe</em> — the vinaigrette
+        has five ingredients and a method. That is not a reuse problem at all; it is a
+        <strong>component</strong>, and the model already has the mechanism (<code>ComponentRefLeaf</code>,
+        built for I5). Promote it, reference it twice, and the DAG disappears — every table is a tree
+        again.
+      </p>
+      <p>
+        In leaf reuse the shared thing is one ingredient portioned two ways. Promoting butter to a
+        component with its own table would be absurd. That case wants the chip.
+      </p>
+    </div>
+
+    <div class="finding stop">
+      <h3>Duplicate-leaf is dangerous. Never make it the default.</h3>
+      <p>
+        Two rows that both read "4 oz (115 g) butter" is a shopping-list error waiting to happen, and
+        the failure mode is silent — you notice at the point where the batter is wrong. Every
+        mitigation available (a bracket, a shared "divided" label, half-disc glyphs, per-row portions)
+        was applied in the rendering above and it is <em>still</em> the strategy most likely to be
+        misread, because the mitigations are all secondary marks on a primary signal that says
+        "two rows, two quantities."
+      </p>
+      <p>
+        Keep it implemented — some renderers may have no better option — but it should require an
+        explicit opt-in, and the engine should never select it on its own.
+      </p>
+    </div>
+
+    <div class="finding stop">
+      <h3>The connector does not justify the SVG track on its own.</h3>
+      <p>
+        This was the question the SVG experiment was largely built to answer, so the answer matters.
+        Rendered, the connector is the most <em>truthful</em> strategy — one row, one quantity, and the
+        second dependency drawn as a real edge rather than described. Turn connectors off above and you
+        can see how much information the line is carrying.
+      </p>
+      <p>
+        But it crosses other cells to get where it is going, and the crossing gets worse exactly as
+        recipes get more complex — the situation where you most need it. At 390px it is unusable in a
+        way the others are merely cramped. And a chart with three or four reuse edges becomes a wiring
+        diagram.
+      </p>
+      <p>
+        <strong>Recommendation:</strong> keep <code>connector</code> as an option that only the SVG
+        track implements, but find the SVG track a better reason to exist before Phase 07 — arbitrary-scale
+        print output and a true dendrogram view are both stronger candidates than this. If connectors are
+        its only differentiator, the track is not earning its place in the bake-off.
+      </p>
+    </div>
+
+    <div class="finding warn">
+      <h3>Split-node has a hidden cost that only appeared when it was drawn.</h3>
+      <p>
+        Modelling the division as an explicit step looks like the principled answer — it keeps the tree
+        honest and adds one cell. What the rendering shows is that the two output lanes must then satisfy
+        contiguity themselves, and that <strong>forces their order</strong>. In the cornbread the
+        skillet-greasing lane has to be listed <em>first</em>, above the batter lane, even though
+        greasing happens last, because any other order splits the batter's rows in two.
+      </p>
+      <p>
+        So split-node buys tree-purity by letting the layout dictate the reading order of the ingredient
+        column. That is the same class of mistake as the original format's — geometry driving meaning
+        instead of the other way round.
+      </p>
+    </div>
+
+    <div class="finding">
+      <h3>Subtree duplication is the honest baseline, and it is worth keeping as a measurement.</h3>
+      <p>
+        "Just keep it a tree" costs <strong>13 rows instead of 8</strong> on the vinaigrette — a 63%
+        taller chart — and prints the five vinaigrette ingredients twice, which is the duplicate-leaf
+        safety problem multiplied by five. On leaf reuse it collapses into duplicate-leaf exactly,
+        because a leaf's subtree is one row.
+      </p>
+      <p>
+        Nobody should ship it. It belongs in the harness as the number the other four are measured
+        against.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <span>I4 · ingredient and step reuse</span>
+    <span>Right-packed columns throughout, per the Q1 finding.</span>
+    <span>Dimensions counted from the rendered spec.</span>
+  </footer>
+</div>
+
+<script>
+(() => {
+  'use strict'
+
+  const CHICKEN = ['¼ cup (60 mL) olive oil','2 Tbs (30 mL) lemon juice','1 tsp (5 g) Dijon mustard','1 clove garlic, minced','½ tsp salt']
+
+  // Each variant is authored as explicit placement rather than derived from a tree,
+  // because the variants *are* different models — that is the thing being compared.
+  // rows: ingredient column, top to bottom. cells: 0-based rows, 1-based step columns.
+  const VARIANTS = {
+    'split-node': {
+      node: {
+        cols: 4, safe: true,
+        tables: [
+          { label: 'component — lemon vinaigrette',
+            rows: CHICKEN.map((t) => ({ t })),
+            cols: 1,
+            cells: [{ t:'whisk', r0:0, r1:4, c0:1, c1:1 }] },
+          { label: 'main',
+            rows: [
+              { t:'lemon vinaigrette', portion:'half', tied:true, glyph:'◐' },
+              { t:'2 (450 g) chicken breasts' },
+              { t:'lemon vinaigrette', portion:'reserved half', tied:true, glyph:'◑' },
+              { t:'4 cups (120 g) arugula' },
+              { t:'2 Tbs (14 g) shaved parmesan' },
+            ],
+            cols: 3,
+            cells: [
+              { t:'marinate 30 min', r0:0, r1:1, c0:1, c1:1 },
+              { t:'grill 6 min per side', r0:0, r1:1, c0:2, c1:2 },
+              { t:'toss', r0:2, r1:3, c0:2, c1:2 },
+              { t:'plate', r0:0, r1:4, c0:3, c1:3 },
+            ] },
+        ],
+        rowCount: 10,
+        gain: 'The DAG disappears. Both tables are trees again, and the vinaigrette gets its own method instead of being smuggled into a row label.',
+        cost: 'Two tables for one dish, and the reader has to hold the first one in mind while reading the second.',
+        mob: 'At 390px: best of the five — two short tables stack naturally, which is what a phone wants anyway.',
+      },
+      leaf: {
+        cols: 4, safe: true,
+        tables: [{ label:'', cols:4, rows: [
+            { t:'4 oz (115 g) butter', portion:'1 oz — for the skillet', tied:true, glyph:'◑', span:2 },
+            { t:'', portion:'3 oz — melted into the batter', tied:true, glyph:'◐', cont:true },
+            { t:'1 cup (140 g) cornmeal' }, { t:'1 cup (125 g) all-purpose flour' },
+            { t:'1 Tbs (12 g) baking powder' }, { t:'1 tsp (6 g) salt' },
+            { t:'1 cup (240 mL) buttermilk' }, { t:'2 large (100 g) eggs' },
+          ],
+          cells: [
+            { t:'divide 3 oz / 1 oz', r0:0, r1:1, c0:1, c1:1, kind:'divider' },
+            { t:'grease the hot skillet', r0:0, r1:0, c0:3, c1:3 },
+            { t:'melt', r0:1, r1:1, c0:2, c1:2 },
+            { t:'whisk together', r0:2, r1:5, c0:2, c1:2 },
+            { t:'beat', r0:6, r1:7, c0:2, c1:2 },
+            { t:'stir in', r0:1, r1:7, c0:3, c1:3 },
+            { t:'pour in and bake 425°F / 218°C 25 min', r0:0, r1:7, c0:4, c1:4 },
+          ] }],
+        rowCount: 8,
+        gain: 'One ingredient row, one quantity, and the division is an explicit cell you can point at — nothing is implied.',
+        cost: 'Contiguity forces the lane order: greasing must be listed first even though it happens last. Layout is dictating the reading order.',
+        mob: 'At 390px: the two lanes of one ingredient are hard to keep distinct once the row wraps.',
+      },
+    },
+
+    'duplicate-leaf': {
+      node: { na: true,
+        why: 'The reused thing here is a <strong>step output</strong>, not an ingredient. Duplicating the row without its upstream deletes the vinaigrette\'s recipe from the chart; duplicating it <em>with</em> its upstream is subtree duplication, which is strategy 5. There is no distinct strategy in between.',
+        note: 'This is the finding, not a gap: duplicate-leaf is defined only for leaves.' },
+      leaf: {
+        cols: 4, safe: false,
+        tables: [{ label:'', cols:4, rows: [
+            { t:'4 oz (115 g) butter', portion:'1 oz — for the skillet', tied:true, danger:true, glyph:'◑', tie:'one 4 oz stick, divided', tieSpan:2 },
+            { t:'4 oz (115 g) butter', portion:'3 oz — melted into the batter', tied:true, danger:true, glyph:'◐' },
+            { t:'1 cup (140 g) cornmeal' }, { t:'1 cup (125 g) all-purpose flour' },
+            { t:'1 Tbs (12 g) baking powder' }, { t:'1 tsp (6 g) salt' },
+            { t:'1 cup (240 mL) buttermilk' }, { t:'2 large (100 g) eggs' },
+          ],
+          cells: [
+            { t:'grease the hot skillet', r0:0, r1:0, c0:3, c1:3 },
+            { t:'melt', r0:1, r1:1, c0:2, c1:2 },
+            { t:'whisk together', r0:2, r1:5, c0:2, c1:2 },
+            { t:'beat', r0:6, r1:7, c0:2, c1:2 },
+            { t:'stir in', r0:1, r1:7, c0:3, c1:3 },
+            { t:'pour in and bake 425°F / 218°C 25 min', r0:0, r1:7, c0:4, c1:4 },
+          ] }],
+        rowCount: 8,
+        gain: 'The grid is untouched — every span is contiguous, every border bounds its own subtree, no new cell types.',
+        cost: 'Two rows both say "4 oz (115 g) butter". Every mitigation here is a secondary mark on a primary signal that reads as two quantities.',
+        mob: 'At 390px: worst case. The bracket tying the rows is the first thing a narrow layout drops.',
+      },
+    },
+
+    connector: {
+      node: {
+        cols: 4, safe: true, wires: [{ from:'whisk', to:'toss' }],
+        tables: [{ label:'', cols:4, rows: [
+            ...CHICKEN.map((t) => ({ t })),
+            { t:'2 (450 g) chicken breasts' }, { t:'4 cups (120 g) arugula' }, { t:'2 Tbs (14 g) shaved parmesan' },
+          ],
+          cells: [
+            { t:'whisk', r0:0, r1:4, c0:1, c1:1, id:'whisk' },
+            { t:'marinate 30 min', r0:0, r1:5, c0:2, c1:2 },
+            { t:'grill 6 min per side', r0:0, r1:5, c0:3, c1:3 },
+            { t:'toss', r0:6, r1:6, c0:3, c1:3, id:'toss' },
+            { t:'plate', r0:0, r1:7, c0:4, c1:4 },
+          ] }],
+        rowCount: 8,
+        gain: 'One row, one quantity, and the second dependency is drawn as an actual edge. The most truthful of the five.',
+        cost: 'The edge crosses two unrelated cells to arrive, and crossings multiply with recipe complexity — worst exactly where it is most needed.',
+        mob: 'At 390px: unusable, not merely cramped. A curve across a reflowed single-column layout has nothing left to connect.',
+      },
+      leaf: {
+        cols: 4, safe: true, wires: [{ from:'butterrow', to:'grease', bow: 2.4 }],
+        tables: [{ label:'', cols:4, rows: [
+            { t:'4 oz (115 g) butter', portion:'3 oz melted, 1 oz for the skillet', tied:true, glyph:'◐', id:'butterrow' },
+            { t:'1 cup (140 g) cornmeal' }, { t:'1 cup (125 g) all-purpose flour' },
+            { t:'1 Tbs (12 g) baking powder' }, { t:'1 tsp (6 g) salt' },
+            { t:'1 cup (240 mL) buttermilk' }, { t:'2 large (100 g) eggs' },
+          ],
+          cells: [
+            { t:'melt 3 oz', r0:0, r1:0, c0:1, c1:1 },
+            { t:'whisk together', r0:1, r1:4, c0:1, c1:1 },
+            { t:'beat', r0:5, r1:6, c0:1, c1:1 },
+            { t:'stir in', r0:0, r1:6, c0:2, c1:2 },
+            { t:'grease the hot skillet', r0:0, r1:0, c0:3, c1:3, id:'grease' },
+            { t:'pour in and bake 425°F / 218°C 25 min', r0:0, r1:6, c0:4, c1:4 },
+          ] }],
+        rowCount: 7,
+        gain: 'Smallest honest chart of the safe options — 7 rows, one butter row, and the second use is visibly connected to it.',
+        cost: 'The edge has to bow around "stir in" to be seen at all, which is a rendering trick, not structure.',
+        mob: 'At 390px: unusable. The bow needs horizontal room the phone does not have.',
+      },
+    },
+
+    'reference-chip': {
+      node: {
+        cols: 4, safe: true,
+        tables: [{ label:'', cols:4, rows: [
+            ...CHICKEN.map((t) => ({ t })),
+            { t:'2 (450 g) chicken breasts' }, { t:'4 cups (120 g) arugula' }, { t:'2 Tbs (14 g) shaved parmesan' },
+          ],
+          cells: [
+            { t:'whisk', r0:0, r1:4, c0:1, c1:1, id:'whisk' },
+            // marinate genuinely consumes `whisk` — its rows include whisk's — so it needs
+            // no chip. Only the branch the grid cannot reach does.
+            { t:'marinate 30 min in half the vinaigrette', r0:0, r1:5, c0:2, c1:2 },
+            { t:'grill 6 min per side', r0:0, r1:5, c0:3, c1:3 },
+            { t:'toss', r0:6, r1:6, c0:3, c1:3, chip:{ label:'↑ vinaigrette · reserved half', target:'whisk' } },
+            { t:'plate', r0:0, r1:7, c0:4, c1:4 },
+          ] }],
+        rowCount: 8,
+        gain: 'One row, one quantity, no new geometry, and it renders identically in every track including plain HTML.',
+        cost: 'The dependency is text. The format\'s whole claim is that structure is spatial, and here it stops being.',
+        mob: 'At 390px: degrades best of the five — a chip is just a word, and words reflow.',
+      },
+      leaf: {
+        cols: 4, safe: true,
+        tables: [{ label:'', cols:4, rows: [
+            { t:'4 oz (115 g) butter', portion:'3 oz melted, 1 oz for the skillet', tied:true, glyph:'◐', id:'butterrow' },
+            { t:'1 cup (140 g) cornmeal' }, { t:'1 cup (125 g) all-purpose flour' },
+            { t:'1 Tbs (12 g) baking powder' }, { t:'1 tsp (6 g) salt' },
+            { t:'1 cup (240 mL) buttermilk' }, { t:'2 large (100 g) eggs' },
+          ],
+          cells: [
+            { t:'melt 3 oz', r0:0, r1:0, c0:1, c1:1 },
+            { t:'whisk together', r0:1, r1:4, c0:1, c1:1 },
+            { t:'beat', r0:5, r1:6, c0:1, c1:1 },
+            { t:'stir in', r0:0, r1:6, c0:2, c1:2 },
+            { t:'grease the hot skillet', r0:0, r1:0, c0:3, c1:3, chip:{ label:'↑ butter · remaining 1 oz', target:'butterrow' } },
+            { t:'pour in and bake 425°F / 218°C 25 min', r0:0, r1:6, c0:4, c1:4 },
+          ] }],
+        rowCount: 7,
+        gain: 'The smallest chart of all five, with the ingredient stated once and each use naming its own portion.',
+        cost: 'Nothing on the page draws the link — you have to read the chip and then find the row it names.',
+        mob: 'At 390px: degrades best of the five.',
+      },
+    },
+
+    'subtree-duplication': {
+      node: {
+        cols: 4, safe: false,
+        tables: [{ label:'', cols:4, rows: [
+            ...CHICKEN.map((t) => ({ t, ghost:false })),
+            { t:'2 (450 g) chicken breasts' },
+            ...CHICKEN.map((t) => ({ t, ghost:true, glyph:'⧉' })),
+            { t:'4 cups (120 g) arugula' }, { t:'2 Tbs (14 g) shaved parmesan' },
+          ],
+          cells: [
+            { t:'whisk', r0:0, r1:4, c0:1, c1:1 },
+            { t:'marinate 30 min', r0:0, r1:5, c0:2, c1:2 },
+            { t:'grill 6 min per side', r0:0, r1:5, c0:3, c1:3 },
+            { t:'whisk (again)', r0:6, r1:10, c0:2, c1:2, kind:'ghost' },
+            { t:'toss', r0:6, r1:11, c0:3, c1:3 },
+            { t:'plate', r0:0, r1:12, c0:4, c1:4 },
+          ] }],
+        rowCount: 13,
+        gain: 'Perfect tree, perfect contiguity, no new cell types, no new concepts. Every existing rule holds unchanged.',
+        cost: 'Thirteen rows instead of eight, and five ingredients printed twice — the duplicate-leaf hazard multiplied by five.',
+        mob: 'At 390px: the tallest chart of the five, on the device with the least room.',
+      },
+      leaf: { na: true,
+        why: 'A leaf\'s upstream subtree is <strong>the leaf itself</strong>. Duplicating it produces exactly two adjacent butter rows — which is strategy 2, cell for cell.',
+        note: 'Identical output to duplicate-leaf: 8 rows × 5 columns, same safety hazard.' },
+    },
+  }
+
+  const ORDER = [
+    ['split-node', '1', 'promote the shared thing to its own component'],
+    ['duplicate-leaf', '2', 'emit the reused row twice, tied'],
+    ['connector', '3', 'one row, draw a real edge'],
+    ['reference-chip', '4', 'one row, name it in the consumer'],
+    ['subtree-duplication', '5', 'refuse the DAG, duplicate everything above'],
+  ]
+
+  function buildChart(spec) {
+    const frag = document.createDocumentFragment()
+    const byId = {}
+
+    for (const table of spec.tables) {
+      const holder = document.createElement('div')
+      if (spec.tables.length > 1) {
+        holder.className = 'subtable'
+        const lab = document.createElement('div')
+        lab.className = 'lab'
+        lab.textContent = table.label
+        holder.append(lab)
+      }
+
+      const chart = document.createElement('div')
+      chart.className = 'chart'
+      const hasTie = table.rows.some((r) => r.tie)
+      chart.style.gridTemplateColumns =
+        `${hasTie ? '1.2rem ' : ''}auto repeat(${table.cols}, minmax(5.5rem,1fr))`
+      chart.style.gridTemplateRows = `repeat(${table.rows.length}, minmax(2.1rem,auto))`
+      const off = hasTie ? 2 : 1
+
+      table.rows.forEach((row, i) => {
+        if (row.tie) {
+          const b = document.createElement('div')
+          b.className = 'tiebracket' + (row.danger ? ' danger' : '')
+          b.style.gridArea = `${i + 1} / 1 / ${i + 1 + (row.tieSpan || 2)} / 2`
+          b.textContent = row.tie
+          chart.append(b)
+        }
+        if (row.cont) return
+        const el = document.createElement('div')
+        el.className = 'cell ing' + (row.tied ? ' tied' : '') + (row.danger ? ' danger' : '') + (row.ghost ? ' ghost' : '')
+        el.style.gridArea = `${i + 1} / ${off} / ${i + 1 + (row.span || 1)} / ${off + 1}`
+        if (row.glyph) {
+          const g = document.createElement('span')
+          g.className = 'glyph'
+          g.textContent = row.glyph
+          el.append(g)
+        }
+        const txt = document.createElement('span')
+        txt.append(document.createTextNode(row.t))
+        if (row.portion) {
+          const p = document.createElement('span')
+          p.className = 'portion'
+          p.textContent = (row.t ? ' — ' : '') + row.portion
+          txt.append(p)
+        }
+        el.append(txt)
+        if (row.id) byId[row.id] = el
+        chart.append(el)
+      })
+
+      const occupied = Array.from({ length: table.rows.length }, () => new Set())
+      for (const cell of table.cells) {
+        const el = document.createElement('div')
+        el.className = 'cell step' + (cell.kind === 'divider' ? ' divider' : '') + (cell.kind === 'ghost' ? ' ghost' : '')
+        el.style.gridArea = `${cell.r0 + 1} / ${cell.c0 + off} / ${cell.r1 + 2} / ${cell.c1 + off + 1}`
+        if (cell.chip) {
+          const chip = document.createElement('button')
+          chip.type = 'button'
+          chip.className = 'chip'
+          chip.textContent = cell.chip.label
+          chip.dataset.target = cell.chip.target
+          el.append(chip)
+        }
+        el.append(document.createTextNode(cell.t))
+        if (cell.id) byId[cell.id] = el
+        chart.append(el)
+        for (let r = cell.r0; r <= cell.r1; r++) for (let c = cell.c0; c <= cell.c1; c++) occupied[r].add(c)
+      }
+
+      for (let r = 0; r < table.rows.length; r++) {
+        let c = 1
+        while (c <= table.cols) {
+          if (occupied[r].has(c)) { c++; continue }
+          let e = c
+          while (e + 1 <= table.cols && !occupied[r].has(e + 1)) e++
+          const f = document.createElement('div')
+          f.className = 'cell filler'
+          f.style.gridArea = `${r + 1} / ${c + off} / ${r + 2} / ${e + off + 1}`
+          chart.append(f)
+          c = e + 1
+        }
+      }
+
+      if (spec.wires) {
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+        svg.setAttribute('class', 'wires')
+        chart.append(svg)
+        spec.svg = svg
+      }
+
+      holder.append(chart)
+      frag.append(holder)
+      spec.chartEl = chart
+    }
+
+    spec.byId = byId
+    return frag
+  }
+
+  function drawWires(spec) {
+    if (!spec.wires || !spec.svg) return
+    const svg = spec.svg
+    svg.replaceChildren()
+    const base = spec.chartEl.getBoundingClientRect()
+    for (const w of spec.wires) {
+      const a = spec.byId[w.from], b = spec.byId[w.to]
+      if (!a || !b) continue
+      const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect()
+      const x1 = ra.right - base.left, y1 = ra.top + ra.height / 2 - base.top
+      const x2 = rb.left - base.left, y2 = rb.top + rb.height / 2 - base.top
+      const bow = (w.bow || 1) * Math.max(28, Math.abs(y2 - y1) * 0.5)
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+      path.setAttribute('d', `M ${x1} ${y1} C ${x1 + bow} ${y1 + bow}, ${x2 - bow} ${y2 + bow}, ${x2} ${y2}`)
+      svg.append(path)
+      for (const [cx, cy] of [[x1, y1], [x2, y2]]) {
+        const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+        dot.setAttribute('cx', cx); dot.setAttribute('cy', cy); dot.setAttribute('r', 3.5)
+        svg.append(dot)
+      }
+    }
+  }
+
+  const live = []
+  const matrix = document.getElementById('matrix')
+
+  for (const [key, n, blurb] of ORDER) {
+    const label = document.createElement('div')
+    label.className = 'rowlabel'
+    label.innerHTML = `<span class="n">strategy ${n}</span><h3>${key.replace(/-/g, ' ')}</h3><span class="what">${blurb}</span>`
+    matrix.append(label)
+
+    for (const caseKey of ['node', 'leaf']) {
+      const spec = VARIANTS[key][caseKey]
+      const panel = document.createElement('section')
+      panel.className = 'panel' + (spec.na ? ' na' : '')
+      const caseName = caseKey === 'node' ? 'node reuse · vinaigrette' : 'leaf reuse · cornbread'
+
+      if (spec.na) {
+        panel.innerHTML = `
+          <div class="panelhead"><span class="case">${caseName}</span>
+            <span class="dims">cannot express</span></div>
+          <div class="naNote"><p>${spec.why}</p><p><strong>${spec.note}</strong></p></div>`
+        matrix.append(panel)
+        continue
+      }
+
+      panel.innerHTML = `
+        <div class="panelhead"><span class="case">${caseName}</span>
+          <span class="safety ${spec.safe ? 'ok' : 'risk'}">${spec.safe ? 'one row, one quantity' : 'can read as double'}</span>
+          <span class="dims">${spec.rowCount} rows × ${spec.cols + 1} cols</span></div>`
+      const scroller = document.createElement('div')
+      scroller.className = 'scroller'
+      scroller.append(buildChart(spec))
+      panel.append(scroller)
+
+      const cap = document.createElement('div')
+      cap.className = 'cap'
+      cap.innerHTML = `
+        <p class="gain"><span class="k">Gains</span><span>${spec.gain}</span></p>
+        <p class="cost"><span class="k">Costs</span><span>${spec.cost}</span></p>
+        <p class="mob"><span class="k">390px</span><span>${spec.mob}</span></p>`
+      panel.append(cap)
+      matrix.append(panel)
+      live.push(spec)
+    }
+  }
+
+  // Chip → row highlight. Hover and keyboard focus both work; the chip is a button
+  // so it is reachable without a pointer.
+  document.addEventListener('pointerover', (e) => {
+    const chip = e.target.closest?.('.chip')
+    document.querySelectorAll('.ing.lit').forEach((el) => el.classList.remove('lit'))
+    if (!chip) return
+    for (const spec of live) {
+      const target = spec.byId?.[chip.dataset.target]
+      if (target && spec.chartEl.contains(chip)) target.classList.add('lit')
+    }
+  })
+  document.addEventListener('focusin', (e) => {
+    const chip = e.target.closest?.('.chip')
+    document.querySelectorAll('.ing.lit').forEach((el) => el.classList.remove('lit'))
+    if (!chip) return
+    for (const spec of live) {
+      const target = spec.byId?.[chip.dataset.target]
+      if (target && spec.chartEl.contains(chip)) target.classList.add('lit')
+    }
+  })
+
+  const redraw = () => live.forEach(drawWires)
+  redraw()
+  window.addEventListener('resize', redraw)
+
+  document.getElementById('grey').addEventListener('change', (e) =>
+    document.body.classList.toggle('grey', e.target.checked))
+  document.getElementById('wires').addEventListener('change', (e) => {
+    for (const spec of live) if (spec.svg) spec.svg.style.display = e.target.checked ? '' : 'none'
+  })
+
+  // ---- measured table ------------------------------------------------------
+  const rows = [
+    ['split-node', '10 rows across 2 tables', '8 rows × 5 cols', 'no — one row per portion'],
+    ['duplicate-leaf', 'cannot express', '8 rows × 5 cols', 'YES — two rows both read "4 oz butter"'],
+    ['connector', '8 rows × 5 cols', '7 rows × 5 cols', 'no — one row, edge drawn'],
+    ['reference-chip', '8 rows × 5 cols', '7 rows × 5 cols', 'no — one row, portion named in each use'],
+    ['subtree-duplication', '13 rows × 5 cols', 'collapses to strategy 2', 'YES — five ingredients printed twice'],
+  ]
+  const tbody = document.getElementById('measured')
+  for (const [s, a, b, safety] of rows) {
+    const tr = document.createElement('tr')
+    const danger = safety.startsWith('YES')
+    tr.innerHTML = `<td>${s}</td><td class="num">${a}</td><td class="num">${b}</td>
+      <td class="${danger ? 'bad' : 'good'}">${safety}</td>`
+    tbody.append(tr)
+  }
+})()
+</script>

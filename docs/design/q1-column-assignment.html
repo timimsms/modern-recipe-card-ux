@@ -1,0 +1,631 @@
+<meta charset="utf-8">
+<title>Q1 — Which column-assignment strategy should the layout engine default to?</title>
+<style>
+  :root {
+    --paper:#fbfaf5; --surface:#ffffff; --ink:#16211b; --ink-soft:#4a5a51; --ink-faint:#7d8b83;
+    --rule:#2f6b45; --rule-heavy:#1c4a2e; --rule-faint:#cfdbd2;
+    --clay:#a86b21; --clay-soft:#f2e6d2; --hairline:#e2e7e2;
+    --void:#eceee9;
+    --font-display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper:#10150f; --surface:#181f19; --ink:#e8efe7; --ink-soft:#a3b3a7; --ink-faint:#75857a;
+      --rule:#6cba86; --rule-heavy:#9ad8ad; --rule-faint:#2f3d33; --clay:#d9a45c; --clay-soft:#3a2f1c;
+      --hairline:#29332a; --void:#212a22; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --paper:#10150f; --surface:#181f19; --ink:#e8efe7; --ink-soft:#a3b3a7;
+    --ink-faint:#75857a; --rule:#6cba86; --rule-heavy:#9ad8ad; --rule-faint:#2f3d33; --clay:#d9a45c;
+    --clay-soft:#3a2f1c; --hairline:#29332a; --void:#212a22; color-scheme: dark; }
+  :root[data-theme="light"] { --paper:#fbfaf5; --surface:#ffffff; --ink:#16211b; --ink-soft:#4a5a51;
+    --ink-faint:#7d8b83; --rule:#2f6b45; --rule-heavy:#1c4a2e; --rule-faint:#cfdbd2; --clay:#a86b21;
+    --clay-soft:#f2e6d2; --hairline:#e2e7e2; --void:#eceee9; color-scheme: light; }
+
+  * { box-sizing:border-box; }
+  body { background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.55; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:82rem; margin:0 auto; padding:clamp(1.75rem,4vw,3.5rem) clamp(1rem,3vw,2.5rem) 6rem; display:flex; flex-direction:column; gap:clamp(2.5rem,5vw,4rem); }
+
+  .eyebrow { font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--rule); }
+  h1 { font-family:var(--font-display); font-size:clamp(1.9rem,4.4vw,2.9rem); line-height:1.1; font-weight:600; text-wrap:balance; letter-spacing:-0.01em; }
+  .standfirst { font-size:clamp(1rem,1.6vw,1.12rem); color:var(--ink-soft); max-width:62ch; }
+  .masthead { display:flex; flex-direction:column; gap:1.1rem; }
+
+  h2 { font-family:var(--font-display); font-size:clamp(1.3rem,2.4vw,1.65rem); font-weight:600; letter-spacing:-0.01em; padding-bottom:0.5rem; border-bottom:2px solid var(--rule); }
+  .section { display:flex; flex-direction:column; gap:1.4rem; }
+  .lede { color:var(--ink-soft); max-width:68ch; }
+  p + p { margin-top:0.7rem; }
+
+  /* ---------- controls ---------- */
+  .controls { display:flex; flex-wrap:wrap; align-items:center; gap:0.9rem 1.4rem; padding:0.85rem 1rem;
+    background:var(--surface); border:1px solid var(--hairline); border-radius:4px; position:sticky; top:0; z-index:5; }
+  .controls label { display:flex; align-items:center; gap:0.5rem; font-family:var(--font-mono); font-size:0.76rem; cursor:pointer; }
+  .controls .hint { font-size:0.76rem; color:var(--ink-faint); font-family:var(--font-mono); }
+  input[type=checkbox] { accent-color:var(--rule); width:1rem; height:1rem; }
+  .controls button { font-family:var(--font-mono); font-size:0.74rem; color:var(--ink); background:var(--surface);
+    border:1px solid var(--rule); border-radius:3px; padding:0.3rem 0.6rem; cursor:pointer; }
+  .controls button:hover { background:color-mix(in srgb, var(--rule) 10%, var(--surface)); }
+  :focus-visible { outline:2px solid var(--clay); outline-offset:2px; }
+
+  /* ---------- strategy band ---------- */
+  .band { background:var(--surface); border:1px solid var(--hairline); border-radius:5px; overflow:hidden; display:flex; flex-direction:column; }
+  .bandhead { display:flex; flex-wrap:wrap; align-items:baseline; gap:0.4rem 1rem; padding:0.9rem 1.1rem; border-bottom:1px solid var(--hairline); }
+  .bandhead h3 { font-family:var(--font-display); font-size:1.16rem; font-weight:600; }
+  .bandhead .rulefor { font-family:var(--font-mono); font-size:0.74rem; color:var(--ink-faint); }
+  .metrics { margin-left:auto; display:flex; gap:1.1rem; font-family:var(--font-mono); font-size:0.74rem; font-variant-numeric:tabular-nums; color:var(--ink-faint); }
+  .metrics b { color:var(--ink); font-weight:600; }
+
+  .scroller { overflow-x:auto; padding:1.2rem 1.1rem; }
+  .chart { display:grid; gap:2px; font-size:0.78rem; width:max-content; min-width:100%; }
+  .cell { border:1.5px solid var(--rule); border-radius:2px; padding:0.38rem 0.45rem; min-width:0; background:var(--surface); }
+  .ing { border-color:var(--rule-faint); font-variant-numeric:tabular-nums; display:flex; align-items:center; min-width:11.5rem; position:sticky; left:0; z-index:2; }
+  /* The prelude spans the whole 2700px chart, so centred text would sit off-screen.
+     Pinned left, it stays readable at every scroll position. */
+  .prelude { border:1.5px solid var(--rule-heavy); font-weight:600; padding:0.38rem 0.45rem; background:color-mix(in srgb, var(--rule) 7%, var(--surface)); }
+  .prelude span { position:sticky; left:0.45rem; display:inline-block; }
+  .step { display:flex; flex-direction:column; align-items:flex-end; justify-content:flex-end; text-align:right; font-weight:500; min-width:6rem; }
+
+  /* ---------- shape thumbnail ---------- */
+  /* The full chart is ~2,700px, so no two strategies can be compared on screen at
+     once. The thumbnail carries the only thing that actually differs — the shape. */
+  .mini { display:grid; gap:1px; flex:none; }
+  .mini i { background:var(--rule-faint); border-radius:1px; }
+  .mini i.s { background:var(--rule); }
+  .mini i.p { background:var(--rule-heavy); }
+  .mini i.f { background:transparent; box-shadow:inset 0 0 0 1px var(--void); }
+  .mini i.spotm { background:var(--clay); box-shadow:0 0 0 1.5px var(--clay); }
+  .shape { display:flex; align-items:flex-start; gap:0.7rem; padding:0.9rem 1.1rem 0; }
+  .shape figcaption { font-family:var(--font-mono); font-size:0.66rem; color:var(--ink-faint); letter-spacing:0.06em; text-transform:uppercase; }
+
+  /* Filler is absence. It gets no border and no background until you ask to see it. */
+  .filler { border:0; background:transparent; }
+  body.reveal .filler { border:1px dashed var(--void); background:repeating-linear-gradient(45deg, transparent 0 5px, var(--void) 5px 6px); border-radius:2px; }
+  body.reveal .filler::after { content:attr(data-span); font-family:var(--font-mono); font-size:0.62rem; color:var(--ink-faint); display:block; text-align:center; }
+
+  /* The proposed fix: right-packed's only real cost is that the long blank run
+     gives the eye nothing to follow. A hairline leader is a rendering decision —
+     it costs the layout plan nothing and recovers what stretch-to-merge was
+     buying with a seven-column cell body. */
+  body.leaders .filler[data-wide] { background:linear-gradient(to bottom, transparent calc(50% - 0.5px), var(--rule-faint) calc(50% - 0.5px) calc(50% + 0.5px), transparent calc(50% + 0.5px)); }
+  body.leaders.reveal .filler[data-wide] { background:repeating-linear-gradient(45deg, transparent 0 5px, var(--void) 5px 6px); }
+
+  /* The cell the whole question is about. */
+  .spot { border-color:var(--clay); border-width:2px; background:color-mix(in srgb, var(--clay) 8%, var(--surface)); }
+  .spot .tag { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--clay); }
+  body.trace .spot { box-shadow:0 0 0 6px color-mix(in srgb, var(--clay) 18%, transparent); }
+
+  .caption { display:grid; grid-template-columns:repeat(auto-fit,minmax(19rem,1fr)); gap:0.5rem 1.6rem; padding:0.9rem 1.1rem 1.05rem; border-top:1px solid var(--hairline); font-size:0.86rem; }
+  .caption p { display:flex; gap:0.5rem; align-items:baseline; margin:0; }
+  .caption .k { font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.08em; text-transform:uppercase; flex:none; width:3.4rem; }
+  .caption .gain .k { color:var(--rule); }
+  .caption .cost .k { color:var(--clay); }
+  .caption .mob { grid-column:1/-1; color:var(--ink-soft); border-top:1px dashed var(--hairline); padding-top:0.55rem; }
+  .caption .mob .k { color:var(--ink-faint); }
+
+  .stack { display:flex; flex-direction:column; gap:1.1rem; }
+
+  .finding { background:var(--surface); border:1px solid var(--hairline); border-left:3px solid var(--rule); border-radius:3px; padding:1.05rem 1.15rem; display:flex; flex-direction:column; gap:0.55rem; }
+  .finding.warn { border-left-color:var(--clay); }
+  .finding h3 { font-family:var(--font-display); font-size:1.08rem; font-weight:600; }
+  .finding p { font-size:0.9rem; color:var(--ink-soft); margin:0; }
+  .finding p + p { margin-top:0.5rem; }
+  code { font-family:var(--font-mono); font-size:0.85em; background:color-mix(in srgb, var(--rule) 10%, transparent); padding:0.05rem 0.3rem; border-radius:2px; color:var(--ink); }
+
+  .tablewrap { overflow-x:auto; border:1px solid var(--hairline); border-radius:4px; background:var(--surface); }
+  table.spec { border-collapse:collapse; width:100%; font-size:0.86rem; }
+  table.spec th, table.spec td { text-align:left; padding:0.55rem 0.75rem; border-bottom:1px solid var(--hairline); vertical-align:top; }
+  table.spec tr:last-child td { border-bottom:0; }
+  table.spec th { font-family:var(--font-mono); font-size:0.66rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--ink-faint); white-space:nowrap; }
+  table.spec td.num { font-family:var(--font-mono); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .win { color:var(--rule); font-weight:600; }
+
+  footer { border-top:1px solid var(--hairline); padding-top:1.2rem; font-family:var(--font-mono); font-size:0.74rem; color:var(--ink-faint); display:flex; flex-wrap:wrap; gap:0.4rem 1.5rem; }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important;} }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="eyebrow">Finding Q1 · layout engine · phase 02</div>
+    <h1>Row spans are determined. Column position is not.</h1>
+    <p class="standfirst">
+      A step spans exactly the rows it consumes — that part is forced. But when a one-step prep chain
+      feeds a merge nine columns to the right, there are three defensible places to put it, and the
+      original site uses different answers in different recipes. All three are rendered below from a
+      single renderer, so column assignment is genuinely the only variable.
+    </p>
+  </header>
+
+  <div class="controls">
+    <label><input type="checkbox" id="reveal"> Reveal filler cells</label>
+    <label><input type="checkbox" id="trace"> Highlight the contested cell</label>
+    <label><input type="checkbox" id="leaders"> Leader rules in the gaps <span class="hint">(proposed)</span></label>
+    <button type="button" id="tocell">Scroll all three to the contested cell</button>
+    <span class="hint" id="report">measuring…</span>
+  </div>
+
+  <section class="section">
+    <h2>Test case 1 — Shepherd's pie</h2>
+    <p class="lede">
+      Fifteen ingredients, twelve steps, depth ten. One branch — <code>cut up into small pieces</code>,
+      outlined in clay — is a single step deep but joins the main chain at column&nbsp;8. That cell is
+      the entire reason this question exists.
+    </p>
+    <div class="stack" id="case1"></div>
+  </section>
+
+  <section class="section">
+    <h2>Test case 2 — Grilled artichokes (control)</h2>
+    <p class="lede">
+      A trivial chain, to check whether the strategies differ at all on simple recipes — and whether
+      the winner on case&nbsp;1 makes case&nbsp;2 worse.
+    </p>
+    <div class="stack" id="case2"></div>
+  </section>
+
+  <section class="section">
+    <h2>Measured</h2>
+    <div class="tablewrap">
+      <table class="spec">
+        <thead>
+          <tr><th>Strategy</th><th>Case</th><th>Columns</th><th>Width</th><th>Filler cells</th><th>Gap between the butter row and its own step</th></tr>
+        </thead>
+        <tbody id="measured"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Verdict</h2>
+
+    <div class="finding">
+      <h3>Default to right-packed.</h3>
+      <p>
+        Not because it is prettier — because it is the only one of the three where <strong>column
+        position means something</strong>. Under right-packed, a step's column is exactly its distance
+        from the finished dish. Every cell in column 7 is one move from done, in every recipe, at every
+        depth. That is what makes a shading ramp legible as "how close to done", which is precisely how
+        Phase 02 defines <code>PlacedCell.depth</code> and how R5 proposes to encode grouping.
+      </p>
+      <p>
+        Under left-packed, column position means "how much prep has happened to the rawest thing in
+        this cell" — a quantity that is measured from a different origin in every branch, and is
+        therefore not comparable between two cells in the same column. A ramp painted across those
+        columns would be decoration pretending to be structure.
+      </p>
+    </div>
+
+    <div class="finding warn">
+      <h3>Stretch-to-merge is better than expected, and that changes the recommendation.</h3>
+      <p>
+        PHASE-02 predicted that stretch would interact badly with bottom-right anchoring — that a
+        stretched cell's text would "float far from its inputs". Rendered, the opposite is the case.
+        The text does land at the right edge, but the <em>body</em> of the cell bridges the whole gap,
+        so the butter row is visibly connected to the step that consumes it. It is the only one of the
+        three where that long-range dependency is drawn rather than implied.
+      </p>
+      <p>
+        Its actual failure is weight, not position. A seven-column bar reads at nearly the weight of the
+        prelude band, so the least important step on the chart becomes one of the most prominent things
+        on it. That is a real disqualification — but the thing it was doing well is worth keeping, and
+        the fix below keeps it.
+      </p>
+    </div>
+
+    <div class="finding">
+      <h3>The fix: right-packed geometry, with a leader rule across the gap.</h3>
+      <p>
+        Right-packed's only genuine cost is that the six blank columns give the eye nothing to follow.
+        Stretch solved that by making the gap into a cell. A hairline through the filler solves it for
+        the price of one CSS rule — <strong>turn on "Leader rules in the gaps" above and compare.</strong>
+      </p>
+      <p>
+        This matters beyond aesthetics: it is a <em>rendering</em> decision, so it costs the layout plan
+        nothing and every track gets to make it independently. The alternative — a hybrid that stretches
+        one-step chains — would push the same fix into <code>GridPlan</code>, where it would make column
+        position mean "distance from done" for most cells and "a range of distances" for a few. Any
+        depth-driven encoding would then need a special case forever, to serve exactly one cell in the
+        entire corpus.
+      </p>
+      <p>
+        <strong>Ship right-packed, unconditionally.</strong> Keep all three implemented behind the
+        <code>columns</code> option — they cost little and the golden files are more informative with
+        three variants than one — but there is no hybrid heuristic and no per-branch rule.
+      </p>
+    </div>
+
+    <div class="finding">
+      <h3>The control case is the strongest evidence, because almost nothing happens in it.</h3>
+      <p>
+        Grilled artichokes renders with <strong>identical step geometry and identical width</strong>
+        under all three strategies — 8 columns, same pixel width, every cell in the same place. The only
+        difference the measurements can find is that right- and left-packed emit two filler cells where
+        stretch emits none, and filler is invisible.
+      </p>
+      <p>
+        The strategies can only diverge where one branch is shorter than its sibling. In a pure chain
+        there is no choice to make. So this decision costs nothing on simple recipes and everything on
+        the ones the format exists for — and it cannot be validated on easy cases at all.
+      </p>
+    </div>
+
+    <div class="finding warn">
+      <h3>Unplanned finding: the stray-border complaint is partly a table artifact.</h3>
+      <p>
+        R1 — "the vertical border that extends from the prior instruction to the ones beneath" — is the
+        most-cited complaint about the original. Turn on <em>Reveal filler cells</em> above and you can
+        see why it exists: an HTML table has no way to say <em>nothing is here</em>. Every gap must be
+        an actual <code>&lt;td&gt;</code>, every <code>&lt;td&gt;</code> draws borders, and CFE's
+        <code>righthide</code> class is a hand-applied patch over that.
+      </p>
+      <p>
+        CSS Grid can leave a track genuinely empty. In all three renderings above the filler carries no
+        border because it is not a box — it is unoccupied space. So the complaint that launched this
+        project is, in part, an artifact of the 2004 substrate rather than of the format. That is
+        evidence for <strong>Q3</strong>, which currently assumes tables might win on accessibility;
+        whatever that test concludes, a table renderer has to re-solve a problem the grid does not have.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <span>Q1 · column assignment</span>
+    <span>Rendered from one layout function; column assignment is the only variable.</span>
+    <span>Widths measured live, not asserted.</span>
+  </footer>
+</div>
+
+<script>
+(() => {
+  'use strict'
+
+  // ---- recipes -------------------------------------------------------------
+  // Transcribed from packages/corpus/recipes/. `inputs` names ingredients by row
+  // index and steps by id, exactly as the real model does.
+
+  const SHEPHERD = {
+    prelude: 'Preheat oven to 400°F / 204°C',
+    ingredients: [
+      '3 Tbs (45 mL) vegetable oil', '1 medium (110 g) onion', '1 medium (61 g) carrot',
+      '1 medium (40 g) celery stalk', '1 lb (450 g) ground lamb', '1 Tbs (8 g) all-purpose flour',
+      '1 tsp (1.2 g) dried rosemary', '1 tsp (1 g) dried thyme', '1 pinch ground nutmeg',
+      '1 cup (235 mL) beef broth', 'salt', 'ground black pepper',
+      '1¾ lb (800 g) mashed potatoes', '2 Tbs (28 g) butter', 'paprika',
+    ],
+    root: 'bake',
+    steps: {
+      heat:      { text:'heat', inputs:[0] },
+      dice:      { text:'dice', inputs:[1,2,3] },
+      tender:    { text:'med-low until tender', inputs:['heat','dice'] },
+      meat:      { text:'cook until meat is no longer pink', inputs:['tender',4] },
+      mixcook:   { text:'mix and cook', inputs:['meat',5] },
+      thicken:   { text:'stir in and cook until liquid thickens', inputs:['mixcook',6,7,8,9] },
+      season:    { text:'season to taste', inputs:['thicken',10,11] },
+      potatoes:  { text:'cover with potatoes and fluff with fork', inputs:['season',12] },
+      cutbutter: { text:'cut up into small pieces', inputs:[13], spot:true },
+      dropbutter:{ text:'drop butter pieces on top', inputs:['potatoes','cutbutter'] },
+      paprika:   { text:'cover with paprika', inputs:['dropbutter',14] },
+      bake:      { text:'bake 400°F / 205°C 30 min', inputs:['paprika'] },
+    },
+  }
+
+  const ARTICHOKE = {
+    prelude: 'Boil 1 in (2.5 cm) water in pot with steamer attachment / Preheat grill',
+    ingredients: ['1 large artichoke', '1 tsp (5 mL) olive oil', 'salt and pepper'],
+    root: 'grilldown',
+    steps: {
+      trim:      { text:'trim', inputs:[0] },
+      steam:     { text:'steam 15 min', inputs:['trim'] },
+      cut:       { text:'cut from tip to base', inputs:['steam'] },
+      brush:     { text:'brush', inputs:['cut',1] },
+      season:    { text:'season', inputs:['brush',2] },
+      grillup:   { text:'grill 10 min medium heat, cut side up', inputs:['season'] },
+      grilldown: { text:'grill 5 min cut side down', inputs:['grillup'] },
+    },
+  }
+
+  // ---- the layout engine, in miniature -------------------------------------
+  // Row spans and the tree walk are shared by all three strategies. Only
+  // `columnsOf` differs — which is the whole point of the comparison.
+
+  const isStep = (ref) => typeof ref === 'string'
+
+  function analyse(recipe) {
+    const steps = recipe.steps
+    const parent = {}
+    const leaves = {}   // step id -> sorted row indices in its subtree
+    const height = {}   // longest chain of steps below, 0 for a step with no step inputs
+    const depth = {}    // distance from the root
+
+    const walkUp = (id) => {
+      if (leaves[id]) return leaves[id]
+      const out = []
+      let h = 0
+      for (const ref of steps[id].inputs) {
+        if (isStep(ref)) {
+          parent[ref] = id
+          out.push(...walkUp(ref))
+          h = Math.max(h, height[ref] + 1)
+        } else out.push(ref)
+      }
+      height[id] = h
+      leaves[id] = out.sort((a, b) => a - b)
+      return leaves[id]
+    }
+    walkUp(recipe.root)
+
+    const walkDown = (id, d) => {
+      depth[id] = d
+      for (const ref of steps[id].inputs) if (isStep(ref)) walkDown(ref, d + 1)
+    }
+    walkDown(recipe.root, 0)
+
+    const maxCol = height[recipe.root] + 1
+    return { parent, leaves, height, depth, maxCol }
+  }
+
+  // Each returns { start, end } in 1-based grid columns; column 0 is ingredients.
+  const STRATEGIES = {
+    'right-packed': {
+      rule: 'column(child) = column(parent) − 1',
+      colsOf: (id, a) => {
+        const c = a.maxCol - a.depth[id]
+        return { start: c, end: c }
+      },
+    },
+    'left-packed': {
+      rule: 'column = height above the deepest leaf',
+      colsOf: (id, a) => {
+        const c = a.height[id] + 1
+        return { start: c, end: c }
+      },
+    },
+    'stretch-to-merge': {
+      rule: 'no filler — the cell absorbs the gap',
+      colsOf: (id, a) => {
+        const start = a.height[id] + 1
+        const p = a.parent[id]
+        return { start, end: p ? a.height[p] : a.maxCol }
+      },
+    },
+  }
+
+  // ---- rendering -----------------------------------------------------------
+
+  function render(recipe, strategyName) {
+    const strategy = STRATEGIES[strategyName]
+    const a = analyse(recipe)
+    const rows = recipe.ingredients.length
+
+    const chart = document.createElement('div')
+    chart.className = 'chart'
+    chart.style.gridTemplateColumns = `auto repeat(${a.maxCol}, minmax(6.5rem, 1fr))`
+    chart.style.gridTemplateRows = `auto repeat(${rows}, minmax(2.4rem, auto))`
+    chart.setAttribute('role', 'img')
+    chart.setAttribute('aria-label',
+      `Shepherd's pie style convergence grid, ${strategyName}, ${a.maxCol + 1} columns by ${rows} rows.`)
+
+    const prelude = document.createElement('div')
+    prelude.className = 'cell prelude'
+    prelude.style.gridArea = `1 / 1 / 2 / ${a.maxCol + 2}`
+    prelude.innerHTML = '<span></span>'
+    prelude.firstChild.textContent = recipe.prelude
+    chart.append(prelude)
+
+    // Thumbnail: the same geometry at 9×7px per cell, no text.
+    const mini = document.createElement('div')
+    mini.className = 'mini'
+    mini.style.gridTemplateColumns = `14px repeat(${a.maxCol}, 9px)`
+    mini.style.gridTemplateRows = `repeat(${rows + 1}, 7px)`
+    mini.setAttribute('aria-hidden', 'true')
+    const pin = (cls, r1, c1, r2, c2) => {
+      const i = document.createElement('i')
+      i.className = cls
+      i.style.gridArea = `${r1} / ${c1} / ${r2} / ${c2}`
+      mini.append(i)
+      return i
+    }
+    pin('p', 1, 1, 2, a.maxCol + 2)
+    recipe.ingredients.forEach((_, i) => pin('', i + 2, 1, i + 3, 2))
+
+    recipe.ingredients.forEach((text, i) => {
+      const el = document.createElement('div')
+      el.className = 'cell ing'
+      el.style.gridArea = `${i + 2} / 1 / ${i + 3} / 2`
+      el.textContent = text
+      chart.append(el)
+    })
+
+    // occupied[row] = Set of columns taken by a step cell, so filler can be
+    // computed as the complement rather than guessed at.
+    const occupied = Array.from({ length: rows }, () => new Set())
+    let stepCount = 0
+
+    for (const id of Object.keys(recipe.steps)) {
+      const { start, end } = strategy.colsOf(id, a)
+      const leaves = a.leaves[id]
+      const top = leaves[0]
+      const bottom = leaves[leaves.length - 1]
+
+      const el = document.createElement('div')
+      el.className = 'cell step' + (recipe.steps[id].spot ? ' spot' : '')
+      el.style.gridArea = `${top + 2} / ${start + 1} / ${bottom + 3} / ${end + 2}`
+      if (recipe.steps[id].spot) {
+        const tag = document.createElement('span')
+        tag.className = 'tag'
+        tag.textContent = 'the contested cell'
+        el.append(tag)
+      }
+      el.append(document.createTextNode(recipe.steps[id].text))
+      chart.append(el)
+      pin(recipe.steps[id].spot ? 'spotm' : 's', top + 2, start + 1, bottom + 3, end + 2)
+      stepCount++
+
+      for (let r = top; r <= bottom; r++) for (let c = start; c <= end; c++) occupied[r].add(c)
+    }
+
+    // Filler: every maximal run of unoccupied columns in a row. Left-packed can
+    // strand these in the middle of a row; right-packed cannot.
+    let fillerCount = 0
+    for (let r = 0; r < rows; r++) {
+      let c = 1
+      while (c <= a.maxCol) {
+        if (occupied[r].has(c)) { c++; continue }
+        let end = c
+        while (end + 1 <= a.maxCol && !occupied[r].has(end + 1)) end++
+        if (strategyName !== 'stretch-to-merge') {
+          const el = document.createElement('div')
+          el.className = 'cell filler'
+          el.style.gridArea = `${r + 2} / ${c + 1} / ${r + 3} / ${end + 2}`
+          el.dataset.span = end - c + 1 > 1 ? `${end - c + 1} cols` : '1'
+          if (end - c + 1 >= 2) el.dataset.wide = ''
+          chart.append(el)
+          pin('f', r + 2, c + 1, r + 3, end + 2)
+          fillerCount++
+        }
+        c = end + 1
+      }
+    }
+
+    // How far the butter row's own step sits from the butter row itself.
+    let gap = null
+    for (const id of Object.keys(recipe.steps)) {
+      if (!recipe.steps[id].spot) continue
+      gap = strategy.colsOf(id, a).start - 1
+    }
+
+    return { chart, mini, columns: a.maxCol + 1, fillerCount, stepCount, gap }
+  }
+
+  const CAPTIONS = {
+    'right-packed': {
+      gain: 'Column position equals distance from done, everywhere, in every recipe. The staircase is that one fact made visible, and merges sit tight against what they merge.',
+      cost: 'The butter row runs six empty columns before reaching its own step, with nothing to follow across. Row alignment is the only thing linking them, and row alignment is invisible.',
+      mob: 'At 390px: 11 columns, unusable — but the filler is contiguous and left-aligned, so collapsing it is a single rule.',
+    },
+    'left-packed': {
+      gain: 'The prep step sits immediately beside the ingredient it acts on, so "butter → cut up into small pieces" reads as one phrase with no eye travel at all.',
+      cost: 'Column position now means "prep done so far", which differs per branch and is not comparable across the chart — so nothing can be encoded on it.',
+      mob: 'At 390px: 11 columns, unusable — and its filler can be stranded mid-row, so a collapse rule has to handle interior gaps.',
+    },
+    'stretch-to-merge': {
+      gain: 'The cell body physically bridges the ingredient to its merge point. It is the only strategy that makes the long-range dependency visible rather than implied.',
+      cost: 'That bridge is drawn at nearly the weight of the prelude band, so "cut up into small pieces" reads as one of the most important steps on the chart. It is one of the least.',
+      mob: 'At 390px: 11 columns, unusable — though stretched cells are the only ones that reflow to a single column without losing their meaning.',
+    },
+  }
+
+  const measured = []
+
+  function band(recipe, strategyName, caseName) {
+    const { chart, mini, columns, fillerCount, gap } = render(recipe, strategyName)
+
+    const el = document.createElement('section')
+    el.className = 'band'
+    el.innerHTML = `
+      <div class="bandhead">
+        <h3>${strategyName}</h3>
+        <span class="rulefor">${STRATEGIES[strategyName].rule}</span>
+        <span class="metrics"><span><b>${columns}</b> cols</span><span><b class="px">–</b> px</span><span><b>${fillerCount}</b> filler</span></span>
+      </div>`
+
+    const shape = document.createElement('figure')
+    shape.className = 'shape'
+    shape.append(mini)
+    const shapeCap = document.createElement('figcaption')
+    shapeCap.textContent = 'shape at a glance — the clay block is the contested cell'
+    shape.append(shapeCap)
+    el.append(shape)
+
+    const scroller = document.createElement('div')
+    scroller.className = 'scroller'
+    scroller.append(chart)
+    el.append(scroller)
+
+    const cap = document.createElement('div')
+    cap.className = 'caption'
+    cap.innerHTML = `
+      <p class="gain"><span class="k">Gains</span><span>${CAPTIONS[strategyName].gain}</span></p>
+      <p class="cost"><span class="k">Costs</span><span>${CAPTIONS[strategyName].cost}</span></p>
+      <p class="mob"><span class="k">390px</span><span>${CAPTIONS[strategyName].mob}</span></p>`
+    el.append(cap)
+
+    measured.push({ strategyName, caseName, columns, fillerCount, gap, el, chart, scroller })
+    return el
+  }
+
+  const case1 = document.getElementById('case1')
+  const case2 = document.getElementById('case2')
+  for (const name of Object.keys(STRATEGIES)) case1.append(band(SHEPHERD, name, "Shepherd's pie"))
+  for (const name of Object.keys(STRATEGIES)) case2.append(band(ARTICHOKE, name, 'Artichokes'))
+
+  // Lock the three charts in a case to the same horizontal position. Comparing
+  // column assignment while each chart sits at a different scroll offset is
+  // comparing nothing.
+  for (const caseName of ["Shepherd's pie", 'Artichokes']) {
+    const scrollers = measured.filter((m) => m.caseName === caseName).map((m) => m.scroller)
+    let syncing = false
+    for (const s of scrollers) {
+      s.addEventListener('scroll', () => {
+        if (syncing) return
+        syncing = true
+        for (const other of scrollers) if (other !== s) other.scrollLeft = s.scrollLeft
+        requestAnimationFrame(() => { syncing = false })
+        setTimeout(() => { syncing = false }, 100)
+      })
+    }
+  }
+
+  // One shared offset, not one per chart: the charts are scroll-locked, and the
+  // point is precisely that the same column holds the contested cell in one
+  // strategy and empty space in another. Scrolling each to its own cell would
+  // hide the finding.
+  document.getElementById('tocell').addEventListener('click', () => {
+    const bands = measured.filter((x) => x.caseName === "Shepherd's pie")
+    let target = 0
+    for (const m of bands) {
+      const spot = m.chart.querySelector('.spot')
+      if (!spot) continue
+      target = Math.max(target, spot.offsetLeft + spot.offsetWidth - m.scroller.clientWidth + 24)
+    }
+    for (const m of bands) m.scroller.scrollLeft = Math.max(0, target)
+    document.getElementById('case1').scrollIntoView({ block: 'start' })
+  })
+
+  // ---- measure -------------------------------------------------------------
+  // Called synchronously: reading scrollWidth forces layout, so the numbers are
+  // real. Deliberately not requestAnimationFrame, which never fires in a
+  // background tab and would leave the table permanently empty.
+  ;(() => {
+    const body = document.getElementById('measured')
+    for (const m of measured) {
+      const px = Math.round(m.chart.scrollWidth)
+      m.el.querySelector('.px').textContent = px
+      const tr = document.createElement('tr')
+      tr.innerHTML = `
+        <td>${m.strategyName}</td>
+        <td>${m.caseName}</td>
+        <td class="num">${m.columns}</td>
+        <td class="num">${px}px</td>
+        <td class="num">${m.fillerCount}</td>
+        <td class="num">${m.gap === null ? '—' : m.gap === 0 ? '<span class="win">adjacent</span>' : m.gap + ' cols'}</td>`
+      body.append(tr)
+    }
+
+    const shepherd = measured.filter((m) => m.caseName === "Shepherd's pie")
+    const artichoke = measured.filter((m) => m.caseName === 'Artichokes')
+    const sameWidth = new Set(shepherd.map((m) => m.columns)).size === 1
+    const artichokeIdentical = new Set(artichoke.map((m) => m.columns + ':' + m.fillerCount)).size === 1
+    document.getElementById('report').textContent =
+      (sameWidth ? 'All three are the same width on case 1' : 'Widths differ on case 1') +
+      ' · ' +
+      (artichokeIdentical ? 'case 2 renders identically under all three' : 'case 2 differs')
+  })()
+
+  for (const [id, cls] of [['reveal', 'reveal'], ['trace', 'trace'], ['leaders', 'leaders']]) {
+    document.getElementById(id).addEventListener('change', (e) => {
+      document.body.classList.toggle(cls, e.target.checked)
+    })
+  }
+})()
+</script>
