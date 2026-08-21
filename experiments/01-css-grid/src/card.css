@@ -393,6 +393,12 @@ body {
   }
 }
 
+/* The greyscale check. Applied to the card rather than the page so the controls stay in colour
+   and you can still see what you are toggling. */
+#cards.grey {
+  filter: grayscale(1);
+}
+
 .failure {
   margin: 0;
   padding: 1rem;

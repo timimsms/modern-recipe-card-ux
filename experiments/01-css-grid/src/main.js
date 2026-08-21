@@ -79,6 +79,13 @@ async function refresh() {
 for (const control of [picker, strategy, reuse, markRule, ramp])
   control.addEventListener('change', refresh)
 
+// R5 claims colour is never the only channel. Checking that should not require devtools, and
+// greyscale is also the closest thing to a print preview without a printer — so it desaturates
+// the card only, leaving the controls legible, the way the page would actually print.
+document.getElementById('grey').addEventListener('change', (e) => {
+  root.classList.toggle('grey', e.target.checked)
+})
+
 const theme = document.getElementById('theme')
 theme.addEventListener('change', (e) => {
   document.documentElement.setAttribute('data-theme', e.target.value)
