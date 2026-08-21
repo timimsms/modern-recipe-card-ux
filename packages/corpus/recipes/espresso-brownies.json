@@ -83,6 +83,7 @@
           "id": "mix-wet",
           "inputs": ["melt", "sugar", "vanilla", "espresso"],
           "text": "mix",
+          "outputName": "the wet mixture",
           "effort": "quick",
           "technique": "mix"
         },
@@ -90,6 +91,7 @@
           "id": "mix-eggs",
           "inputs": ["mix-wet", "eggs"],
           "text": "mix",
+          "outputName": "the batter base",
           "effort": "quick",
           "technique": "mix"
         },
@@ -97,6 +99,7 @@
           "id": "fold-in",
           "inputs": ["mix-eggs", "flour", "cocoa", "baking-soda", "salt"],
           "text": "fold in",
+          "outputName": "the brownie batter",
           "effort": "minutes",
           "technique": "fold"
         },

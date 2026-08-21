@@ -256,6 +256,16 @@ export type Step = {
   /** "cook until meat is no longer pink". Always required, even when `technique` is set. */
   text: string
   /**
+   * What this step produces, as a cook would refer to it later: "the browned beef", "the sifted
+   * dry ingredients".
+   *
+   * The grid never needs this — on a chart the output of a step is the cell you can see, and
+   * pointing at it is enough. Cook mode shows one step at a time, so its inputs have to be
+   * *named*, and the original format leaves every intermediate result anonymous. Optional,
+   * because `describeOutput` derives a usable fallback.
+   */
+  outputName?: string
+  /**
    * Required and cheap. Drives the duration glyph and Phase 04's parallelism banner.
    * See findings/Q5-time-axis.md — the design cannot render more precision than this.
    */
@@ -471,4 +481,87 @@ export function subtreeSteps(component: Component, stepId: StepId): StepId[] {
 /** The leaf that an id refers to, whether it is an ingredient or a cross-component ref. */
 export function findLeaf(component: Component, id: IngredientId): Leaf | undefined {
   return component.ingredients.find((leaf) => leaf.id === id)
+}
+
+/**
+ * Past participles for the techniques where the English is irregular enough that appending "-ed"
+ * would be wrong. Everything else takes the regular rule.
+ */
+const PARTICIPLES: Partial<Record<Technique, string>> = {
+  mix: 'mixed',
+  slice: 'sliced',
+  chop: 'chopped',
+  sift: 'sifted',
+  whisk: 'whisked',
+  cream: 'creamed',
+  knead: 'kneaded',
+  melt: 'melted',
+  brown: 'browned',
+  sear: 'seared',
+  saute: 'sautéed',
+  simmer: 'simmered',
+  boil: 'boiled',
+  steam: 'steamed',
+  grill: 'grilled',
+  roast: 'roasted',
+  bake: 'baked',
+  broil: 'broiled',
+  fry: 'fried',
+  chill: 'chilled',
+  freeze: 'frozen',
+  rest: 'rested',
+  ferment: 'fermented',
+  marinate: 'marinated',
+  drain: 'drained',
+  season: 'seasoned',
+  brush: 'brushed',
+  fold: 'folded',
+  peel: 'peeled',
+  trim: 'trimmed',
+  assemble: 'assembled',
+  serve: 'served',
+  measure: 'measured',
+}
+
+/**
+ * What to call a step's result when it is referred to from somewhere else.
+ *
+ * Prefers the authored `outputName` and is deliberately vague without one.
+ *
+ * The obvious generator — technique plus the step's own ingredients — is wrong far more often
+ * than it looks. It reads the *additions* as the subject, which only holds for a step with no
+ * step inputs. Applied to the corpus it produced "the browned butter" for the stroganoff step
+ * that browns beef in butter, "the seasoned paprika" for covering a pie with paprika, and "the
+ * mixed all-purpose flour" for a meat mixture that flour was stirred into. Each is confident,
+ * fluent, and false.
+ *
+ * So: name the ingredients only when they are demonstrably the whole subject, and otherwise say
+ * "the simmered mixture" — vague, but never a lie. A cook can work out what the vague phrase
+ * refers to from the step in front of them; they cannot recover from being told the wrong thing.
+ */
+export function describeOutput(component: Component, id: StepId): string {
+  const step = component.steps[id]
+  if (!step) return 'the previous step'
+  if (step.outputName) return step.outputName
+
+  const participle = step.technique ? PARTICIPLES[step.technique] : undefined
+  const buildsOnAnotherStep = step.inputs.some((i) => i.kind === 'step')
+
+  if (!buildsOnAnotherStep) {
+    // A pure prep step: its ingredients really are the whole of what it produced.
+    const leaves = step.inputs
+      .map((i) => findLeaf(component, i.id))
+      .filter((leaf): leaf is Leaf => leaf !== undefined)
+      .map((leaf) => (isComponentRef(leaf) ? (leaf.label ?? leaf.component) : leaf.item))
+
+    if (leaves.length > 0 && leaves.length <= 2) {
+      const subject = leaves.join(' and ')
+      return participle ? `the ${participle} ${subject}` : `the ${subject}`
+    }
+    if (participle) return `the ${participle} mixture`
+  }
+
+  // "the mixed mixture" is true and unusable.
+  if (participle === 'mixed') return 'the mixture'
+  return participle ? `the ${participle} mixture` : 'the mixture so far'
 }

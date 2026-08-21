@@ -41,12 +41,14 @@
           "id": "mash",
           "inputs": ["boil", "reserved-water", "unsalted-butter"],
           "text": "mash",
-          "effort": "minutes"
+          "effort": "minutes",
+          "outputName": "the mashed potatoes"
         },
         "season": {
           "id": "season",
           "inputs": ["mash", "salt", "ground-white-pepper"],
           "text": "season to taste",
+          "outputName": "the mashed potatoes",
           "effort": "quick",
           "technique": "season"
         }
@@ -143,6 +145,7 @@
           "id": "sweat",
           "inputs": ["heat", "dice"],
           "text": "med-low until tender",
+          "outputName": "the softened vegetables",
           "effort": "minutes",
           "temperature": { "label": "med-low" },
           "technique": "saute"
@@ -151,6 +154,7 @@
           "id": "cook-meat",
           "inputs": ["sweat", "ground-lamb"],
           "text": "cook until meat is no longer pink",
+          "outputName": "the browned lamb",
           "effort": "minutes",
           "technique": "brown"
         },
@@ -171,6 +175,7 @@
             "beef-broth"
           ],
           "text": "stir in and cook until liquid thickens",
+          "outputName": "the thickened filling",
           "effort": "minutes",
           "technique": "simmer"
         },
@@ -178,6 +183,7 @@
           "id": "season",
           "inputs": ["thicken", "salt", "ground-black-pepper"],
           "text": "season to taste",
+          "outputName": "the seasoned filling",
           "effort": "quick",
           "technique": "season"
         },
@@ -185,6 +191,7 @@
           "id": "cover-with-potatoes",
           "inputs": ["season", "mashed-potatoes"],
           "text": "cover with potatoes and fluff with fork",
+          "outputName": "the assembled pie",
           "effort": "minutes",
           "technique": "assemble"
         },
