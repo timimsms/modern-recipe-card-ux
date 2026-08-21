@@ -101,6 +101,43 @@ than raw ingredients, does not depend on any of this.
   *"12 min of this could be saved with a second pair of hands."* A number in a bar reads as a
   promise; that sentence is a conditional, which is what it always was.
 
+## And the banner never fires
+
+The third measurement of the same fact, taken when cook mode was built.
+
+PHASE-04 calls the parallelism banner *"the format's central insight, delivered actively rather
+than left for the user to infer from geometry"* and suggests it may be **better than the desktop
+chart at this one job**. It is the reason cook mode was expected not to be a numbered list.
+
+`whileThisRuns` offers work only when it is genuinely available: the step you are on must be one
+you can walk away from, the offered step must not be something the current step already depends
+on (you cannot be baking a pie you have not assembled), and it must not be the step the current
+one is blocking (during a thirty-minute autolyse, "fold the dough" is precisely what the waiting
+prevents).
+
+Under those rules, across the whole corpus:
+
+```
+0 of 66 steps show a parallelism banner
+```
+
+Not a low number — none. The code is right: a synthetic recipe with a thirty-minute braise and
+two minutes of unrelated chopping produces the banner and shortens the schedule from 33 minutes
+to 31. The corpus simply has no such structure.
+
+This is the same fact as the two above, seen a third way: **these recipes are chains, and a lone
+cook has nothing to overlap.**
+
+### What cook mode leans on instead
+
+The banner stays — it is correct, and a recipe written for parallelism would use it — but nothing
+in the design may depend on it appearing. What actually keeps cook mode from being a numbered
+list is:
+
+1. **The mini-map.** Position and progress in the tree, at all times.
+2. **Named inputs.** "the seasoned filling" and "mashed potatoes 1-3/4 lb. (800 g)", not "step 9".
+3. **One-tap access to any outstanding step**, so the order is a suggestion rather than a rail.
+
 ## Consequences
 
 - **Phase 03's at-a-glance bar must handle a zero honestly.** Rendering "saved in parallel: 0 min"

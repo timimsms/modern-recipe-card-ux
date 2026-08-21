@@ -102,6 +102,49 @@ describe('what to do while a step runs', () => {
   it('offers nothing during a step that needs you', () => {
     expect(whileThisRuns(overlappable, 'chop', new Set())).toEqual([])
   })
+
+  /**
+   * You cannot be baking a pie you have not assembled, so everything the current step depends
+   * on has already happened whether or not anyone ticked it off. Without this the banner
+   * offered work from the start of the recipe: standing at the oven with shepherd's pie in it,
+   * it suggested "heat", "dice" and "cut up into small pieces".
+   */
+  it('never offers work the current step already depends on', () => {
+    const late: Component = {
+      id: 'late',
+      prelude: [],
+      ingredients: [
+        { id: 'a', item: 'a' },
+        { id: 'b', item: 'b' },
+      ],
+      root: 'bake',
+      steps: {
+        prep: step('prep', [ing('a')], 'quick', 2),
+        assemble: step('assemble', [from('prep')], 'quick', 2),
+        bake: step('bake', [from('assemble')], 'long-unattended', 30),
+        garnish: step('garnish', [ing('b')], 'quick', 1),
+      },
+    }
+    // `garnish` is genuinely outstanding; `prep` and `assemble` are behind us.
+    expect(whileThisRuns(late, 'bake', new Set())).toEqual(['garnish'])
+  })
+
+  it('never offers the step that is waiting on this one', () => {
+    const chain: Component = {
+      id: 'chain',
+      prelude: [],
+      ingredients: [{ id: 'a', item: 'a' }],
+      root: 'shape',
+      steps: {
+        mix: step('mix', [ing('a')], 'quick', 2),
+        rest: step('rest', [from('mix')], 'long-unattended', 30),
+        shape: step('shape', [from('rest')], 'quick', 5),
+      },
+    }
+    // "While the dough rests, you can: shape the dough" is the one suggestion that cannot be
+    // taken — shaping is what the resting is blocking.
+    expect(whileThisRuns(chain, 'rest', new Set())).toEqual([])
+  })
 })
 
 describe('resolved inputs', () => {

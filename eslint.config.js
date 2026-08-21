@@ -46,6 +46,7 @@ export default tseslint.config(
         fetch: 'readonly',
         URL: 'readonly',
         Event: 'readonly',
+        Element: 'readonly',
         console: 'readonly',
         setTimeout: 'readonly',
         requestAnimationFrame: 'readonly',

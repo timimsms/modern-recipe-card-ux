@@ -174,6 +174,78 @@ test.describe('mini-map', () => {
   })
 })
 
+test.describe('cook mode', () => {
+  test.use({ viewport: { width: 390, height: 844 } })
+
+  const open = async (page: Page, slug: string) => {
+    await page.goto('/experiments/01-css-grid/')
+    await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
+    await page.selectOption('#recipe', slug)
+    await page.selectOption('#view', 'cook')
+    await page.waitForSelector('.cookmode')
+  }
+
+  test('shepherds-pie, mid-recipe', async ({ page }) => {
+    await open(page, 'recipes/shepherds-pie')
+    for (let i = 0; i < 10; i++) await page.click('.cm-next')
+    await page.addStyleTag({ content: '.controls{position:static!important}' })
+    await expect(page.locator('.cookmode')).toHaveScreenshot('cookmode-shepherds-pie.png')
+  })
+
+  /**
+   * Components are sequential — the pie eats the potatoes — so navigation has to cross between
+   * them. Confined to one component, a cook finishes the mashed potatoes and is stranded.
+   */
+  test('walks every step of every component', async ({ page }) => {
+    await open(page, 'recipes/shepherds-pie')
+    const seen: string[] = []
+    for (let i = 0; i < 30; i++) {
+      seen.push((await page.locator('.cookmode').getAttribute('data-step')) ?? '')
+      if (await page.locator('.cm-next').isDisabled()) break
+      await page.click('.cm-next')
+    }
+    expect(seen).toHaveLength(15)
+    expect(seen.slice(0, 3)).toEqual(['boil', 'mash', 'season'])
+    expect(seen.at(-1)).toBe('bake')
+    await expect(page.locator('.cm-count')).toHaveText('15 of 15')
+  })
+
+  test('accumulates progress on the mini-map as you go', async ({ page }) => {
+    await open(page, 'recipes/shepherds-pie')
+    expect(await page.locator('.mm-done').count()).toBe(0)
+    for (let i = 0; i < 10; i++) await page.click('.cm-next')
+    // Moving on is finishing: without that the map never fills and its one job goes undone.
+    expect(await page.locator('.mm-done').count()).toBeGreaterThan(5)
+    expect(await page.locator('.mm-now').count()).toBe(1)
+  })
+
+  /**
+   * The bug this pins: cook mode at the oven with shepherd's pie in it offered "heat" and
+   * "dice", a dozen minutes behind. A step's own dependencies have necessarily happened.
+   */
+  test('never offers work that is already behind you', async ({ page }) => {
+    await open(page, 'recipes/shepherds-pie')
+    for (let i = 0; i < 10; i++) await page.click('.cm-next')
+    const offered = await page.$$eval('.cm-jumps .jump, .banner .jump', (nodes) =>
+      nodes.map((n) => n.textContent ?? ''),
+    )
+    expect(offered).not.toContain('heat')
+    expect(offered).not.toContain('dice')
+  })
+
+  test('resolves inputs to named results and real quantities', async ({ page }) => {
+    await open(page, 'recipes/shepherds-pie')
+    for (let i = 0; i < 10; i++) await page.click('.cm-next')
+    const inputs = await page.$$eval('.inputs li', (nodes) =>
+      nodes.map((n) => (n.textContent ?? '').replace(/\s+/g, ' ').trim()),
+    )
+    // Not "step 9" — a name you could say out loud, and a quantity you can measure.
+    expect(inputs[0]).toBe('the seasoned filling')
+    expect(inputs[1]).toContain('mashed potatoes')
+    expect(inputs[1]).toContain('800 g')
+  })
+})
+
 /**
  * Not a screenshot: R7 is behaviour, and a picture of a checked box proves nothing about whether
  * the fill propagated to the right regions.

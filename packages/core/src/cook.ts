@@ -14,6 +14,7 @@ import {
   findLeaf,
   isUnattended,
   stepsOf,
+  subtreeSteps,
   type Component,
   type IngredientId,
   type Leaf,
@@ -161,6 +162,30 @@ export function resolveInputs(component: Component, id: StepId): ResolvedInput[]
  * Only offered for steps you can walk away from — suggesting a second task during a step that
  * needs both hands is how you end up with two burnt things instead of one.
  */
+/**
+ * Steps a cook standing at `current` could genuinely start next.
+ *
+ * Two exclusions, both learned by rendering it wrong:
+ *
+ * Everything the current step depends on has necessarily already happened — you cannot be
+ * baking a pie you have not assembled — so those are settled whether or not anyone ticked them
+ * off. Without that, cook mode at the oven with shepherd's pie in it offered "heat", "dice" and
+ * "cut up into small pieces", all of them a dozen minutes behind.
+ *
+ * But *not* the current step itself, which is still running. Counting it as settled made its own
+ * successor look available: during the bread's thirty-minute autolyse it offered "fold the
+ * dough", which is exactly the thing the waiting is blocking.
+ */
+export function outstandingSteps(
+  component: Component,
+  current: StepId,
+  done: ReadonlySet<StepId>,
+): StepId[] {
+  const settled = new Set<StepId>([...done, ...subtreeSteps(component, current)])
+  settled.delete(current)
+  return readySteps(component, settled, new Set([current]))
+}
+
 export function whileThisRuns(
   component: Component,
   current: StepId,
@@ -168,5 +193,5 @@ export function whileThisRuns(
 ): StepId[] {
   const step = component.steps[current]
   if (!step || !isUnattended(step.effort)) return []
-  return readySteps(component, done, new Set([current]))
+  return outstandingSteps(component, current, done)
 }

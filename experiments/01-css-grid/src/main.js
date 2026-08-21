@@ -9,6 +9,7 @@
 import { layout, normalizeRecipe } from '../../../packages/core/dist/index.js'
 import { renderCard } from './render.js'
 import { renderMiniMap, sharedScale } from './minimap.js'
+import { cookOrderOf, cookPathOf, renderCookMode } from './cookmode.js'
 
 const RECIPES = [
   'espresso-brownies',
@@ -63,12 +64,79 @@ async function show() {
   recipe.plans = recipe.components.map((c) =>
     layout(c, { columns: strategy.value, reuse: reuse.value }),
   )
+  current = recipe
+  cook = { componentIndex: 0, current: undefined, done: new Set() }
+  draw()
+}
+
+/**
+ * Cook-mode state lives here rather than in the renderer, because Phase 04's transition and
+ * Phase 05's persistence both need one model behind two views — check-off in cook mode has to
+ * fill the same regions in the chart.
+ */
+let current = null
+let cook = { componentIndex: 0, current: undefined, done: new Set() }
+
+function draw() {
+  const recipe = current
+  if (!recipe) return
   root.innerHTML =
     view.value === 'filmstrip'
       ? renderFilmstrip(recipe)
-      : renderCard(recipe, { markRule: markRule.value, ramp: ramp.value })
+      : view.value === 'cook'
+        ? renderCookMode(recipe, cook)
+        : renderCard(recipe, { markRule: markRule.value, ramp: ramp.value })
   document.title = `${recipe.title} — track 01`
 }
+
+/**
+ * Cook-mode navigation. Delegated from the root so a redraw never leaves a dead listener, and
+ * every control is a real button so the whole thing works from a keyboard.
+ */
+root.addEventListener('click', (event) => {
+  if (!current || view.value !== 'cook') return
+  const target = event.target
+  if (!(target instanceof Element)) return
+
+  const jump = target.closest('.jump, .minimap button')
+  if (jump) {
+    cook.current = jump.dataset.step
+    draw()
+    return
+  }
+
+  // Navigation runs over the whole recipe, so the last step of one component leads into the
+  // first of the next rather than dead-ending.
+  const path = cookPathOf(current)
+  const order = cookOrderOf(current.components[cook.componentIndex])
+  const here = cook.current ?? order[0]
+  const at = Math.max(
+    0,
+    path.findIndex((p) => p.componentIndex === cook.componentIndex && p.stepId === here),
+  )
+  const goTo = (index) => {
+    const target = path[Math.max(0, Math.min(path.length - 1, index))]
+    cook.componentIndex = target.componentIndex
+    cook.current = target.stepId
+  }
+
+  if (target.closest('.cm-next')) {
+    // Moving on *is* finishing the step, so Next marks it done. Without this the mini-map never
+    // fills in as you cook — you walk the whole recipe and it still shows nothing complete,
+    // which is the one job it has.
+    cook.done.add(here)
+    goTo(at + 1)
+  } else if (target.closest('.cm-prev')) {
+    goTo(at - 1)
+  } else if (target.closest('.cm-done')) {
+    // Toggling rather than one-way: the commonest kitchen mistake is a mis-tap.
+    if (cook.done.has(here)) cook.done.delete(here)
+    else cook.done.add(here)
+  } else {
+    return
+  }
+  draw()
+})
 
 /**
  * One mini-map per step, in cook order, with everything before it marked done.
