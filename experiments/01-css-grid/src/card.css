@@ -980,3 +980,51 @@ body {
     display: none;
   }
 }
+
+/* A running timer, on the chart cell. The wall chart's advantage is that one glance covers the
+   whole dish, and "what is on the stove right now" is part of that. */
+.cell-timer {
+  position: absolute;
+  inset-block-end: 0.25rem;
+  inset-inline-end: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+  background: var(--surface);
+  border-radius: 3px;
+  padding-inline: 0.25rem;
+}
+.cell-timer.ringing {
+  color: var(--clay);
+  font-weight: 600;
+}
+.controls input[type='number'] {
+  font: inherit;
+  font-family: var(--font-mono);
+  inline-size: 4.5rem;
+  padding: 0.2rem 0.3rem;
+}
+@media print {
+  .cell-timer {
+    display: none;
+  }
+}
+
+/* R8 and PHASE-05's 48px rule, applied where it matters.
+   Ingredient rows measured 37px tall — a comfortable *area* at 208px wide, but stacked directly
+   against their neighbours, so the vertical miss lands on the wrong ingredient. That is the
+   wet-finger case check-off exists for. Raised only at the narrow rung: on a desktop chart or in
+   print the rows are read rather than tapped, and taller rows there cost page count for nothing.
+   Row height is shared with the step cells that span them, so the whole chart grows with it. */
+@container (max-width: 34rem) {
+  .cell.ing {
+    min-block-size: 48px;
+  }
+  .cell.ing .tick {
+    /* The box itself stays small; the label is the target. Widening the hit area rather than the
+       glyph keeps the chart looking like a chart. */
+    inline-size: 22px;
+    block-size: 22px;
+  }
+}

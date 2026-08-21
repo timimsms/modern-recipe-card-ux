@@ -54,6 +54,7 @@ export default tseslint.config(
         requestAnimationFrame: 'readonly',
         localStorage: 'readonly',
         navigator: 'readonly',
+        Notification: 'readonly',
       },
     },
   },

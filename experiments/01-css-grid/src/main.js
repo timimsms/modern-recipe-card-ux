@@ -42,6 +42,7 @@ const FIXTURES = [
 const root = document.getElementById('cards')
 const picker = document.getElementById('recipe')
 const scaleControl = document.getElementById('scale')
+const scaleAny = document.getElementById('scale-any')
 const units = document.getElementById('units')
 const undoButton = document.getElementById('undo')
 const startOver = document.getElementById('startover')
@@ -132,7 +133,7 @@ function restore(slug) {
     scale: saved.scale ?? 1,
     unitSystem: saved.unitSystem ?? 'both',
   }))
-  scaleControl.value = String(store.get().scale)
+  syncScaleControls()
   units.value = store.get().unitSystem
 }
 
@@ -184,6 +185,7 @@ function draw() {
     ramp: ramp.value,
     doneSteps: state.completedSteps,
     checkedIngredients: state.checkedIngredients,
+    timers: state.timers,
     scale: state.scale,
     unitSystem: state.unitSystem,
   }
@@ -312,11 +314,19 @@ root.addEventListener('click', (event) => {
   if (start) {
     const key = start.dataset.timer
     const component = current.components[cook.componentIndex]
+    alerted.delete(key)
+    // The tap that starts a timer is the one moment asking for notification permission has an
+    // obvious reason, so it is the only moment we ask. A refusal is permanent, and the beep
+    // works without it.
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {})
+    }
     store.startTimer(key, component.steps[key.slice(component.id.length + 1)])
     return
   }
   const stop = target.closest('.cm-timer-stop')
   if (stop) {
+    alerted.delete(stop.dataset.timerStop)
     store.stopTimer(stop.dataset.timerStop)
     return
   }
@@ -450,8 +460,17 @@ async function refresh() {
   }
 }
 
-for (const control of [picker, strategy, reuse, markRule, ramp, view])
-  control.addEventListener('change', refresh)
+/**
+ * Only the controls that change the *plan* re-fetch and re-lay-out. The rest are rendering
+ * options and need nothing but a redraw.
+ *
+ * They were all wired to `refresh()`, which re-runs `show()` — and `show()` resets the store.
+ * So switching from cook mode to the chart to see where you were threw away your place, your
+ * timers, and (before persistence) every box you had ticked. Switching a *view* is the one
+ * moment a cook most wants their state kept.
+ */
+for (const control of [picker, strategy, reuse]) control.addEventListener('change', refresh)
+for (const control of [markRule, ramp, view]) control.addEventListener('change', draw)
 
 // R5 claims colour is never the only channel. Checking that should not require devtools, and
 // greyscale is also the closest thing to a print preview without a printer — so it desaturates
@@ -510,8 +529,76 @@ function tick() {
     const left = store.remaining(key)
     if (left === null) continue
     const ringing = store.isRinging(key)
-    node.textContent = formatRemaining(left, ringing)
+    node.textContent = formatRemaining(left, ringing, node.classList.contains('cell-timer'))
     node.classList.toggle('ringing', ringing)
+    if (ringing) alertOnce(key)
+  }
+}
+
+// --- Alerting ----------------------------------------------------------------------------------
+
+/**
+ * Assume the screen is off and the cook is across the room.
+ *
+ * Fires once per timer: `tick()` runs every second and a ringing timer stays ringing until it is
+ * stopped, so without this the cook gets a beep a second until they come back.
+ */
+const alerted = new Set()
+function alertOnce(key) {
+  if (alerted.has(key)) return
+  alerted.add(key)
+  const label = key.split('/').pop()
+  // Sound first — it is the one channel that works with the screen off and no permission
+  // granted, which is the common case. The notification is the improvement on top.
+  beep()
+  notify(`${label} — check it`)
+}
+
+/**
+ * Two short tones from an oscillator rather than an audio file.
+ *
+ * The track has no build step and loads no assets, so a bundled sound would be the only binary
+ * dependency in it. Wrapped because autoplay policy rejects audio with no prior user gesture —
+ * and a timer is always started by a tap, so in practice there has been one.
+ */
+let audio = null
+function beep() {
+  try {
+    audio ??= new (window.AudioContext ?? window.webkitAudioContext)()
+    if (audio.state === 'suspended') audio.resume()
+    for (const [at, freq] of [
+      [0, 880],
+      [0.28, 1175],
+    ]) {
+      const osc = audio.createOscillator()
+      const gain = audio.createGain()
+      osc.frequency.value = freq
+      // A hard start and stop on a square-ish tone clicks; a short ramp does not.
+      gain.gain.setValueAtTime(0.0001, audio.currentTime + at)
+      gain.gain.exponentialRampToValueAtTime(0.25, audio.currentTime + at + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + at + 0.22)
+      osc.connect(gain).connect(audio.destination)
+      osc.start(audio.currentTime + at)
+      osc.stop(audio.currentTime + at + 0.24)
+    }
+  } catch {
+    // No audio context available. The visual ringing state is still there.
+  }
+}
+
+/**
+ * Only ever with permission already granted.
+ *
+ * Asking on page load is the behaviour everyone has learned to dismiss, and a denied permission
+ * is permanent — so the prompt is offered from the timer button, where the request has obvious
+ * cause, and never from here.
+ */
+function notify(text) {
+  try {
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return
+    new Notification(text, { tag: text, silent: true })
+  } catch {
+    // Notifications unsupported or blocked. The beep already fired.
   }
 }
 
@@ -546,8 +633,9 @@ startOver.addEventListener('click', () => {
     return
   }
   disarm()
+  alerted.clear()
   store.reset()
-  scaleControl.value = '1'
+  syncScaleControls()
   units.value = 'both'
   cook = { componentIndex: 0, current: undefined }
 })
@@ -561,7 +649,26 @@ document.addEventListener('click', (event) => {
   if (armed && event.target !== startOver) disarm()
 })
 
+/**
+ * The preset menu and the number box are two views of one value, so each writes the store and
+ * the store writes both back. Left independent, the menu would keep reading "double" next to a
+ * card scaled to 2.75.
+ */
+function syncScaleControls() {
+  const scale = store.get().scale
+  scaleAny.value = String(scale)
+  // A scale with no preset leaves the menu showing whatever was last picked, which is a lie.
+  scaleControl.value = [...scaleControl.options].some((o) => Number(o.value) === scale)
+    ? String(scale)
+    : ''
+}
 scaleControl.addEventListener('change', () => store.setScale(Number(scaleControl.value)))
+scaleAny.addEventListener('change', () => {
+  const value = Number(scaleAny.value)
+  if (Number.isFinite(value) && value > 0) store.setScale(value)
+  // Reflect the clamp: typing 100 and being silently given 8 needs to show in the box.
+  syncScaleControls()
+})
 units.addEventListener('change', () => store.setUnitSystem(units.value))
 
 /**

@@ -60,6 +60,17 @@ async function show(page: Page, slug: string, options: Record<string, string> = 
   return card
 }
 
+/**
+ * The same setup for behaviour tests, which drive the controls and so cannot have them hidden.
+ * `show()` is the screenshot helper; this one is for everything that clicks.
+ */
+async function open(page: Page, slug: string) {
+  await page.goto('/experiments/01-css-grid/')
+  await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
+  await page.selectOption('#recipe', slug)
+  await page.waitForSelector('.card')
+}
+
 const name = (slug: string) => slug.replace(/\//g, '-')
 
 test.describe('track 01 — recipes', () => {
@@ -395,6 +406,124 @@ test.describe('chart ↔ cook mode', () => {
     // but the positional relationship still has to survive — hence a fade in place, not a jump.
     expect(await capture(false)).toContain('transform')
     expect(await capture(true)).not.toContain('transform')
+  })
+})
+
+/**
+ * Phase 05 behaviour, all of it found by driving the page rather than by reading the code.
+ */
+test.describe('kitchen state', () => {
+  /**
+   * Switching view used to re-run `show()`, which resets the store — so going from cook mode to
+   * the chart to see where you were threw away your place, your timers and your check-offs.
+   */
+  test('switching view keeps your place, your ticks and a running timer', async ({ page }) => {
+    await open(page, 'recipes/espresso-brownies')
+    await page.locator('.tick[data-ing="brownies/flour"]').check()
+
+    await page.selectOption('#view', 'cook')
+    for (let i = 0; i < 4; i++) await page.click('.cm-next')
+    await expect(page.locator('.cookmode')).toHaveAttribute('data-step', 'bake')
+    await page.click('.cm-timer-start')
+
+    await page.selectOption('#view', 'chart')
+    // The chart cell carries the countdown too, so one glance says what is in the oven.
+    await expect(page.locator('.step[data-step="bake"] .cell-timer')).toBeVisible()
+    await expect(page.locator('.tick[data-ing="brownies/flour"]')).toBeChecked()
+
+    await page.selectOption('#view', 'cook')
+    await expect(page.locator('.cookmode')).toHaveAttribute('data-step', 'bake')
+    await expect(page.locator('.cm-timer')).toBeVisible()
+  })
+
+  /**
+   * Undo restored a whole state snapshot, which carried `timers` with it — so undoing a
+   * mis-tapped checkbox also stopped a running forty-minute bake.
+   */
+  test('undo takes back a tick without stopping the timer', async ({ page }) => {
+    await open(page, 'recipes/espresso-brownies')
+    await page.selectOption('#view', 'cook')
+    for (let i = 0; i < 4; i++) await page.click('.cm-next')
+    await page.click('.cm-timer-start')
+    await expect(page.locator('.cm-timer')).toBeVisible()
+
+    await page.click('#undo')
+    await expect(page.locator('.cm-timer')).toBeVisible()
+  })
+
+  test('progress is time-weighted, and disagrees with the step count on purpose', async ({
+    page,
+  }) => {
+    await open(page, 'recipes/espresso-brownies')
+    await page.selectOption('#view', 'cook')
+    for (let i = 0; i < 4; i++) await page.click('.cm-next')
+
+    // Four of five steps done, and a forty-minute bake still to go: 80% by count, 23% by clock.
+    await expect(page.locator('.cm-count')).toHaveText('5 of 5')
+    await expect(page.locator('.cm-progress-text')).toHaveText('23% of the time')
+  })
+
+  test('scaling reaches every quantity, and refuses the ones that do not scale', async ({
+    page,
+  }) => {
+    await open(page, 'recipes/espresso-brownies')
+    await page.selectOption('#scale', '2')
+
+    const rows = page.locator('.ing-text')
+    // 4 oz climbs to ½ lb, and 4 Tbs to ½ cup — one scoop rather than eight.
+    await expect(rows.filter({ hasText: 'unsalted butter' })).toContainText('½ lb')
+    await expect(rows.filter({ hasText: 'unsalted butter' })).toContainText('230 g')
+    await expect(rows.filter({ hasText: 'espresso' })).toContainText('½ cup')
+
+    // A pinch does not double.
+    await open(page, 'recipes/shepherds-pie')
+    await page.selectOption('#scale', '3')
+    await expect(page.locator('.ing-text').filter({ hasText: 'nutmeg' })).toContainText(
+      'does not scale',
+    )
+  })
+
+  test('an arbitrary factor works, is clamped, and clears the preset menu', async ({ page }) => {
+    await open(page, 'recipes/espresso-brownies')
+    await page.fill('#scale-any', '2.75')
+    await page.locator('#scale-any').dispatchEvent('change')
+
+    await expect(page.locator('.ing-text').filter({ hasText: 'all-purpose flour' })).toContainText(
+      '1⅓ cup',
+    )
+    // No preset matches 2.75, and leaving the menu on "double" beside a 2.75× card is a lie.
+    await expect(page.locator('#scale')).toHaveValue('')
+
+    await page.fill('#scale-any', '100')
+    await page.locator('#scale-any').dispatchEvent('change')
+    await expect(page.locator('#scale-any')).toHaveValue('8')
+  })
+
+  test('progress survives a reload, keyed by recipe', async ({ page }) => {
+    await open(page, 'recipes/espresso-brownies')
+    await page.locator('.tick[data-ing="brownies/flour"]').check()
+
+    await page.reload()
+    await page.waitForSelector('.chart')
+    await expect(page.locator('.tick[data-ing="brownies/flour"]')).toBeChecked()
+
+    // Start over is two taps, so a stray one cannot clear an hour of cooking.
+    await page.click('#startover')
+    await expect(page.locator('#startover')).toHaveText('Tap again to clear')
+    await page.click('#startover')
+    await expect(page.locator('.tick[data-ing="brownies/flour"]')).not.toBeChecked()
+  })
+
+  /** PHASE-05's 48px rule, on the control that gets used most and with the wettest hands. */
+  test('every check-off target clears 48px on a phone', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await open(page, 'recipes/shepherds-pie')
+
+    const heights = await page.$$eval('label.cell.ing, .step[data-step]', (nodes) =>
+      nodes.map((n) => n.getBoundingClientRect().height),
+    )
+    expect(heights.length).toBeGreaterThan(10)
+    expect(Math.min(...heights)).toBeGreaterThanOrEqual(48)
   })
 })
 

@@ -279,6 +279,13 @@ export function renderChart(component, plan, options = {}) {
     // A step cell is the way into cook mode, so it has to be operable — a real role and a tab
     // stop, not a div that happens to respond to clicks.
     const complete = options.doneSteps?.has(stepKey(component, cell.ref)) ? ' complete' : ''
+    // A running timer shows on the chart cell too, so a glance at the wall chart says what is
+    // on the stove — the reason to have a wall chart rather than a card per step. `tick()`
+    // refreshes the text in place; the markup here is only the initial value.
+    const timerKey = stepKey(component, cell.ref)
+    const badge = options.timers?.[timerKey]
+      ? `<span class="cell-timer" data-timer-for="${esc(timerKey)}" role="status"></span>`
+      : ''
     parts.push(
       `<div class="cell step d${shadeFor(cell.depth, plan.maxDepth, options.ramp)}${isUnattended(step.effort) ? ' unatt' : ''}${micro ? ' collapsed' : ''}${complete}" ` +
         `role="button" tabindex="0" data-step="${esc(cell.ref)}" ` +
@@ -288,7 +295,7 @@ export function renderChart(component, plan, options = {}) {
             .map((id) => ingredientKey(component, id))
             .join(' '),
         )}">` +
-        `${chips}${body}${temp}${markFor(step, polarity)}</div>`,
+        `${chips}${body}${temp}${markFor(step, polarity)}${badge}</div>`,
     )
   }
 

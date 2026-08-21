@@ -117,11 +117,16 @@ function renderTimer(component, stepId, cook) {
  * A countdown reads m:ss so the seconds are visible at the end, which is when anyone is
  * watching it. Past the low end of a range it counts *up* rather than going negative — "30–40
  * min" has not failed at 31 minutes, it has entered the window where you start checking.
+ *
+ * `terse` drops the words for the chart badge, which sits in a grid cell that can be 60px wide
+ * on a phone. The badge still turns clay and bold, so the ringing state keeps two channels
+ * there as well — it just says it in the space it has.
  */
-export function formatRemaining(ms, ringing) {
+export function formatRemaining(ms, ringing, terse = false) {
   const seconds = Math.max(0, Math.round(Math.abs(ms) / 1000))
   const text = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
-  return ringing ? `check it — +${text}` : text
+  if (!ringing) return text
+  return terse ? `+${text}` : `check it — +${text}`
 }
 
 /**
