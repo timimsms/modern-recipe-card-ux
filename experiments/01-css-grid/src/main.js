@@ -8,6 +8,7 @@
 
 import { layout, normalizeRecipe } from '../../../packages/core/dist/index.js'
 import { renderCard } from './render.js'
+import { renderMiniMap, sharedScale } from './minimap.js'
 
 const RECIPES = [
   'espresso-brownies',
@@ -35,6 +36,7 @@ const strategy = document.getElementById('strategy')
 const reuse = document.getElementById('reuse')
 const markRule = document.getElementById('markrule')
 const ramp = document.getElementById('ramp')
+const view = document.getElementById('view')
 
 for (const group of [
   { label: 'recipes', items: RECIPES, dir: 'recipes' },
@@ -61,9 +63,40 @@ async function show() {
   recipe.plans = recipe.components.map((c) =>
     layout(c, { columns: strategy.value, reuse: reuse.value }),
   )
-  root.innerHTML = renderCard(recipe, { markRule: markRule.value, ramp: ramp.value })
+  root.innerHTML =
+    view.value === 'filmstrip'
+      ? renderFilmstrip(recipe)
+      : renderCard(recipe, { markRule: markRule.value, ramp: ramp.value })
   document.title = `${recipe.title} — track 01`
 }
+
+/**
+ * One mini-map per step, in cook order, with everything before it marked done.
+ *
+ * A single mini-map always looks fine. The question is whether *position* reads across a whole
+ * recipe — whether a cook glancing down at step 7 of 12 can tell where they are without
+ * studying it — and that only shows up when you see the frames in sequence.
+ */
+function renderFilmstrip(recipe) {
+  const frames = []
+  const scale = sharedScale(recipe.plans)
+  for (const [i, component] of recipe.components.entries()) {
+    const plan = recipe.plans[i]
+    const done = new Set()
+    for (const id of plan.linearization) {
+      const text = component.steps[id].text || id
+      frames.push(
+        `<figure class="frame">${renderMiniMap(plan, { current: id, done: new Set(done), scale })}` +
+          `<figcaption><b>${done.size + 1}/${plan.linearization.length}</b> ${escapeText(text)}</figcaption></figure>`,
+      )
+      done.add(id)
+    }
+  }
+  return `<div class="card"><div class="filmstrip">${frames.join('')}</div></div>`
+}
+
+const escapeText = (s) =>
+  String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c])
 
 // A blank page with a silent console is the worst possible failure mode for a study you are
 // meant to look at, so say what broke, on the page.
@@ -76,7 +109,7 @@ async function refresh() {
   }
 }
 
-for (const control of [picker, strategy, reuse, markRule, ramp])
+for (const control of [picker, strategy, reuse, markRule, ramp, view])
   control.addEventListener('change', refresh)
 
 // R5 claims colour is never the only channel. Checking that should not require devtools, and

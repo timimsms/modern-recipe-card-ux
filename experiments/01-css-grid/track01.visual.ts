@@ -29,12 +29,21 @@ const FIXTURES = [
   'fixtures/valid/degenerate',
 ]
 
+/**
+ * The control bar is `position: sticky`, and a card is usually taller than the viewport. When
+ * Playwright scrolls to stitch a tall element it takes the sticky bar with it, painting the
+ * harness over the card — so the first set of baselines had the control bar burned into them,
+ * and adding a single `<select>` churned every image by ~1% of its pixels.
+ *
+ * Unsticking it for the duration of a screenshot keeps the baselines about the design.
+ */
 async function show(page: Page, slug: string, options: Record<string, string> = {}) {
   await page.goto('/experiments/01-css-grid/')
   await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
   for (const [id, value] of Object.entries({ recipe: slug, ...options })) {
     await page.selectOption(`#${id}`, value)
   }
+  await page.addStyleTag({ content: '.controls{position:static!important}' })
   const card = page.locator('.card')
   await expect(card).toBeVisible()
   // The chart is laid out entirely by CSS Grid from static markup, so once the card is in the
@@ -113,6 +122,56 @@ test.describe('track 01 — 390px', () => {
       await expect(card).toHaveScreenshot(`${name(slug)}-390.png`)
     })
   }
+})
+
+/**
+ * The mini-map, tested as behaviour rather than as fifteen screenshots. What matters is that it
+ * always says where you are and how far you have got — a picture of one frame cannot show that,
+ * and a picture of every frame is a 15-image baseline that will churn on any styling change.
+ */
+test.describe('mini-map', () => {
+  test('marks exactly one current step and fills the ones behind it', async ({ page }) => {
+    await page.goto('/experiments/01-css-grid/')
+    await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
+    await page.selectOption('#recipe', 'recipes/shepherds-pie')
+    await page.selectOption('#view', 'filmstrip')
+    await page.waitForSelector('.minimap')
+
+    const frames = await page.$$eval('.frame', (nodes) =>
+      nodes.map((f) => ({
+        now: f.querySelectorAll('.mm-now').length,
+        done: f.querySelectorAll('.mm-done').length,
+        label: f.querySelector('.minimap')?.getAttribute('aria-label') ?? '',
+      })),
+    )
+
+    expect(frames.length).toBeGreaterThan(10)
+    for (const frame of frames) expect(frame.now).toBe(1)
+
+    // Progress only ever goes forward, and it resets at a component boundary — shepherd's pie
+    // has two, so the count drops back to zero once.
+    const resets = frames.filter((f, i) => i > 0 && f.done < frames[i - 1]!.done).length
+    expect(resets).toBe(1)
+    expect(frames.at(-1)!.label).toContain('step 12 of 12')
+  })
+
+  test('scales every component of a recipe to one cell size', async ({ page }) => {
+    await page.goto('/experiments/01-css-grid/')
+    await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
+    await page.selectOption('#recipe', 'recipes/shepherds-pie')
+    await page.selectOption('#view', 'filmstrip')
+    await page.waitForSelector('.minimap')
+
+    // Sized per-plan, the four-column component drew 34px cells and the eleven-column one 29px,
+    // so the map changed size as the cook crossed between them.
+    const cellWidths = await page.$$eval('.minimap', (maps) =>
+      maps.map((m) => {
+        const cols = getComputedStyle(m).gridTemplateColumns.split(' ')
+        return Math.round(parseFloat(cols[0]!))
+      }),
+    )
+    expect(new Set(cellWidths).size).toBe(1)
+  })
 })
 
 /**

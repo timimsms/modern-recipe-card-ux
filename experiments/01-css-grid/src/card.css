@@ -445,6 +445,75 @@ body {
   filter: grayscale(1);
 }
 
+/* ---------- mini-map ---------- */
+/* The plan at thumbnail scale. No text — at this size type is illegible and the information
+   is shape and position, which is what survives being made tiny. */
+
+.minimap {
+  display: grid;
+  flex: none;
+}
+.minimap i,
+.minimap button {
+  border: 0;
+  padding: 0;
+  border-radius: 1px;
+  background: var(--rule-faint);
+}
+.minimap button {
+  cursor: pointer;
+}
+.mm-prelude {
+  background: var(--rule-heavy) !important;
+  opacity: 0.45;
+}
+.mm-leaf {
+  background: var(--hairline) !important;
+}
+.mm-todo {
+  background: var(--rule-faint) !important;
+}
+.mm-done {
+  background: var(--rule) !important;
+}
+/* Position is carried by fill *and* by a ring, so "where am I" does not depend on telling clay
+   from green — the one thing on this element a reader must never miss. */
+.mm-now {
+  background: var(--clay) !important;
+  box-shadow: 0 0 0 2px var(--clay);
+  position: relative;
+  z-index: 1;
+}
+.minimap button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+  z-index: 2;
+}
+
+/* The filmstrip: one mini-map per step, to check that position reads at a glance across a
+   whole recipe rather than only in a single frame. A prototyping view, not a shipping one. */
+.filmstrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+}
+.frame {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.frame figcaption {
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  color: var(--ink-faint);
+  max-width: 22ch;
+}
+.frame b {
+  color: var(--clay);
+  font-weight: 600;
+}
+
 .failure {
   margin: 0;
   padding: 1rem;
