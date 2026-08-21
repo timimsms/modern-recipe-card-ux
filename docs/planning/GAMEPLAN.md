@@ -238,9 +238,12 @@ Sequencing notes:
   done — which is exactly what `PlacedCell.depth` and R5's shading rely on. No hybrid. The one cost
   (a long blank run between an ingredient and its own step) is repaired in the renderer with a leader
   rule, not in `GridPlan`. See [`../findings/Q1-column-assignment.md`](../findings/Q1-column-assignment.md).
-- **Q2** — Does the cook mode preserve enough parallelism to be honest, or does stepping
-  through a tree one node at a time silently relinearize it? The mini-map is the proposed
-  answer; it needs validation in Phase 04.
+- **Q2** — ~~Does cook mode preserve enough parallelism to be honest?~~ **Answered: it does not
+  relinearize, but not for the reason expected.** The parallelism banner — PHASE-04's proposed
+  defence — fires on **0 of 66 corpus steps**, because these recipes are chains and a lone cook
+  has nothing to overlap. What keeps cook mode honest is the mini-map, inputs named as things
+  rather than step numbers, and the tree staying one tap away. See
+  [`../findings/Q2-cook-mode-honesty.md`](../findings/Q2-cook-mode-honesty.md).
 - **Q3** — Is `<table>` with `rowspan`/`colspan` actually the most accessible substrate, given
   that assistive tech understands table navigation? Or does CSS Grid + explicit ARIA win?
   Phase 06 should test both against a real screen reader, not just axe.

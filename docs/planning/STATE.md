@@ -1,32 +1,31 @@
 # Project state — handoff
 
-> Read this first after a context clear. Current as of the close of the Phase 00–01 build session.
+> Read this first after a context clear. Current as of the close of the Phase 04 build session.
 
 ## Where things stand
 
-**Phases 00 and 01 are built.** The monorepo exists with structurally enforced boundaries, the
-assembly tree model and validator are written and tested, and the corpus is transcribed.
-`pnpm check` runs typecheck, lint, boundary check, format check and 110 tests — green, in a few
-seconds.
+**Phases 00 through 04 are built.** 369 unit tests plus 39 browser tests, all green.
 
-**Phase 02 — the layout engine — is built.** `layout(component, opts) → GridPlan` in
-`packages/core/src/layout.ts`, with all three column strategies, all three reuse strategies,
-derived edges, groups, linearization, critical path and `TimingSummary`. 200 tests pass, including
-~3,300 generated trees and golden files for every corpus entry × strategy.
-
-**Phase 03 is under way.** Tokens exist with contrast validated as a test, and
-`experiments/01-css-grid` renders every corpus recipe from a `GridPlan` with no bundler and no
-framework. 274 tests pass. **E1 — the item that gated the token freeze — is resolved.**
-
-```sh
-pnpm serve        # then open http://localhost:8731/experiments/01-css-grid/
-```
+| Phase | State |
+| --- | --- |
+| 00 Foundation | Monorepo, structurally enforced boundaries, CI. |
+| 01 Model & corpus | Schema, validator (E1–E8, W1–W5), 8 recipes + 14 fixtures. |
+| 02 Layout engine | `layout(component, opts) → GridPlan`. Three column strategies, three reuse strategies, derived edges, groups, timing. Reproduces the 2004 source table's spans exactly. |
+| 03 Design system & reference renderer | Tokens with contrast validated as a test; `experiments/01-css-grid` with no bundler and no framework; visual baselines; print verified as real PDFs. |
+| 04 Responsive ladder & cook mode | All four presentations from one plan, plus the transition between them. |
 
 ```sh
 pnpm install
-pnpm check                                   # typecheck, lint, boundaries, format, tests
-node scripts/check-recipe.mjs <file.json>    # one corpus file, ~1s
+pnpm check                # typecheck, lint, boundaries, format, 369 tests
+pnpm serve                # then open http://localhost:8731/experiments/01-css-grid/
+pnpm test:visual          # 39 browser tests + committed screenshot baselines
+pnpm test:print           # renders the corpus to PDF and checks it survives paper
+node scripts/check-recipe.mjs <file.json>
 ```
+
+**R8 is answered.** Shepherd's pie is cookable end to end at 390px with **zero horizontal
+overflow at every one of its 15 steps** and no target smaller than 48px. That was the biggest
+unsolved problem in the project and the reason the format spreads as screenshots.
 
 ## What exists
 
@@ -77,17 +76,16 @@ to the `Artifact` tool as `url` — otherwise a new URL is minted instead of upd
    differentiator — do not earn it a place in the bake-off. Decide before Phase 07 whether
    arbitrary-scale print output or a true dendrogram view replaces that rationale, or whether the
    track is cut.
-2. **Q2 — does cook mode relinearize the tree?** Phase 04; the mini-map is the proposed answer.
-3. **Q3 — table vs. CSS Grid substrate.** Deferred to Phase 06 by design; needs real screen readers.
+2. **Q3 — table vs. CSS Grid substrate.** Deferred to Phase 06 by design; needs real screen readers.
    Q1 turned up evidence here: a table cannot express "nothing is here", which is part of why R1's
    stray-border complaint exists at all.
 4. **Multi-component charts share no row rhythm.** Shepherd's pie renders mashed potatoes (4
    columns) above the pie (11), and the two grids align on nothing. PHASE-03 proposed `subgrid`;
    nothing has been tried.
 
-**Resolved:** Q1 (`findings/Q1-column-assignment.md`), I4 (`findings/I4-reuse.md`),
-Q4 (`findings/Q4-authoring-ergonomics.md`), Q5 (`findings/Q5-time-axis.md`),
-E1 (`findings/E1-mostly-waiting.md`).
+**Resolved:** Q1 (`findings/Q1-column-assignment.md`), Q2 (`findings/Q2-cook-mode-honesty.md`),
+I4 (`findings/I4-reuse.md`), Q4 (`findings/Q4-authoring-ergonomics.md`),
+Q5 (`findings/Q5-time-axis.md`), E1 (`findings/E1-mostly-waiting.md`).
 
 **New, and uncomfortable:** `findings/P02-parallel-saving.md`. Measured over the whole corpus, the
 grid's parallel saving is **zero for five of nine components**, including the viral brownie recipe.
@@ -104,18 +102,19 @@ that EDGE-CASES' "revisit if common" condition is met; Phase 03 should answer it
 
 ## Recommended next action
 
-**Finish Phase 03.** The renderer works and the gate is cleared; what remains is the acceptance
-list in `phases/PHASE-03`, most of which is unstarted:
+**Phase 05 — interaction and kitchen state.** Cook mode already surfaces `duration`; Phase 05
+counts it down. Timers, serving-size scaling over the structured `Quantity` model, unit toggling,
+wake lock, and persistence. Check-off already works and is already shared across views, so the
+new work is timers and scaling.
 
-Phase 03's acceptance list is now met apart from one item:
+Two things to settle early, both cheap and both able to move the design:
 
-1. **A real print check.** Greyscale was verified by measuring rendered luminance and by a
-   `filter: grayscale(1)` pass — both proxies. Nobody has produced a PDF and looked at it, and
-   `print-color-adjust` behaviour is the kind of thing that only fails in the real pipeline.
-
-Then **Phase 04** — the responsive ladder and cook mode. R8 is still the biggest unsolved problem
-in the project: every screenshot in `images/` is a pinch-zoomed phone photo of a desktop table,
-and the charts here are 1,000–2,700px wide.
+1. **Equipment contention (EDGE-CASES E4).** `Step.equipment` exists and nothing reads it. It is
+   what turns the parallelism claim from "topologically possible" into "actually possible" — and
+   given Q2 found the banner never fires, this is the more valuable half of that idea.
+2. **Session splitting (EDGE-CASES E2).** `passive` steps mean bread and cures span days. Cook
+   mode has no notion of putting a recipe down and coming back, which is exactly what those
+   recipes require.
 
 Already done and not worth redoing: the leader rule is drawn from `PlacedCell.leader`; the
 at-a-glance bar handles `parallelSaving: 0` by dropping the field and saying "nothing overlaps in
@@ -127,8 +126,13 @@ R9 is met by capping the grid *tracks*, not the text. Capping the text inside an
 gave the worst of both: a 621px cell with its text wrapping in a 130px ribbon. With ceilings on
 the tracks, `long-text.json` renders 996px wide instead of 1,749.
 
+**All four ladder rungs exist**, from one unmodified plan: wall chart, condensed chart
+(shepherd's pie 11 → 6 columns, collapsed runs rendered as a stack so each sub-step still sits
+beside the ingredient it consumes), ingredient-led, and cook mode. Tapping a step cell expands it
+into its cook-mode card; check-off is one model behind all of them.
+
 **Visual baselines are committed** under `experiments/01-css-grid/track01.visual.ts-snapshots/`
-(19 images, 1.6 MB) and run with `pnpm test:visual` — deliberately *not* part of `pnpm check`,
+and run with `pnpm test:visual` — deliberately *not* part of `pnpm check`,
 because screenshot baselines are font-rendering dependent and a macOS baseline fails on a Linux
 runner for reasons unrelated to the code. Playwright suffixes them by platform, so a Linux CI job
 would generate its own set rather than fight over these. Regenerate with `--update-snapshots`
