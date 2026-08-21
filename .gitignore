@@ -40,3 +40,4 @@ test-results/
 # The canonical, self-contained sources live in docs/design/ — keep those instead.
 sources/*.html
 sources/*_files/
+.print-check/

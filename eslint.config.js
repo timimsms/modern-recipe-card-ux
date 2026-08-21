@@ -27,6 +27,11 @@ export default tseslint.config(
         URL: 'readonly',
         module: 'writable',
         require: 'readonly',
+        // Scripts that drive a browser pass callbacks to `page.evaluate`, whose bodies run in
+        // the page rather than in Node. They are browser code that merely lives in a Node file.
+        document: 'readonly',
+        window: 'readonly',
+        getComputedStyle: 'readonly',
       },
     },
   },

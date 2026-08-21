@@ -370,15 +370,43 @@ body {
   .controls {
     display: none;
   }
+  .page {
+    padding: 0;
+    max-width: none;
+    gap: 0;
+  }
   .card {
     border: 0;
+  }
+  /* Deliberately NOT `break-inside: avoid` on the card. A shepherd's pie card is taller than a
+     sheet of A4, so asking the browser to keep it whole makes it skip to a fresh page, fail to
+     fit there too, and leave the first page completely blank. Keep the *headings* with their
+     content instead, and let the card break where it must. */
+  .glance,
+  .component-title,
+  .legend {
     break-inside: avoid;
+    break-after: avoid;
+  }
+  .component {
+    break-inside: auto;
   }
   .scroller {
     overflow: visible;
   }
   .chart {
     width: 100%;
+  }
+  /* The screen ceilings are sized for a 1400px window; a printable A4 landscape column is
+     about 1040px. Shepherd's pie at eleven columns needs 1,352px at screen minimums, so
+     without this the chart runs off the right edge of the paper — where, unlike a screen,
+     there is nothing to scroll. */
+  .chart {
+    --space-ingredient-column: 9rem;
+    --space-ingredient-column-max: 14rem;
+    --space-step-column-min: 3.6rem;
+    --space-step-column-max: 11rem;
+    font-size: 0.72rem;
   }
   /* Fill is a luminance ramp, so it survives a greyscale printer as-is — but browsers drop
      backgrounds by default, and the depth encoding is information, not decoration. */
