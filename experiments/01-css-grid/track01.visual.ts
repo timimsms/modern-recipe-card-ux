@@ -96,6 +96,26 @@ test.describe('track 01 — themes', () => {
 })
 
 /**
+ * The narrow rung. Phase 04 is entirely about this width, and the tokens were finalised before
+ * anything had been tested here — which is how the at-a-glance bar shipped clipping its headline
+ * figure to "1 hr 12 mi" on a phone. These exist so that cannot happen twice.
+ */
+test.describe('track 01 — 390px', () => {
+  test.use({ viewport: { width: 390, height: 844 } })
+
+  for (const slug of [
+    'recipes/shepherds-pie',
+    'recipes/espresso-brownies',
+    'recipes/no-knead-bread',
+  ]) {
+    test(slug, async ({ page }) => {
+      const card = await show(page, slug)
+      await expect(card).toHaveScreenshot(`${name(slug)}-390.png`)
+    })
+  }
+})
+
+/**
  * Not a screenshot: R7 is behaviour, and a picture of a checked box proves nothing about whether
  * the fill propagated to the right regions.
  */

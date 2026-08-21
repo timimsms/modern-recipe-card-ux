@@ -162,6 +162,24 @@ body {
   background: var(--fill-depth-3);
 }
 
+/* The first rung of the responsive ladder, and it is here because the tokens were finalised
+   before anything had been tested at 390px — PHASE-03 warned about exactly that.
+   `1 hr 12 min` in mono at 1.2rem does not fit a 115px cell, and `white-space: nowrap` meant it
+   clipped rather than wrapped, so the headline figure on a phone read "1 hr 12 mi".
+   Container query, not media query: a card in a sidebar has the same problem. */
+@container (max-width: 34rem) {
+  .g {
+    flex-basis: 50%;
+  }
+  .g b {
+    font-size: 1.05rem;
+    white-space: normal;
+  }
+  .cardhead {
+    padding: 0.8rem 0.9rem 0.7rem;
+  }
+}
+
 .glance-note {
   margin: 0;
   padding: 0.5rem 0.9rem;
