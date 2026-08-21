@@ -161,6 +161,7 @@ export function renderCookMode(recipe, state) {
   return (
     `<article class="cookmode" data-step="${esc(current)}">` +
     `<header class="cm-head">` +
+    `<button type="button" class="cm-back" aria-label="Back to the chart">← chart</button>` +
     `<span class="cm-count">${position} of ${total}</span>${componentTitle}` +
     `</header>` +
     `<div class="cm-body">` +

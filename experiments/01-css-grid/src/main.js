@@ -66,22 +66,35 @@ async function show() {
     layout(c, { columns: strategy.value, reuse: reuse.value }),
   )
   current = recipe
-  cook = { componentIndex: 0, current: undefined, done: new Set() }
+  state.ingredients.clear()
+  state.steps.clear()
+  cook = { componentIndex: 0, current: undefined, done: state.steps }
   draw()
 }
 
 /**
- * Cook-mode state lives here rather than in the renderer, because Phase 04's transition and
- * Phase 05's persistence both need one model behind two views — check-off in cook mode has to
- * fill the same regions in the chart.
+ * One model, two views.
+ *
+ * The chart and cook mode were keeping separate notions of "done" — the chart tracked which
+ * ingredients had been gathered, cook mode tracked which steps were finished, and neither knew
+ * about the other. Switching views silently threw your progress away. They share this now, so
+ * a step finished in cook mode is filled in the chart and an ingredient ticked in the chart is
+ * still ticked in the ingredient list.
  */
+const state = { ingredients: new Set(), steps: new Set() }
+
 let current = null
-let cook = { componentIndex: 0, current: undefined, done: new Set() }
+let cook = { componentIndex: 0, current: undefined, done: state.steps }
 
 function draw() {
   const recipe = current
   if (!recipe) return
-  const options = { markRule: markRule.value, ramp: ramp.value }
+  const options = {
+    markRule: markRule.value,
+    ramp: ramp.value,
+    doneSteps: state.steps,
+    checkedIngredients: state.ingredients,
+  }
   root.innerHTML =
     view.value === 'filmstrip'
       ? renderFilmstrip(recipe)
@@ -153,10 +166,43 @@ function condensedOf(recipe) {
  * Cook-mode navigation. Delegated from the root so a redraw never leaves a dead listener, and
  * every control is a real button so the whole thing works from a keyboard.
  */
+/**
+ * Ingredient check-off stays a pure-CSS `:has()` affair so the chart still works with no
+ * JavaScript at all; this only mirrors it into shared state so the other views can see it.
+ */
+root.addEventListener('change', (event) => {
+  const tick = event.target
+  if (!(tick instanceof Element) || !tick.matches('.tick')) return
+  const id = tick.dataset.ing
+  if (tick.checked) state.ingredients.add(id)
+  else state.ingredients.delete(id)
+})
+
+/**
+ * Chart → cook mode, expanding the tapped cell into the card it becomes.
+ *
+ * The point is not decoration: the reader has just picked a cell out of a chart they understand,
+ * and arriving somewhere unrelated costs them that understanding. The cell grows into the card,
+ * and backing out puts it back where it was.
+ */
 root.addEventListener('click', (event) => {
-  if (!current || view.value !== 'cook') return
   const target = event.target
   if (!(target instanceof Element)) return
+
+  if (view.value !== 'cook') {
+    const cell = target.closest('.step[data-step]')
+    if (!current || !cell) return
+    openCookMode(cell)
+    return
+  }
+
+  if (target.closest('.cm-back')) {
+    view.value = 'chart'
+    draw()
+    return
+  }
+
+  if (!current) return
 
   const jump = target.closest('.jump, .minimap button')
   if (jump) {
@@ -197,6 +243,56 @@ root.addEventListener('click', (event) => {
   }
   draw()
 })
+
+// A step cell is a control, so the keyboard has to reach it.
+root.addEventListener('keydown', (event) => {
+  if (event.key !== 'Enter' && event.key !== ' ') return
+  const cell = event.target instanceof Element ? event.target.closest('.step[data-step]') : null
+  if (!cell || view.value === 'cook') return
+  event.preventDefault()
+  openCookMode(cell)
+})
+
+/**
+ * FLIP: measure where the cell is, switch views, measure where the card landed, then play the
+ * difference backwards. Animating layout properties would reflow on every frame; a transform
+ * does not touch layout at all.
+ */
+function openCookMode(cell) {
+  const stepId = cell.dataset.step
+  const componentIndex = [...root.querySelectorAll('.component')].findIndex((c) => c.contains(cell))
+
+  const from = cell.getBoundingClientRect()
+  cook.componentIndex = Math.max(0, componentIndex)
+  cook.current = stepId
+  view.value = 'cook'
+  draw()
+
+  const card = root.querySelector('.cookmode')
+  if (!card) return
+
+  // Reduced motion still needs the positional relationship, so it cross-fades in place rather
+  // than teleporting — the difference is that nothing flies across the screen.
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (reduced) {
+    card.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: 'ease-out' })
+    return
+  }
+
+  const to = card.getBoundingClientRect()
+  const dx = from.left + from.width / 2 - (to.left + to.width / 2)
+  const dy = from.top + from.height / 2 - (to.top + to.height / 2)
+  const sx = Math.max(0.05, from.width / to.width)
+  const sy = Math.max(0.05, from.height / to.height)
+
+  card.animate(
+    [
+      { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`, opacity: 0.4 },
+      { transform: 'none', opacity: 1 },
+    ],
+    { duration: 260, easing: 'cubic-bezier(0.2, 0, 0, 1)' },
+  )
+}
 
 /**
  * One mini-map per step, in cook order, with everything before it marked done.

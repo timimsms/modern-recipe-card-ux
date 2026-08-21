@@ -445,6 +445,51 @@ body {
   filter: grayscale(1);
 }
 
+/* A step cell is the way into cook mode. */
+.step[data-step] {
+  cursor: pointer;
+}
+.step[data-step]:hover {
+  box-shadow: inset 0 0 0 1px var(--rule);
+}
+.step[data-step]:focus-visible {
+  outline: 2px solid var(--clay);
+  outline-offset: -2px;
+}
+
+/* A step finished in cook mode, shown in the chart. Not colour alone — the check is the part
+   that survives greyscale and a monochrome printer. */
+.step.complete {
+  opacity: 0.62;
+}
+.step.complete::before {
+  content: '✓';
+  position: absolute;
+  inset: auto auto 0.3rem 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--rule);
+}
+.step {
+  position: relative;
+}
+
+.cm-back {
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  color: var(--rule);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.cm-back:hover,
+.cm-back:focus-visible {
+  color: var(--ink);
+}
+
 /* A collapsed run: a stack, not a paragraph. Each part sits against the rows it adds, so the
    ingredient beside it is still the ingredient it consumes. */
 .step.collapsed {

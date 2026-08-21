@@ -323,6 +323,74 @@ test.describe('cook mode', () => {
 })
 
 /**
+ * The transition, and the thing it depends on: one model behind two views.
+ *
+ * These were separate before — the chart tracked gathered ingredients, cook mode tracked
+ * finished steps, and switching views silently discarded your progress.
+ */
+test.describe('chart ↔ cook mode', () => {
+  const chart = async (page: Page) => {
+    await page.goto('/experiments/01-css-grid/')
+    await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
+    await page.selectOption('#recipe', 'recipes/espresso-brownies')
+    await page.waitForSelector('.chart')
+  }
+
+  test('a step cell opens cook mode at that step', async ({ page }) => {
+    await chart(page)
+    await page.locator('.step[data-step="fold-in"]').click()
+    await expect(page.locator('.cookmode')).toHaveAttribute('data-step', 'fold-in')
+  })
+
+  test('the keyboard reaches it too', async ({ page }) => {
+    await chart(page)
+    await page.locator('.step[data-step="melt"]').focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('.cookmode')).toHaveAttribute('data-step', 'melt')
+  })
+
+  test('progress survives the round trip in both directions', async ({ page }) => {
+    await chart(page)
+    await page.locator('.tick[data-ing="flour"]').check()
+
+    await page.locator('.step[data-step="fold-in"]').click()
+    await page.click('.cm-next')
+    await page.click('.cm-back')
+    await page.waitForSelector('.chart')
+
+    // Finished in cook mode, filled in the chart.
+    await expect(page.locator('.step.complete')).toHaveAttribute('data-step', 'fold-in')
+    // Gathered in the chart, still gathered after the detour.
+    await expect(page.locator('.tick[data-ing="flour"]')).toBeChecked()
+  })
+
+  test('animates the cell into the card, and cross-fades under reduced motion', async ({
+    page,
+  }) => {
+    const capture = async (reduced: boolean) => {
+      await page.emulateMedia({ reducedMotion: reduced ? 'reduce' : 'no-preference' })
+      await chart(page)
+      await page.evaluate(() => {
+        ;(window as unknown as { __kf: string[] }).__kf = []
+        const original = Element.prototype.animate
+        Element.prototype.animate = function (this: Element, frames, opts) {
+          ;(window as unknown as { __kf: string[] }).__kf.push(JSON.stringify(frames))
+          return original.call(this, frames, opts)
+        } as typeof Element.prototype.animate
+      })
+      await page.locator('.step[data-step="fold-in"]').click()
+      await page.waitForSelector('.cookmode')
+      return page.evaluate(() => (window as unknown as { __kf: string[] }).__kf.join(' '))
+    }
+
+    // Moving something across the screen is exactly what reduced motion asks you not to do,
+    // but the positional relationship still has to survive — hence a fade in place, not a jump.
+    expect(await capture(false)).toContain('transform')
+    expect(await capture(true)).not.toContain('transform')
+  })
+})
+
+/**
  * Not a screenshot: R7 is behaviour, and a picture of a checked box proves nothing about whether
  * the fill propagated to the right regions.
  */

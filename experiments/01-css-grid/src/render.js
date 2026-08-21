@@ -224,9 +224,13 @@ export function renderChart(component, plan, options = {}) {
 
     if (cell.kind === 'ingredient') {
       const leaf = leafById.get(cell.ref)
+      // `checked` is rendered in, so gathering an ingredient in one view is still gathered in
+      // the next. One model, two views — PHASE-04's rule, and the reason state does not live
+      // in the DOM.
+      const checked = options.checkedIngredients?.has(cell.ref) ? ' checked' : ''
       parts.push(
         `<label class="cell ing${cell.duplicate ? ' dup' : ''}" style="${area};${edgeStyle(cell.edges)}" data-row="${esc(cell.ref)}">` +
-          `<input type="checkbox" class="tick" data-ing="${esc(cell.ref)}">` +
+          `<input type="checkbox" class="tick" data-ing="${esc(cell.ref)}"${checked}>` +
           `<span class="ing-text">${renderLeaf(leaf)}</span></label>`,
       )
       continue
@@ -262,8 +266,13 @@ export function renderChart(component, plan, options = {}) {
         `</span>`
       : `<span class="step-text">${esc(step.text)}</span>`
 
+    // A step cell is the way into cook mode, so it has to be operable — a real role and a tab
+    // stop, not a div that happens to respond to clicks.
+    const complete = options.doneSteps?.has(cell.ref) ? ' complete' : ''
     parts.push(
-      `<div class="cell step d${shadeFor(cell.depth, plan.maxDepth, options.ramp)}${isUnattended(step.effort) ? ' unatt' : ''}${micro ? ' collapsed' : ''}" ` +
+      `<div class="cell step d${shadeFor(cell.depth, plan.maxDepth, options.ramp)}${isUnattended(step.effort) ? ' unatt' : ''}${micro ? ' collapsed' : ''}${complete}" ` +
+        `role="button" tabindex="0" data-step="${esc(cell.ref)}" ` +
+        `aria-label="${esc(step.text)}${complete ? ', done' : ''}. Open in cook mode." ` +
         `style="${area};${edgeStyle(cell.edges)}" data-fed-by="${esc(feedsOf(component, plan, cell.ref).join(' '))}">` +
         `${chips}${body}${temp}${markFor(step, polarity)}</div>`,
     )
