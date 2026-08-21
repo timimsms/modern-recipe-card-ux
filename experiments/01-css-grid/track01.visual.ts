@@ -174,6 +174,82 @@ test.describe('mini-map', () => {
   })
 })
 
+test.describe('the ladder', () => {
+  const pick = async (page: Page, slug: string, view: string) => {
+    await page.goto('/experiments/01-css-grid/')
+    await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
+    await page.selectOption('#recipe', slug)
+    await page.selectOption('#view', view)
+    await page.waitForSelector('.card')
+    await page.addStyleTag({ content: '.controls{position:static!important}' })
+  }
+
+  test('condensed chart', async ({ page }) => {
+    await pick(page, 'recipes/shepherds-pie', 'condensed')
+    await expect(page.locator('.card')).toHaveScreenshot('condensed-shepherds-pie.png')
+  })
+
+  test('ingredient-led', async ({ page }) => {
+    await pick(page, 'recipes/shepherds-pie', 'ingredients')
+    await expect(page.locator('.card')).toHaveScreenshot('ingredient-led-shepherds-pie.png')
+  })
+
+  test('condensing narrows the chart without dropping an ingredient row', async ({ page }) => {
+    await pick(page, 'recipes/shepherds-pie', 'chart')
+    const before = await page.$$eval('.chart', (c) =>
+      c.map((n) => getComputedStyle(n).gridTemplateColumns.split(' ').length),
+    )
+    const rowsBefore = await page.locator('.ing').count()
+
+    await pick(page, 'recipes/shepherds-pie', 'condensed')
+    const after = await page.$$eval('.chart', (c) =>
+      c.map((n) => getComputedStyle(n).gridTemplateColumns.split(' ').length),
+    )
+    expect(Math.max(...after)).toBeLessThan(Math.max(...before))
+    expect(Math.max(...after)).toBeLessThanOrEqual(6)
+    expect(await page.locator('.ing').count()).toBe(rowsBefore)
+  })
+
+  /**
+   * The point of the stacked micro-list. Joining a collapsed run into one paragraph saved the
+   * same columns but put `ground lamb` a long way from "cook until meat is no longer pink",
+   * giving back exactly what R3 and R4 establish.
+   */
+  test('a collapsed run keeps each sub-step beside the ingredient it consumes', async ({
+    page,
+  }) => {
+    await pick(page, 'recipes/shepherds-pie', 'condensed')
+    const aligned = await page.evaluate(() => {
+      const lamb = Array.from(document.querySelectorAll('.ing')).find((e) =>
+        e.textContent?.includes('ground lamb'),
+      )
+      const part = Array.from(document.querySelectorAll('.micro-part')).find((e) =>
+        e.textContent?.includes('no longer pink'),
+      )
+      if (!lamb || !part) return null
+      const a = lamb.getBoundingClientRect()
+      const b = part.getBoundingClientRect()
+      // Same row band: their vertical centres should be within a line of each other.
+      return Math.abs(a.top + a.height / 2 - (b.top + b.height / 2))
+    })
+    expect(aligned).not.toBeNull()
+    expect(aligned!).toBeLessThan(24)
+  })
+
+  /**
+   * The bar is the only thing this view has that a shopping list does not, so it has to be
+   * right. Components are sequential: the last step of the mashed potatoes is halfway through
+   * the dish, and tagging its salt "at the end" is backwards.
+   */
+  test('ingredient-led measures depth across the recipe, not the component', async ({ page }) => {
+    await pick(page, 'recipes/shepherds-pie', 'ingredients')
+    const late = await page.$$eval('.il-row.late .item', (nodes) =>
+      nodes.map((n) => n.textContent ?? ''),
+    )
+    expect(late).toEqual(['paprika'])
+  })
+})
+
 test.describe('cook mode', () => {
   test.use({ viewport: { width: 390, height: 844 } })
 

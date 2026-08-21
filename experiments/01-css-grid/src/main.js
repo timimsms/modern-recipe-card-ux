@@ -6,7 +6,8 @@
  * its emitted `dist/`, exactly as PHASE-00 required it to be.
  */
 
-import { layout, normalizeRecipe } from '../../../packages/core/dist/index.js'
+import { condense, layout, normalizeRecipe } from '../../../packages/core/dist/index.js'
+import { renderIngredientLed } from './ingredientled.js'
 import { renderCard } from './render.js'
 import { renderMiniMap, sharedScale } from './minimap.js'
 import { cookOrderOf, cookPathOf, renderCookMode } from './cookmode.js'
@@ -80,13 +81,72 @@ let cook = { componentIndex: 0, current: undefined, done: new Set() }
 function draw() {
   const recipe = current
   if (!recipe) return
+  const options = { markRule: markRule.value, ramp: ramp.value }
   root.innerHTML =
     view.value === 'filmstrip'
       ? renderFilmstrip(recipe)
       : view.value === 'cook'
         ? renderCookMode(recipe, cook)
-        : renderCard(recipe, { markRule: markRule.value, ramp: ramp.value })
+        : view.value === 'ingredients'
+          ? renderIngredientLed(recipe)
+          : view.value === 'condensed'
+            ? (({ recipe: r, microList }) => renderCard(r, { ...options, microList }))(
+                condensedOf(recipe),
+              )
+            : renderCard(recipe, options)
   document.title = `${recipe.title} — track 01`
+}
+
+/**
+ * The condensed rung: single-file runs collapsed until the chart fits six columns, the critical
+ * path last. The transform runs on the component and the result goes back through `layout()`,
+ * so the condensed chart is a real plan with every invariant intact — not a special rendering
+ * mode with its own geometry rules.
+ */
+function condensedOf(recipe) {
+  const components = []
+  const plans = []
+  const microList = new Map()
+
+  for (const [i, component] of recipe.components.entries()) {
+    const full = recipe.plans[i]
+    const keep = new Set(full.criticalPath)
+    const { component: small, merged } = condense(component, { maxColumns: 6, keep })
+    components.push(small)
+    plans.push(layout(small, { columns: strategy.value, reuse: reuse.value }))
+
+    // Each part of a collapsed run gets the rows it *adds*, not the rows it covers. A chain
+    // nests — each step spans everything before it plus its own new ingredients — so laying the
+    // parts out by their full bands would stack six overlapping blocks. The difference between
+    // consecutive bands is exactly the ingredients that step introduced, which is what the
+    // micro-list should sit against.
+    const bandOf = new Map(full.cells.filter((c) => c.kind === 'step').map((c) => [c.ref, c]))
+    for (const [survivor, originals] of merged) {
+      if (originals.length < 2) continue
+      let coveredTop = null
+      let coveredBottom = null
+      const parts = []
+      for (const id of originals) {
+        const cell = bandOf.get(id)
+        if (!cell) continue
+        const top = cell.row
+        const bottom = cell.row + cell.rowSpan - 1
+        const newTop = coveredTop === null ? top : coveredBottom + 1
+        const newBottom = bottom
+        if (newTop <= newBottom) {
+          parts.push({
+            row: newTop,
+            rowSpan: newBottom - newTop + 1,
+            text: component.steps[id].text,
+          })
+        }
+        coveredTop = coveredTop === null ? top : Math.min(coveredTop, top)
+        coveredBottom = coveredBottom === null ? bottom : Math.max(coveredBottom, bottom)
+      }
+      if (parts.length > 1) microList.set(survivor, parts)
+    }
+  }
+  return { recipe: { ...recipe, components, plans }, microList }
 }
 
 /**

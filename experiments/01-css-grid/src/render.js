@@ -233,6 +233,7 @@ export function renderChart(component, plan, options = {}) {
     }
 
     const step = component.steps[cell.ref]
+    const micro = options.microList?.get(cell.ref)
     const chips = (chipsByStep.get(cell.ref) ?? [])
       .map((c) => {
         const leaf = leafById.get(c.leaf)
@@ -245,10 +246,26 @@ export function renderChart(component, plan, options = {}) {
         ? `<span class="temp">${esc(formatTemperature(step.temperature))}</span>`
         : ''
 
+    // A collapsed run renders as a stack, each part sitting against the rows it actually adds,
+    // rather than as one paragraph of joined text. That is what keeps `ground lamb` beside
+    // "cook until meat is no longer pink" after six columns have become one — losing that
+    // alignment would give back exactly what R3 and R4 exist to establish.
+    const body = micro
+      ? `<span class="micro" style="grid-template-rows:repeat(${cell.rowSpan},1fr)">` +
+        micro
+          .map(
+            (p) =>
+              `<span class="micro-part" style="grid-row:${p.row - cell.row + 1}/span ${p.rowSpan}">` +
+              `${esc(p.text)}</span>`,
+          )
+          .join('') +
+        `</span>`
+      : `<span class="step-text">${esc(step.text)}</span>`
+
     parts.push(
-      `<div class="cell step d${shadeFor(cell.depth, plan.maxDepth, options.ramp)}${isUnattended(step.effort) ? ' unatt' : ''}" ` +
+      `<div class="cell step d${shadeFor(cell.depth, plan.maxDepth, options.ramp)}${isUnattended(step.effort) ? ' unatt' : ''}${micro ? ' collapsed' : ''}" ` +
         `style="${area};${edgeStyle(cell.edges)}" data-fed-by="${esc(feedsOf(component, plan, cell.ref).join(' '))}">` +
-        `${chips}<span class="step-text">${esc(step.text)}</span>${temp}${markFor(step, polarity)}</div>`,
+        `${chips}${body}${temp}${markFor(step, polarity)}</div>`,
     )
   }
 

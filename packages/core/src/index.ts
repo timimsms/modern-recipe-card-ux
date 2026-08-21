@@ -8,6 +8,7 @@
  */
 
 export * from './authoring.js'
+export * from './condense.js'
 export * from './cook.js'
 export * from './layout.js'
 export * from './model.js'
