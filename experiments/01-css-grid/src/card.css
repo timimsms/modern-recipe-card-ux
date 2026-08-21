@@ -1,0 +1,410 @@
+/* Track 01 — the reference renderer's stylesheet.
+   Everything structural comes from the plan; this file only says what the tokens look like. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  /* R6: quantities in a vertical column that do not align are exactly the kind of detail
+     this project exists to get right. */
+  font-variant-numeric: tabular-nums;
+}
+
+.page {
+  max-width: 92rem;
+  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 2.5rem) clamp(0.75rem, 2vw, 2rem) 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* ---------- controls ---------- */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.1rem;
+  align-items: center;
+  padding: 0.7rem 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+.controls select {
+  font: inherit;
+  padding: 0.2rem 0.3rem;
+}
+:focus-visible {
+  outline: 2px solid var(--clay);
+  outline-offset: 2px;
+}
+
+/* ---------- card ---------- */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 5px;
+  overflow: hidden;
+  container-type: inline-size;
+}
+
+.cardhead {
+  padding: 1rem 1.1rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.card-title {
+  margin: 0;
+  font-family: var(--type-card-title-family, var(--font-display));
+  font-size: var(--type-card-title-size);
+  font-weight: var(--type-card-title-weight);
+  line-height: var(--type-card-title-leading);
+  letter-spacing: -0.01em;
+}
+.cardhead .src,
+.cardhead .yield {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  color: var(--ink-faint);
+}
+
+/* ---------- at-a-glance bar ---------- */
+
+.glance {
+  display: flex;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  background: var(--fill-depth-4);
+}
+.g {
+  flex: 1 1 7rem;
+  min-width: 0;
+  padding: 0.7rem 0.9rem;
+  border-right: 1px solid var(--hairline);
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.g:last-child {
+  border-right: 0;
+}
+.g b {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.g .lab {
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.g.total b {
+  color: var(--rule);
+}
+.g.away b {
+  color: var(--clay);
+}
+.g.away .lab {
+  color: var(--clay);
+}
+.g.saved {
+  background: var(--fill-depth-2);
+}
+.g.saved b {
+  color: var(--rule);
+}
+
+.legend {
+  margin: 0;
+  padding: 0.5rem 0.9rem;
+  border-bottom: 1px solid var(--hairline);
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: var(--type-ingredient-size);
+  color: var(--ink-soft);
+}
+.legend .glyph {
+  color: var(--clay);
+  font-family: var(--font-mono);
+}
+.legend.flipped {
+  color: var(--ink);
+  background: var(--fill-depth-3);
+}
+
+.glance-note {
+  margin: 0;
+  padding: 0.5rem 0.9rem;
+  border-bottom: 1px solid var(--hairline);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  color: var(--ink-faint);
+}
+
+/* ---------- chart ---------- */
+
+.component {
+  display: flex;
+  flex-direction: column;
+}
+.component-title {
+  margin: 0;
+  padding: 0.85rem 1.1rem 0;
+  font-family: var(--font-display);
+  font-size: var(--type-component-title-size);
+  font-weight: var(--type-component-title-weight);
+}
+
+.scroller {
+  overflow-x: auto;
+  padding: 0.9rem 1.1rem 1.2rem;
+}
+
+.chart {
+  display: grid;
+  gap: var(--space-gap);
+  grid-template-columns:
+    minmax(var(--space-ingredient-column), max-content)
+    repeat(var(--cols), minmax(var(--space-step-column-min), 1fr));
+  grid-template-rows: repeat(var(--rows), minmax(2.3rem, auto));
+  width: max-content;
+  min-width: 100%;
+}
+
+.cell {
+  border-style: solid;
+  border-color: var(--rule);
+  border-radius: var(--space-radius);
+  padding: var(--space-cell-padding-y) var(--space-cell-padding-x);
+  min-width: 0;
+  background: var(--surface);
+}
+
+/* R2: every step's text sits bottom-right of its region, so scanning down the chart follows a
+   predictable diagonal instead of hunting for where the instruction landed. */
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-end;
+  text-align: right;
+  gap: 0.25rem;
+  font-size: var(--type-step-size);
+  font-weight: var(--type-step-weight);
+  line-height: var(--type-step-leading);
+}
+/* R9: long step text wraps inside its own region rather than forcing the column wider. */
+.step-text {
+  max-width: var(--space-step-measure);
+}
+
+/* R5: fill ramps by depth from the root, so the shading reads as "how close to done".
+   The channel is luminance, which survives both colour-vision deficiency and greyscale print;
+   rule weight carries the same information redundantly. */
+.step.d0 {
+  background: var(--fill-depth-0);
+}
+.step.d1 {
+  background: var(--fill-depth-1);
+}
+.step.d2 {
+  background: var(--fill-depth-2);
+}
+.step.d3 {
+  background: var(--fill-depth-3);
+}
+.step.d4 {
+  background: var(--fill-depth-4);
+}
+
+/* R7: check-off propagates with no JavaScript. Each card carries one generated `:has()` rule
+   per ingredient which flips `--started` on every region that ingredient feeds; the width of
+   the inset bar is the only thing that reads it. This is the animated version of the solid
+   fill IMG_4230 drew statically in a spreadsheet. */
+.step {
+  --started: 0;
+  transition: box-shadow 140ms ease;
+}
+.step[data-fed-by] {
+  box-shadow: inset calc(var(--started) * 4px) 0 0 0 var(--rule);
+}
+
+.ing {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-color: var(--rule-faint);
+  font-size: var(--type-ingredient-size);
+  line-height: var(--type-ingredient-leading);
+  cursor: pointer;
+}
+.ing-text {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  align-items: baseline;
+  min-width: 0;
+}
+.ing .qty {
+  font-family: var(--font-mono);
+  font-size: 0.94em;
+  white-space: nowrap;
+}
+.ing .note {
+  color: var(--ink-faint);
+  font-size: 0.94em;
+}
+.ing .ref {
+  font-style: italic;
+}
+.ing.dup {
+  border-color: var(--clay);
+  border-left-width: 4px;
+}
+.tick {
+  accent-color: var(--rule);
+  width: 0.95rem;
+  height: 0.95rem;
+  flex: none;
+  margin: 0;
+}
+
+.prelude {
+  border-color: var(--rule-heavy);
+  border-width: var(--edge-rule);
+  background: var(--fill-depth-3);
+  font-size: var(--type-prelude-size);
+  font-weight: var(--type-prelude-weight);
+}
+/* The prelude spans the whole chart, which can be 2,700px. Pinned left it stays readable at
+   every scroll position instead of drifting off-screen. */
+.prelude span {
+  position: sticky;
+  left: var(--space-cell-padding-x);
+  display: inline-block;
+}
+
+.temp {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  color: var(--ink-soft);
+}
+
+/* Q5's shorthand mark. Clay is the exception hue and never carries meaning alone — the glyph
+   distinguishes attended from unattended without reference to colour. */
+.mark {
+  display: flex;
+  align-items: center;
+  gap: 0.28rem;
+  font-family: var(--font-mono);
+  font-size: var(--type-mark-size);
+  font-weight: var(--type-mark-weight);
+  line-height: var(--type-mark-leading);
+  color: var(--clay);
+  white-space: nowrap;
+}
+.step:not(.unatt) .mark {
+  color: var(--ink-soft);
+}
+
+.chip {
+  align-self: flex-end;
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  color: var(--clay);
+  border: 1px solid var(--clay);
+  border-radius: 99px;
+  padding: 0.02rem 0.38rem;
+  white-space: nowrap;
+}
+
+/* The Q1 repair: right-packed leaves a long blank run between an ingredient and the step that
+   consumes it, and row alignment alone is invisible. This is the only reason filler appears in
+   the DOM at all — it is decoration, not a cell, and it is hidden from assistive tech. */
+.leader {
+  align-self: center;
+  height: 1px;
+  background: var(--rule-faint);
+  margin: 0 0.35rem;
+}
+
+/* ---------- print ---------- */
+
+@media print {
+  body {
+    background: #fff;
+  }
+  .controls {
+    display: none;
+  }
+  .card {
+    border: 0;
+    break-inside: avoid;
+  }
+  .scroller {
+    overflow: visible;
+  }
+  .chart {
+    width: 100%;
+  }
+  /* Fill is a luminance ramp, so it survives a greyscale printer as-is — but browsers drop
+     backgrounds by default, and the depth encoding is information, not decoration. */
+  .step,
+  .prelude,
+  .glance {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .tick {
+    display: none;
+  }
+}
+
+.failure {
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--clay);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--clay);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  white-space: pre-wrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

@@ -31,6 +31,23 @@ export default tseslint.config(
     },
   },
   {
+    // The experiment tracks run in a browser with no bundler, so they legitimately reach for
+    // browser globals. Declared explicitly rather than pulling in `globals` for a handful.
+    files: ['experiments/**/*.js'],
+    languageOptions: {
+      globals: {
+        document: 'readonly',
+        window: 'readonly',
+        fetch: 'readonly',
+        URL: 'readonly',
+        Event: 'readonly',
+        console: 'readonly',
+        setTimeout: 'readonly',
+        requestAnimationFrame: 'readonly',
+      },
+    },
+  },
+  {
     // packages/core is consumed unbundled in a browser. `no-undef` with no globals declared
     // is a cheap second line of defence behind tsconfig's DOM-free `lib`.
     files: ['packages/core/src/**/*.ts'],

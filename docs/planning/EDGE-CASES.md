@@ -7,7 +7,14 @@
 
 ## A. Cases that could change the settled design
 
-### E1 — Mostly-waiting recipes
+### E1 — Mostly-waiting recipes — **RESOLVED, and the proposal below was rejected**
+
+> Both rules were built and rendered on `no-knead-bread`. The relative rule leaves the 12–18 hour
+> bulk ferment — the most consequential fact in the recipe — styled as an aside, because the rule
+> classifies it as "the default". **Keep `◷` fixed as unattended; carry the polarity in a legend
+> line instead.** See [`../findings/E1-mostly-waiting.md`](../findings/E1-mostly-waiting.md).
+> The rest of this section is kept as the original reasoning.
+
 
 **Breaks:** "label the exception, not the default" — the rule the mark vocabulary rests on.
 

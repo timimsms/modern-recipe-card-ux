@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Track 01 — CSS Grid reference renderer</title>
+    <link rel="stylesheet" href="../../packages/tokens/tokens.css" />
+    <link rel="stylesheet" href="src/card.css" />
+  </head>
+  <body>
+    <main class="page">
+      <div class="controls">
+        <label
+          >recipe
+          <select id="recipe"></select
+        ></label>
+        <label>
+          columns
+          <select id="strategy">
+            <option value="right-packed">right-packed</option>
+            <option value="left-packed">left-packed</option>
+            <option value="stretch-to-merge">stretch-to-merge</option>
+          </select>
+        </label>
+        <label>
+          reuse
+          <select id="reuse">
+            <option value="chip">chip</option>
+            <option value="connector">connector</option>
+            <option value="duplicate-leaf">duplicate-leaf</option>
+          </select>
+        </label>
+        <label>
+          marks
+          <select id="markrule">
+            <option value="fixed">◷ always means unattended</option>
+            <option value="relative">mark whichever is the minority</option>
+          </select>
+        </label>
+        <label>
+          theme
+          <select id="theme">
+            <option value="light">light</option>
+            <option value="dark">dark</option>
+          </select>
+        </label>
+      </div>
+      <div id="cards"></div>
+    </main>
+    <!-- Imported with a cache-buster rather than linked directly. This track has no build step,
+         so an edited module is otherwise served from Chrome's cache and you end up debugging
+         code you already fixed. -->
+    <script type="module">
+      import(`./src/main.js?v=${Date.now()}`).catch((error) => {
+        document.getElementById('cards').innerHTML =
+          `<pre class="failure">${error.stack ?? error.message}</pre>`
+      })
+    </script>
+  </body>
+</html>

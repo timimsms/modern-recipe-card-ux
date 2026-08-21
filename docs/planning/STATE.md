@@ -14,7 +14,13 @@ seconds.
 derived edges, groups, linearization, critical path and `TimingSummary`. 200 tests pass, including
 ~3,300 generated trees and golden files for every corpus entry × strategy.
 
-**Phase 03 — design system and reference renderer — is next.**
+**Phase 03 is under way.** Tokens exist with contrast validated as a test, and
+`experiments/01-css-grid` renders every corpus recipe from a `GridPlan` with no bundler and no
+framework. 274 tests pass. **E1 — the item that gated the token freeze — is resolved.**
+
+```sh
+python3 -m http.server 8731        # then open /experiments/01-css-grid/
+```
 
 ```sh
 pnpm install
@@ -67,20 +73,21 @@ to the `Artifact` tool as `url` — otherwise a new URL is minted instead of upd
 
 ## Open questions, in priority order
 
-1. **E1 — mostly-waiting recipes.** The corpus entry exists (`no-knead-bread`: a 12–18 h bulk
-   ferment, ~95% unattended), but the check needs `TimingSummary`, which is Phase 02. Still gates
-   Phase 03's token freeze — it could invalidate the mark vocabulary.
-2. **The SVG track needs a new justification.** I4 concluded that non-planar connectors — its stated
+1. **The SVG track needs a new justification.** I4 concluded that non-planar connectors — its stated
    differentiator — do not earn it a place in the bake-off. Decide before Phase 07 whether
    arbitrary-scale print output or a true dendrogram view replaces that rationale, or whether the
    track is cut.
-3. **Q2 — does cook mode relinearize the tree?** Phase 04; the mini-map is the proposed answer.
-4. **Q3 — table vs. CSS Grid substrate.** Deferred to Phase 06 by design; needs real screen readers.
+2. **Q2 — does cook mode relinearize the tree?** Phase 04; the mini-map is the proposed answer.
+3. **Q3 — table vs. CSS Grid substrate.** Deferred to Phase 06 by design; needs real screen readers.
    Q1 turned up evidence here: a table cannot express "nothing is here", which is part of why R1's
    stray-border complaint exists at all.
+4. **R5's depth ramp does nothing on a long chain.** Bread is nine deep, the ramp has five steps,
+   and everything past depth 4 clamps flat. The shading is built for wide, shallow convergence.
+   Raised by the E1 render; should be settled before Phase 03 closes.
 
 **Resolved:** Q1 (`findings/Q1-column-assignment.md`), I4 (`findings/I4-reuse.md`),
-Q4 (`findings/Q4-authoring-ergonomics.md`), Q5 (`findings/Q5-time-axis.md`).
+Q4 (`findings/Q4-authoring-ergonomics.md`), Q5 (`findings/Q5-time-axis.md`),
+E1 (`findings/E1-mostly-waiting.md`).
 
 **New, and uncomfortable:** `findings/P02-parallel-saving.md`. Measured over the whole corpus, the
 grid's parallel saving is **zero for five of nine components**, including the viral brownie recipe.
@@ -97,21 +104,23 @@ that EDGE-CASES' "revisit if common" condition is met; Phase 03 should answer it
 
 ## Recommended next action
 
-**Start Phase 03** — tokens and the CSS Grid reference renderer, against
-[`../design/resolved-card.html`](../design/resolved-card.html) as the visual target.
+**Finish Phase 03.** The renderer works and the gate is cleared; what remains is the acceptance
+list in `phases/PHASE-03`, most of which is unstarted:
 
-Do these first, in this order, because each could move the tokens:
+1. **Fix R5's depth ramp on long chains** (open question 4 above). This is the one that could still
+   move the tokens, so do it before anything is called frozen.
+2. **Visual regression baselines.** Playwright screenshots of every corpus recipe at a fixed width,
+   committed. These become the fidelity reference Phase 08 scores the other tracks against, so
+   nothing downstream is trustworthy until they exist.
+3. **Verify the R1–R7 claims against `IMG_4225`** rather than asserting them. The brownies chart is
+   the one every complaint in the Threads audit was written about.
+4. **Check `long-text.json` does not blow out column widths** (R9), and that greyscale print stays
+   interpretable.
 
-1. **Test E1 before anything freezes.** Render `no-knead-bread` (72 min hands-on against 1,080 min
-   of walking away) and check whether the mark vocabulary survives a recipe where unattended is the
-   rule, not the exception. `TimingSummary` now exists, so this is a render-and-look, not a build.
-2. **Draw the leader rule.** Q1's repair. `PlacedCell.leader` already marks which filler runs want
-   one; nothing has decided what it looks like, and it has to survive print.
-3. **Decide what the at-a-glance bar does with `parallelSaving: 0`,** which is the honest answer for
-   five of nine components. Leading with `longest walk-away` is the obvious candidate.
-
-Everything the renderer consumes is in place: `layout()` emits derived `edges` (so no track invents
-a border), `groups` for R4/R5 shading, `anchor` for R2, and `connections` for the reuse chip.
+Already done and not worth redoing: the leader rule is drawn from `PlacedCell.leader`; the
+at-a-glance bar handles `parallelSaving: 0` by dropping the field and saying "nothing overlaps in
+this recipe — the steps run in order"; check-off propagates with no JavaScript, via one generated
+`:has()` rule per ingredient.
 
 ## Things a future session should not re-derive
 
