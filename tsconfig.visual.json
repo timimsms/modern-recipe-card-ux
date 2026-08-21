@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    // Separate from tsconfig.tests.json specifically so that DOM types stay out of there.
+    // The unit tests share a config with `packages/core`, whose whole contract is that it
+    // cannot see the DOM — handing them `lib.dom` would quietly retire that guarantee.
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"]
+  },
+  "include": ["experiments/**/*.visual.ts", "playwright.config.ts"]
+}

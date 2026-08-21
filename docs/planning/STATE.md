@@ -107,13 +107,15 @@ that EDGE-CASES' "revisit if common" condition is met; Phase 03 should answer it
 **Finish Phase 03.** The renderer works and the gate is cleared; what remains is the acceptance
 list in `phases/PHASE-03`, most of which is unstarted:
 
-1. **Visual regression baselines.** Playwright screenshots of every corpus recipe at a fixed width,
-   committed. These become the fidelity reference Phase 08 scores the other tracks against, so
-   nothing downstream is trustworthy until they exist.
-2. **Greyscale print check.** The ramp is a luminance scale so it should survive by construction,
-   but that has been reasoned, not printed.
-3. **R7 check-off is written but unexercised.** The generated `:has()` rules render; nobody has
-   clicked a box and confirmed the fill propagates.
+Phase 03's acceptance list is now met apart from one item:
+
+1. **A real print check.** Greyscale was verified by measuring rendered luminance and by a
+   `filter: grayscale(1)` pass — both proxies. Nobody has produced a PDF and looked at it, and
+   `print-color-adjust` behaviour is the kind of thing that only fails in the real pipeline.
+
+Then **Phase 04** — the responsive ladder and cook mode. R8 is still the biggest unsolved problem
+in the project: every screenshot in `images/` is a pinch-zoomed phone photo of a desktop table,
+and the charts here are 1,000–2,700px wide.
 
 Already done and not worth redoing: the leader rule is drawn from `PlacedCell.leader`; the
 at-a-glance bar handles `parallelSaving: 0` by dropping the field and saying "nothing overlaps in
@@ -124,6 +126,13 @@ scales to `GridPlan.maxDepth` per chart, and it runs **darkest at the finished d
 R9 is met by capping the grid *tracks*, not the text. Capping the text inside an uncapped column
 gave the worst of both: a 621px cell with its text wrapping in a 130px ribbon. With ceilings on
 the tracks, `long-text.json` renders 996px wide instead of 1,749.
+
+**Visual baselines are committed** under `experiments/01-css-grid/track01.visual.ts-snapshots/`
+(19 images, 1.6 MB) and run with `pnpm test:visual` — deliberately *not* part of `pnpm check`,
+because screenshot baselines are font-rendering dependent and a macOS baseline fails on a Linux
+runner for reasons unrelated to the code. Playwright suffixes them by platform, so a Linux CI job
+would generate its own set rather than fight over these. Regenerate with `--update-snapshots`
+only when a change is *meant* to alter the rendering, and review the diff.
 
 **Serve with `pnpm serve`,** not `python -m http.server`. The tracks have no build step and
 nothing fingerprints filenames, so a plain server hands the browser a cached module or stylesheet
