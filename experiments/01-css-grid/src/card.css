@@ -863,3 +863,120 @@ body {
     animation: none !important;
   }
 }
+
+/* ---------- Phase 05: scaling, timers, kitchen affordances ---------- */
+
+.controls button {
+  font: inherit;
+  font-family: var(--font-mono);
+  padding: 0.25rem 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 3px;
+  cursor: pointer;
+}
+.controls button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.control-group {
+  display: flex;
+  gap: 0.4rem;
+}
+/* Armed start-over. Colour is not the only channel — the label changes too, which is what R5
+   actually asks for and what survives greyscale and a print. */
+.controls button.armed {
+  border-color: var(--clay);
+  color: var(--clay);
+  font-weight: 600;
+}
+
+/* A quantity that will not follow the scale factor. Sits under the amount rather than beside
+   it: the ingredient column is narrow, and "1 pinch to taste — does not scale" on one line
+   pushes the chart sideways. */
+.note.unscalable {
+  display: block;
+  color: var(--clay);
+  font-style: normal;
+}
+
+/* Time-weighted progress. Pushed to the end of the header row, away from the step count it
+   deliberately disagrees with. */
+.cm-progress {
+  margin-inline-start: auto;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-inline-size: 8.5rem;
+  block-size: 1.05rem;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--paper);
+}
+.cm-progress-fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  background: var(--fill-depth-2);
+  transition: inline-size 200ms ease-out;
+}
+.cm-progress-text {
+  position: relative;
+  padding-inline: 0.5rem;
+  font-size: 0.68rem;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.cm-timer-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+.cm-timer,
+.cm-timer-start,
+.cm-timer-stop {
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  /* R8: nothing a wet hand has to hit is under 48px. */
+  min-block-size: 48px;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 0.9rem;
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  background: var(--surface);
+  cursor: pointer;
+}
+.cm-timer {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.1rem;
+  cursor: default;
+  gap: 0.4rem;
+}
+/* Past the low end of a range. Two channels, since a kitchen is not a well-lit office and this
+   is the one thing on the card that is time-critical. */
+.cm-timer.ringing {
+  border-color: var(--clay);
+  color: var(--clay);
+  font-weight: 600;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cm-timer.ringing {
+    animation: timer-pulse 1.6s ease-in-out infinite;
+  }
+}
+@keyframes timer-pulse {
+  50% {
+    background: var(--fill-depth-4);
+  }
+}
+
+@media print {
+  .cm-progress-fill,
+  .cm-timer-start,
+  .cm-timer-stop {
+    display: none;
+  }
+}

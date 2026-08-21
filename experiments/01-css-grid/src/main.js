@@ -6,11 +6,18 @@
  * its emitted `dist/`, exactly as PHASE-00 required it to be.
  */
 
-import { condense, layout, normalizeRecipe } from '../../../packages/core/dist/index.js'
+import {
+  condense,
+  createStore,
+  layout,
+  normalizeRecipe,
+  stepKey,
+  stepMinutes,
+} from '../../../packages/core/dist/index.js'
 import { renderIngredientLed } from './ingredientled.js'
 import { renderCard } from './render.js'
 import { renderMiniMap, sharedScale } from './minimap.js'
-import { cookOrderOf, cookPathOf, renderCookMode } from './cookmode.js'
+import { cookOrderOf, cookPathOf, formatRemaining, renderCookMode } from './cookmode.js'
 
 const RECIPES = [
   'espresso-brownies',
@@ -34,6 +41,10 @@ const FIXTURES = [
 
 const root = document.getElementById('cards')
 const picker = document.getElementById('recipe')
+const scaleControl = document.getElementById('scale')
+const units = document.getElementById('units')
+const undoButton = document.getElementById('undo')
+const startOver = document.getElementById('startover')
 const strategy = document.getElementById('strategy')
 const reuse = document.getElementById('reuse')
 const markRule = document.getElementById('markrule')
@@ -66,48 +77,138 @@ async function show() {
     layout(c, { columns: strategy.value, reuse: reuse.value }),
   )
   current = recipe
-  state.ingredients.clear()
-  state.steps.clear()
-  cook = { componentIndex: 0, current: undefined, done: state.steps }
+  currentSlug = path
+  store.reset()
+  cook = { componentIndex: 0, current: undefined }
+  restore(path)
   draw()
 }
 
+// --- Persistence -------------------------------------------------------------------------------
+
 /**
- * One model, two views.
+ * Cooking is not a browsing session. A phone on a counter locks, a floury thumb hits back, a tab
+ * gets closed to look something up — and losing an hour of check-offs to any of those is the
+ * difference between a card you cook from and a card you look at.
+ *
+ * Keyed by recipe, so the bread you started yesterday is still where you left it after a detour
+ * through the brownies. Timers are deliberately *not* saved: a countdown restored from disk is a
+ * countdown that has been running while the tab was shut, and resuming one silently is how you
+ * get told a braise has forty minutes left when it has been out of the oven since Tuesday.
+ */
+const KEY = 'track01:progress'
+let currentSlug = null
+
+function persist() {
+  if (!currentSlug) return
+  const state = store.get()
+  try {
+    const all = JSON.parse(localStorage.getItem(KEY) ?? '{}')
+    all[currentSlug] = {
+      ingredients: [...state.checkedIngredients],
+      steps: [...state.completedSteps],
+      scale: state.scale,
+      unitSystem: state.unitSystem,
+    }
+    localStorage.setItem(KEY, JSON.stringify(all))
+  } catch {
+    // A full or disabled localStorage must not take the card down with it. Losing progress is
+    // a bad afternoon; a blank page is a broken study.
+  }
+}
+
+function restore(slug) {
+  let saved
+  try {
+    saved = JSON.parse(localStorage.getItem(KEY) ?? '{}')[slug]
+  } catch {
+    return
+  }
+  if (!saved) return
+  store.update((state) => ({
+    ...state,
+    checkedIngredients: new Set(saved.ingredients ?? []),
+    completedSteps: new Set(saved.steps ?? []),
+    scale: saved.scale ?? 1,
+    unitSystem: saved.unitSystem ?? 'both',
+  }))
+  scaleControl.value = String(store.get().scale)
+  units.value = store.get().unitSystem
+}
+
+/**
+ * One model, every view.
  *
  * The chart and cook mode were keeping separate notions of "done" — the chart tracked which
  * ingredients had been gathered, cook mode tracked which steps were finished, and neither knew
- * about the other. Switching views silently threw your progress away. They share this now, so
- * a step finished in cook mode is filled in the chart and an ingredient ticked in the chart is
- * still ticked in the ingredient list.
+ * about the other. Switching views silently threw your progress away.
+ *
+ * This is now `createStore()` from core rather than a pair of Sets held here, so scale, units,
+ * timers and check-off are one object that every view reads. The binding below is the whole of
+ * this track's adapter — PHASE-05 says a large adapter is itself a finding, and at ~20 lines
+ * this one says the store's shape is right.
  */
-const state = { ingredients: new Set(), steps: new Set() }
+const store = createStore()
+store.subscribe(() => {
+  undoButton.disabled = !store.canUndo()
+  scheduleDraw()
+})
+
+/**
+ * Coalesced redraw.
+ *
+ * Every store mutation notifies, and a single tap on Next both marks a step done and moves the
+ * cursor — two notifications, two full re-renders, and the first of them drawn at the *old*
+ * position. Deferring to a microtask collapses them; a synchronous `draw()` clears the flag so
+ * the FLIP transition, which has to measure between two renders, is never chased by a stale one.
+ */
+let pendingDraw = false
+function scheduleDraw() {
+  if (pendingDraw) return
+  pendingDraw = true
+  queueMicrotask(() => {
+    if (pendingDraw) draw()
+  })
+}
 
 let current = null
-let cook = { componentIndex: 0, current: undefined, done: state.steps }
+let cook = { componentIndex: 0, current: undefined }
 
 function draw() {
+  pendingDraw = false
   const recipe = current
   if (!recipe) return
+  const state = store.get()
   const options = {
     markRule: markRule.value,
     ramp: ramp.value,
-    doneSteps: state.steps,
-    checkedIngredients: state.ingredients,
+    doneSteps: state.completedSteps,
+    checkedIngredients: state.checkedIngredients,
+    scale: state.scale,
+    unitSystem: state.unitSystem,
   }
   root.innerHTML =
     view.value === 'filmstrip'
       ? renderFilmstrip(recipe)
       : view.value === 'cook'
-        ? renderCookMode(recipe, cook)
+        ? renderCookMode(recipe, {
+            ...cook,
+            state,
+            progress: recipeProgress(recipe, state),
+            scale: state.scale,
+            unitSystem: state.unitSystem,
+            store,
+          })
         : view.value === 'ingredients'
-          ? renderIngredientLed(recipe)
+          ? renderIngredientLed(recipe, options)
           : view.value === 'condensed'
             ? (({ recipe: r, microList }) => renderCard(r, { ...options, microList }))(
                 condensedOf(recipe),
               )
             : renderCard(recipe, options)
   document.title = `${recipe.title} — track 01`
+  persist()
+  tick()
 }
 
 /**
@@ -171,11 +272,13 @@ function condensedOf(recipe) {
  * JavaScript at all; this only mirrors it into shared state so the other views can see it.
  */
 root.addEventListener('change', (event) => {
-  const tick = event.target
-  if (!(tick instanceof Element) || !tick.matches('.tick')) return
-  const id = tick.dataset.ing
-  if (tick.checked) state.ingredients.add(id)
-  else state.ingredients.delete(id)
+  const box = event.target
+  if (!(box instanceof Element) || !box.matches('.tick')) return
+  // The checkbox has already flipped itself; this only mirrors it into shared state. Going
+  // through `toggleIngredient` rather than setting a Set directly is what puts it on the undo
+  // stack, which is the whole point of routing every mutation through the store.
+  // `data-ing` already carries the component-qualified key, so this passes it straight on.
+  store.toggleIngredient(box.dataset.ing)
 })
 
 /**
@@ -204,6 +307,20 @@ root.addEventListener('click', (event) => {
 
   if (!current) return
 
+  // Timers. Started by hand, because arriving at a step does not mean the pan is on.
+  const start = target.closest('.cm-timer-start')
+  if (start) {
+    const key = start.dataset.timer
+    const component = current.components[cook.componentIndex]
+    store.startTimer(key, component.steps[key.slice(component.id.length + 1)])
+    return
+  }
+  const stop = target.closest('.cm-timer-stop')
+  if (stop) {
+    store.stopTimer(stop.dataset.timerStop)
+    return
+  }
+
   const jump = target.closest('.jump, .minimap button')
   if (jump) {
     cook.current = jump.dataset.step
@@ -230,14 +347,14 @@ root.addEventListener('click', (event) => {
     // Moving on *is* finishing the step, so Next marks it done. Without this the mini-map never
     // fills in as you cook — you walk the whole recipe and it still shows nothing complete,
     // which is the one job it has.
-    cook.done.add(here)
+    const key = stepKey(current.components[cook.componentIndex], here)
+    if (!store.get().completedSteps.has(key)) store.toggleStep(key)
     goTo(at + 1)
   } else if (target.closest('.cm-prev')) {
     goTo(at - 1)
   } else if (target.closest('.cm-done')) {
     // Toggling rather than one-way: the commonest kitchen mistake is a mis-tap.
-    if (cook.done.has(here)) cook.done.delete(here)
-    else cook.done.add(here)
+    store.toggleStep(stepKey(current.components[cook.componentIndex], here))
   } else {
     return
   }
@@ -354,3 +471,124 @@ document.documentElement.setAttribute('data-theme', theme.value)
 
 picker.value = 'recipes/espresso-brownies'
 await refresh()
+
+/**
+ * Completion across the whole recipe, weighted by time rather than by step count.
+ *
+ * Measured over the corpus, a step-count bar overstates by up to 62 points — the short ribs sit
+ * at 7 steps of 9 with four hours of braising left, which counts as 78% done and is not. Whole
+ * recipe rather than per component, because "12 of 15" is the number a cook wants and finishing
+ * the mashed potatoes is not finishing the pie.
+ *
+ * See docs/findings/R7-progress-weighting.md.
+ */
+function recipeProgress(recipe, state) {
+  let total = 0
+  let done = 0
+  for (const component of recipe.components) {
+    for (const step of Object.values(component.steps)) {
+      const minutes = stepMinutes(step)
+      total += minutes
+      if (state.completedSteps.has(stepKey(component, step.id))) done += minutes
+    }
+  }
+  return total === 0 ? 0 : done / total
+}
+
+// --- Timers on screen --------------------------------------------------------------------------
+
+/**
+ * Refreshes running countdowns in place, once a second.
+ *
+ * In place, and not by redrawing: a full re-render every second would throw away focus, restart
+ * the FLIP transition, and rewrite the whole card to change four characters. The store is not
+ * touched at all — `remaining()` recomputes from the clock, so this is a pure read.
+ */
+function tick() {
+  for (const node of root.querySelectorAll('[data-timer-for]')) {
+    const key = node.dataset.timerFor
+    const left = store.remaining(key)
+    if (left === null) continue
+    const ringing = store.isRinging(key)
+    node.textContent = formatRemaining(left, ringing)
+    node.classList.toggle('ringing', ringing)
+  }
+}
+
+setInterval(tick, 1000)
+
+/**
+ * A backgrounded tab throttles `setInterval` to once a minute or stops it altogether, so the
+ * first thing a cook sees on coming back is a stale number. Recomputing on wake costs nothing
+ * and is the difference between a timer that survives a locked phone and one that only appears
+ * to.
+ */
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) tick()
+})
+
+// --- Kitchen affordances -----------------------------------------------------------------------
+
+undoButton.addEventListener('click', () => store.undo())
+
+/**
+ * Deliberate rather than easy to hit: two taps, and the button says what it is about to do.
+ * `confirm()` would block the extension harness, and a modal for this is heavier than it
+ * deserves — the button becoming its own confirmation is enough, and it reverts on a stray tap
+ * elsewhere.
+ */
+let armed = false
+startOver.addEventListener('click', () => {
+  if (!armed) {
+    armed = true
+    startOver.textContent = 'Tap again to clear'
+    startOver.classList.add('armed')
+    return
+  }
+  disarm()
+  store.reset()
+  scaleControl.value = '1'
+  units.value = 'both'
+  cook = { componentIndex: 0, current: undefined }
+})
+
+function disarm() {
+  armed = false
+  startOver.textContent = 'Start over'
+  startOver.classList.remove('armed')
+}
+document.addEventListener('click', (event) => {
+  if (armed && event.target !== startOver) disarm()
+})
+
+scaleControl.addEventListener('change', () => store.setScale(Number(scaleControl.value)))
+units.addEventListener('change', () => store.setUnitSystem(units.value))
+
+/**
+ * Keeps the screen awake while cooking.
+ *
+ * A phone that sleeps every thirty seconds is a phone you wake with a floury knuckle. Requested
+ * only in cook mode — holding a wake lock while someone reads a chart is a battery cost with
+ * nothing to show for it. Unsupported on some browsers, which is fine: it is an improvement, not
+ * a dependency, so failure is silent by design.
+ */
+let wakeLock = null
+async function updateWakeLock() {
+  const wanted = view.value === 'cook'
+  try {
+    if (wanted && !wakeLock && 'wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen')
+      wakeLock.addEventListener('release', () => (wakeLock = null))
+    } else if (!wanted && wakeLock) {
+      await wakeLock.release()
+      wakeLock = null
+    }
+  } catch {
+    wakeLock = null
+  }
+}
+view.addEventListener('change', updateWakeLock)
+// A lock is dropped whenever the tab loses visibility and has to be retaken by hand.
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) updateWakeLock()
+})

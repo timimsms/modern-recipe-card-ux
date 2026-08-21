@@ -16,8 +16,14 @@
 import { isRange } from './quantity.js'
 import type { Quantity, Range, Unit } from './model.js'
 
-/** One number and one unit. A scaled quantity may need several to read naturally. */
-export type Portion = { amount: number | Range; unit: Unit }
+/**
+ * One number and one unit. A scaled quantity may need several to read naturally.
+ *
+ * `amount` is optional because some quantities genuinely have none — "a pinch of nutmeg" is a
+ * unit with no number. Defaulting that to 1 printed "1 pinch", inventing a precision the source
+ * deliberately withheld.
+ */
+export type Portion = { amount?: number | Range; unit: Unit }
 
 export type ScaledQuantity = {
   /** Usually one; more when laddering produces something like `1 Tbs + 1½ tsp`. */
@@ -187,8 +193,10 @@ export function scaleQuantity(quantity: Quantity, factor: number): ScaledQuantit
     return identity
   }
 
+  // "a pinch of nutmeg" — a unit with no number. There is nothing to multiply, and supplying a
+  // 1 so the arithmetic has something to work on prints "1 pinch", which the source did not say.
   if (quantity.amount === undefined) {
-    return { parts: [{ amount: 1, unit: quantity.unit }], unscalable: 'as needed' }
+    return { parts: [{ unit: quantity.unit }], unscalable: 'as needed' }
   }
 
   // "1 pinch" times three is not "3 pinches", it is still a pinch or two — the model said this
@@ -256,6 +264,7 @@ function renderAmount(amount: number | Range): string {
 
 /** `count` is the model's placeholder for a number with no unit — two eggs, one artichoke. */
 function renderPortion(portion: Portion): string {
+  if (portion.amount === undefined) return portion.unit === 'count' ? '' : portion.unit
   return portion.unit === 'count'
     ? renderAmount(portion.amount)
     : `${renderAmount(portion.amount)}\u00a0${portion.unit}`

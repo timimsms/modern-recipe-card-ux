@@ -23,6 +23,54 @@ import {
 import type { GridPlan } from './layout.js'
 import type { UnitSystem } from './scale.js'
 
+// --- Identity ------------------------------------------------------------------------------------
+
+/**
+ * Step and ingredient ids are unique *within a component*, not within a recipe.
+ *
+ * Shepherd's pie has a `season` step in both the mashed potatoes and the pie, and a `salt` leaf
+ * in both. Held in a flat set, ticking the potatoes' salt ticked the pie's, and marking one
+ * `season` done marked the other — a recipe reporting itself two steps further along than the
+ * cook actually is.
+ *
+ * So the store's identity is the qualified key, and the bare id never appears in `CookState`.
+ * The alternative — asking every corpus file to make its ids globally unique — pushes a storage
+ * detail onto the authoring format, and would silently break again the first time someone wrote
+ * two components that both `reduce`.
+ */
+export type CookKey = string & { readonly __cookKey?: unique symbol }
+
+export function stepKey(component: Pick<Component, 'id'>, id: StepId): CookKey {
+  return `${component.id}/${id}`
+}
+
+export function ingredientKey(component: Pick<Component, 'id'>, id: IngredientId): CookKey {
+  return `${component.id}/${id}`
+}
+
+/**
+ * The completed steps of one component, as bare ids.
+ *
+ * `cook.ts` works on a single component and rightly speaks in bare ids; this is the translation
+ * at the boundary, so a track never hand-rolls it and never gets it half-right.
+ */
+export function completedIn(component: Component, state: CookState): Set<StepId> {
+  const bare = new Set<StepId>()
+  for (const step of stepsOf(component)) {
+    if (state.completedSteps.has(stepKey(component, step.id))) bare.add(step.id)
+  }
+  return bare
+}
+
+/** The checked ingredients of one component, as bare ids. */
+export function checkedIn(component: Component, state: CookState): Set<IngredientId> {
+  const bare = new Set<IngredientId>()
+  for (const leaf of component.ingredients) {
+    if (state.checkedIngredients.has(ingredientKey(component, leaf.id))) bare.add(leaf.id)
+  }
+  return bare
+}
+
 /**
  * A running timer, stored as timestamps rather than a countdown.
  *
@@ -39,13 +87,15 @@ export type Timer = {
 }
 
 export type CookState = {
-  checkedIngredients: Set<IngredientId>
-  completedSteps: Set<StepId>
-  currentStep: StepId | null
+  /** Qualified keys — see `ingredientKey`. Never a bare id. */
+  checkedIngredients: Set<CookKey>
+  /** Qualified keys — see `stepKey`. Never a bare id. */
+  completedSteps: Set<CookKey>
+  currentStep: CookKey | null
   /** 1 = as authored. A rendering-time factor; corpus data is never mutated. */
   scale: number
   unitSystem: UnitSystem
-  timers: Record<StepId, Timer>
+  timers: Record<CookKey, Timer>
 }
 
 export function initialState(): CookState {
@@ -66,18 +116,20 @@ export type Store = {
   /** Every mutation goes through here so subscribers cannot miss one. */
   update(change: (state: CookState) => CookState): void
 
-  toggleIngredient(id: IngredientId): void
-  toggleStep(id: StepId): void
-  setCurrentStep(id: StepId | null): void
+  /** Takes a qualified key from `ingredientKey`. */
+  toggleIngredient(key: CookKey): void
+  /** Takes a qualified key from `stepKey`. */
+  toggleStep(key: CookKey): void
+  setCurrentStep(key: CookKey | null): void
   setScale(scale: number): void
   setUnitSystem(system: UnitSystem): void
 
-  startTimer(step: Step): void
-  stopTimer(id: StepId): void
+  startTimer(key: CookKey, step: Step): void
+  stopTimer(key: CookKey): void
   /** Milliseconds left, negative once past the low end. `null` when no timer is running. */
-  remaining(id: StepId): number | null
+  remaining(key: CookKey): number | null
   /** Past the low end of the range but still inside it — "check it now" rather than "done". */
-  isRinging(id: StepId): boolean
+  isRinging(key: CookKey): boolean
 
   /** Undo the last check-off. Wet fingers mis-tap constantly. */
   undo(): void
@@ -105,9 +157,16 @@ export function createStore(options: StoreOptions = {}): Store {
   let state: CookState = { ...initialState(), ...options.initial }
   const listeners = new Set<() => void>()
 
-  // Only check-off is undoable. Scale and unit system are visible in the controls that set
-  // them, so an undo stack across those would restore state the reader cannot see changing.
-  const history: CookState[] = []
+  /**
+   * Undo covers check-off and *only* check-off.
+   *
+   * Snapshotting the whole `CookState` looked equivalent and was not: it captured `timers` too,
+   * so undoing a mis-tapped checkbox also restored the moment before you started the bake — the
+   * running forty-minute timer silently disappeared. Scale and unit system are excluded for a
+   * quieter reason: both are visible in the controls that set them, and rolling one back would
+   * change the card while the control still reads the old value.
+   */
+  const history: Array<Pick<CookState, 'checkedIngredients' | 'completedSteps'>> = []
 
   const emit = () => {
     for (const listener of [...listeners]) listener()
@@ -115,7 +174,10 @@ export function createStore(options: StoreOptions = {}): Store {
 
   const commit = (next: CookState, undoable = false) => {
     if (undoable) {
-      history.push(clone(state))
+      history.push({
+        checkedIngredients: new Set(state.checkedIngredients),
+        completedSteps: new Set(state.completedSteps),
+      })
       if (history.length > 50) history.shift()
     }
     state = next
@@ -132,17 +194,17 @@ export function createStore(options: StoreOptions = {}): Store {
       commit(change(clone(state)))
     },
 
-    toggleIngredient(id) {
+    toggleIngredient(key) {
       const next = clone(state)
-      if (next.checkedIngredients.has(id)) next.checkedIngredients.delete(id)
-      else next.checkedIngredients.add(id)
+      if (next.checkedIngredients.has(key)) next.checkedIngredients.delete(key)
+      else next.checkedIngredients.add(key)
       commit(next, true)
     },
 
-    toggleStep(id) {
+    toggleStep(key) {
       const next = clone(state)
-      if (next.completedSteps.has(id)) next.completedSteps.delete(id)
-      else next.completedSteps.add(id)
+      if (next.completedSteps.has(key)) next.completedSteps.delete(key)
+      else next.completedSteps.add(key)
       commit(next, true)
     },
 
@@ -158,29 +220,29 @@ export function createStore(options: StoreOptions = {}): Store {
       commit({ ...clone(state), unitSystem: system })
     },
 
-    startTimer(step) {
+    startTimer(key, step) {
       if (!step.duration) return
       const low = durationToMinutes(step.duration, 'min') * 60_000
       const high = durationToMinutes(step.duration, 'max') * 60_000
       const next = clone(state)
-      next.timers[step.id] = { startedAt: now(), alertAfter: low, endsAfter: high }
+      next.timers[key] = { startedAt: now(), alertAfter: low, endsAfter: high }
       commit(next)
     },
 
-    stopTimer(id) {
+    stopTimer(key) {
       const next = clone(state)
-      delete next.timers[id]
+      delete next.timers[key]
       commit(next)
     },
 
-    remaining(id) {
-      const timer = state.timers[id]
+    remaining(key) {
+      const timer = state.timers[key]
       if (!timer) return null
       return timer.startedAt + timer.alertAfter - now()
     },
 
-    isRinging(id) {
-      const timer = state.timers[id]
+    isRinging(key) {
+      const timer = state.timers[key]
       if (!timer) return false
       const elapsed = now() - timer.startedAt
       // A range alerts at the low end and keeps counting to the high end: "30–40 min" means
@@ -190,10 +252,11 @@ export function createStore(options: StoreOptions = {}): Store {
 
     undo() {
       const previous = history.pop()
-      if (previous) {
-        state = previous
-        emit()
-      }
+      if (!previous) return
+      // Merged into the *current* state, not swapped for an old one, so a timer started since
+      // the mis-tap keeps running.
+      state = { ...clone(state), ...previous }
+      emit()
     },
     canUndo: () => history.length > 0,
 
@@ -219,7 +282,7 @@ export function regionFill(
   const fill = new Map<StepId, number>()
   for (const group of plan.groups) {
     const inside = subtreeSteps(component, group.ref)
-    const done = inside.filter((id) => state.completedSteps.has(id)).length
+    const done = inside.filter((id) => state.completedSteps.has(stepKey(component, id))).length
     fill.set(group.ref, inside.length === 0 ? 0 : done / inside.length)
   }
   return fill
@@ -237,7 +300,7 @@ export function progress(component: Component, state: CookState): number {
   const total = steps.reduce((sum, step) => sum + stepMinutes(step), 0)
   if (total === 0) return 0
   const done = steps
-    .filter((step) => state.completedSteps.has(step.id))
+    .filter((step) => state.completedSteps.has(stepKey(component, step.id)))
     .reduce((sum, step) => sum + stepMinutes(step), 0)
   return done / total
 }
@@ -246,5 +309,8 @@ export function progress(component: Component, state: CookState): number {
 export function progressByStepCount(component: Component, state: CookState): number {
   const steps = stepsOf(component)
   if (steps.length === 0) return 0
-  return steps.filter((step) => state.completedSteps.has(step.id)).length / steps.length
+  return (
+    steps.filter((step) => state.completedSteps.has(stepKey(component, step.id))).length /
+    steps.length
+  )
 }

@@ -30,20 +30,28 @@ const FIXTURES = [
 ]
 
 /**
- * The control bar is `position: sticky`, and a card is usually taller than the viewport. When
- * Playwright scrolls to stitch a tall element it takes the sticky bar with it, painting the
- * harness over the card — so the first set of baselines had the control bar burned into them,
- * and adding a single `<select>` churned every image by ~1% of its pixels.
+ * The control bar is hidden outright before every screenshot, and that is load-bearing.
  *
- * Unsticking it for the duration of a screenshot keeps the baselines about the design.
+ * It is `position: sticky`, and a card is usually taller than the viewport; when Playwright
+ * scrolls to stitch a tall element it takes the sticky bar with it. That painted the harness
+ * over the first set of baselines, and unsticking it fixed the visible symptom.
+ *
+ * It did not fix the underlying one. The bar still occupied space, so the card's *offset* moved
+ * whenever a control was added — and a card 269.95px tall rounds to 270px or 271px depending on
+ * where its top edge falls on the pixel grid. Adding two buttons shifted twelve baselines by
+ * exactly one pixel while the card itself was byte-identical.
+ *
+ * Removing the bar from flow entirely puts the card at a fixed offset, so the baselines answer
+ * "did the design change" instead of "did the harness".
  */
+const HIDE_CONTROLS = '.controls{display:none!important}'
 async function show(page: Page, slug: string, options: Record<string, string> = {}) {
   await page.goto('/experiments/01-css-grid/')
   await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
   for (const [id, value] of Object.entries({ recipe: slug, ...options })) {
     await page.selectOption(`#${id}`, value)
   }
-  await page.addStyleTag({ content: '.controls{position:static!important}' })
+  await page.addStyleTag({ content: HIDE_CONTROLS })
   const card = page.locator('.card')
   await expect(card).toBeVisible()
   // The chart is laid out entirely by CSS Grid from static markup, so once the card is in the
@@ -181,7 +189,7 @@ test.describe('the ladder', () => {
     await page.selectOption('#recipe', slug)
     await page.selectOption('#view', view)
     await page.waitForSelector('.card')
-    await page.addStyleTag({ content: '.controls{position:static!important}' })
+    await page.addStyleTag({ content: HIDE_CONTROLS })
   }
 
   test('condensed chart', async ({ page }) => {
@@ -264,7 +272,7 @@ test.describe('cook mode', () => {
   test('shepherds-pie, mid-recipe', async ({ page }) => {
     await open(page, 'recipes/shepherds-pie')
     for (let i = 0; i < 10; i++) await page.click('.cm-next')
-    await page.addStyleTag({ content: '.controls{position:static!important}' })
+    await page.addStyleTag({ content: HIDE_CONTROLS })
     await expect(page.locator('.cookmode')).toHaveScreenshot('cookmode-shepherds-pie.png')
   })
 
@@ -351,7 +359,7 @@ test.describe('chart ↔ cook mode', () => {
 
   test('progress survives the round trip in both directions', async ({ page }) => {
     await chart(page)
-    await page.locator('.tick[data-ing="flour"]').check()
+    await page.locator('.tick[data-ing="brownies/flour"]').check()
 
     await page.locator('.step[data-step="fold-in"]').click()
     await page.click('.cm-next')
@@ -361,7 +369,7 @@ test.describe('chart ↔ cook mode', () => {
     // Finished in cook mode, filled in the chart.
     await expect(page.locator('.step.complete')).toHaveAttribute('data-step', 'fold-in')
     // Gathered in the chart, still gathered after the detour.
-    await expect(page.locator('.tick[data-ing="flour"]')).toBeChecked()
+    await expect(page.locator('.tick[data-ing="brownies/flour"]')).toBeChecked()
   })
 
   test('animates the cell into the card, and cross-fades under reduced motion', async ({
@@ -396,11 +404,13 @@ test.describe('chart ↔ cook mode', () => {
  */
 test('check-off propagates to exactly the regions an ingredient feeds', async ({ page }) => {
   await show(page, 'recipes/espresso-brownies')
-  await page.locator('.tick[data-ing="flour"]').check()
+  await page.locator('.tick[data-ing="brownies/flour"]').check()
 
   const started = await page.$$eval('.step', (steps) =>
     steps.map((s) => ({
-      fed: (s as HTMLElement).dataset.fedBy?.split(' ').includes('flour') ?? false,
+      // Component-qualified: shepherd's pie has `salt` in both components, so a bare id here
+      // would dim the wrong row — see `ingredientKey`.
+      fed: (s as HTMLElement).dataset.fedBy?.split(' ').includes('brownies/flour') ?? false,
       started: getComputedStyle(s).getPropertyValue('--started').trim(),
     })),
   )
@@ -408,5 +418,5 @@ test('check-off propagates to exactly the regions an ingredient feeds', async ({
   // Flour reaches `fold in` and `bake`, and nothing upstream of it.
   expect(started.filter((s) => s.started === '1')).toHaveLength(2)
   expect(started.every((s) => (s.fed ? s.started === '1' : s.started === '0'))).toBe(true)
-  await expect(page.locator('[data-row="flour"]')).toHaveCSS('opacity', '0.5')
+  await expect(page.locator('[data-row="brownies/flour"]')).toHaveCSS('opacity', '0.5')
 })

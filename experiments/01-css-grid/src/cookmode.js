@@ -16,13 +16,16 @@
  */
 
 import {
+  completedIn,
   cookSchedule,
   isUnattended,
   outstandingSteps,
   resolveInputs,
+  stepKey,
   whileThisRuns,
 } from '../../../packages/core/dist/index.js'
 import { renderMiniMap, sharedScale } from './minimap.js'
+import { formatQuantity, unscalableNote } from './quantity.js'
 
 const esc = (s) =>
   String(s ?? '').replace(
@@ -38,48 +41,11 @@ function duration(d) {
   return d.max !== undefined && d.max !== d.min ? `${d.min}–${d.max}${unit}` : `${d.min}${unit}`
 }
 
-const GLYPHS = [
-  [0.125, '⅛'],
-  [1 / 6, '⅙'],
-  [0.25, '¼'],
-  [1 / 3, '⅓'],
-  [0.375, '⅜'],
-  [0.5, '½'],
-  [0.625, '⅝'],
-  [2 / 3, '⅔'],
-  [0.75, '¾'],
-  [0.875, '⅞'],
-]
-
-function amount(value) {
-  if (value && typeof value === 'object') return `${amount(value.from)}–${amount(value.to)}`
-  const whole = Math.floor(value)
-  const rest = value - whole
-  if (rest < 1e-6) return String(whole)
-  for (const [fraction, glyph] of GLYPHS) {
-    if (Math.abs(rest - fraction) < 1e-3) return whole === 0 ? glyph : `${whole}${glyph}`
-  }
-  return String(Number(value.toFixed(2)))
-}
-
-function quantity(q) {
-  if (!q) return ''
-  // R6: a non-breaking space, so "4 oz" never splits across lines. Written as an escape
-  // rather than a literal, which lint cannot tell apart from an ordinary space.
-  const one = (m) => (m.unit === 'count' ? amount(m.amount) : `${amount(m.amount)}\u00a0${m.unit}`)
-  const parts = []
-  if (q.amount !== undefined) parts.push(one(q))
-  else if (q.unit && q.unit !== 'count') parts.push(q.unit)
-  if (q.of) parts.push(`(${one(q.of)} each)`)
-  if (q.metric) parts.push(`/ ${one(q.metric)}`)
-  return parts.join(' ')
-}
-
 /**
  * Inputs, resolved. An ingredient shows its quantity because that is what you are about to
  * measure; a prior result shows its name because "step 4" is not something you can pick up.
  */
-function renderInputs(component, stepId) {
+function renderInputs(component, stepId, options = {}) {
   const inputs = resolveInputs(component, stepId)
   if (inputs.length === 0) return ''
 
@@ -90,9 +56,11 @@ function renderInputs(component, stepId) {
       }
       const leaf = input.leaf
       const label = leaf.component ? (leaf.label ?? leaf.component) : leaf.item
-      const q = quantity(leaf.quantity)
+      const q = formatQuantity(leaf.quantity, options)
+      const warning = unscalableNote(leaf.quantity, options.scale)
       const note = leaf.note ? `<span class="note">${esc(leaf.note)}</span>` : ''
-      return `<li><span class="qty">${esc(q)}</span> <span class="item">${esc(label)}</span>${note}</li>`
+      const flag = warning ? `<span class="note unscalable">${esc(warning)}</span>` : ''
+      return `<li><span class="qty">${esc(q)}</span> <span class="item">${esc(label)}</span>${note}${flag}</li>`
     })
     .join('')
 
@@ -115,16 +83,77 @@ function renderBanner(component, stepId, done) {
   return `<div class="banner"><span class="banner-lead">while this runs, you can</span>${chips}</div>`
 }
 
-export function renderCookMode(recipe, state) {
-  const index = state.componentIndex ?? 0
+/**
+ * The timer, and the reason it is a button rather than something that starts itself.
+ *
+ * Arriving at a step does not mean the pan is on. Auto-starting a forty-minute bake the moment
+ * the card is drawn produces a countdown that is confidently wrong for whatever length of time
+ * the cook spent finding the tin.
+ *
+ * The remaining time is rendered from `store.remaining()` and refreshed in place by `main.js`,
+ * never accumulated — see the store for why.
+ */
+function renderTimer(component, stepId, cook) {
+  const step = component.steps[stepId]
+  if (!step?.duration || !cook.store) return ''
+  const key = stepKey(component, stepId)
+  const running = cook.store.remaining(key) !== null
+  if (!running) {
+    return (
+      `<div class="cm-timer-row">` +
+      `<button type="button" class="cm-timer-start" data-timer="${esc(key)}">Start timer</button></div>`
+    )
+  }
+  const ringing = cook.store.isRinging(key)
+  return (
+    `<div class="cm-timer-row">` +
+    `<span class="cm-timer${ringing ? ' ringing' : ''}" data-timer-for="${esc(key)}" role="status">` +
+    `${esc(formatRemaining(cook.store.remaining(key), ringing))}</span>` +
+    `<button type="button" class="cm-timer-stop" data-timer-stop="${esc(key)}">Stop</button></div>`
+  )
+}
+
+/**
+ * A countdown reads m:ss so the seconds are visible at the end, which is when anyone is
+ * watching it. Past the low end of a range it counts *up* rather than going negative — "30–40
+ * min" has not failed at 31 minutes, it has entered the window where you start checking.
+ */
+export function formatRemaining(ms, ringing) {
+  const seconds = Math.max(0, Math.round(Math.abs(ms) / 1000))
+  const text = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
+  return ringing ? `check it — +${text}` : text
+}
+
+/**
+ * Time-weighted, and it says so.
+ *
+ * A bar reading 16% next to "7 of 9" looks broken unless the reader knows what it measures, so
+ * the label is "16% of the time" rather than a bare percentage. Both numbers are on screen and
+ * they disagree honestly — which is the point, since the step count is the one that lies.
+ */
+function renderProgress(fraction) {
+  if (typeof fraction !== 'number') return ''
+  const percent = Math.round(fraction * 100)
+  return (
+    `<span class="cm-progress" role="progressbar" aria-valuenow="${percent}" aria-valuemin="0" ` +
+    `aria-valuemax="100" aria-label="${percent}% of the cooking time">` +
+    `<span class="cm-progress-fill" style="inline-size:${percent}%"></span>` +
+    `<span class="cm-progress-text">${percent}% of the time</span></span>`
+  )
+}
+
+export function renderCookMode(recipe, cook) {
+  const index = cook.componentIndex ?? 0
   const component = recipe.components[index]
   const plan = recipe.plans[index]
-  const done = state.done ?? new Set()
+  // `cook.ts` speaks in bare ids because it only ever sees one component; the store holds
+  // component-qualified keys. This is the one place the track translates.
+  const done = cook.state ? completedIn(component, cook.state) : (cook.done ?? new Set())
   const scale = sharedScale(recipe.plans, { width: 320, height: 130 })
 
   const schedule = cookSchedule(component)
   const order = schedule.order
-  const current = state.current ?? order[0]
+  const current = cook.current ?? order[0]
   const step = component.steps[current]
 
   // Position counts across the whole recipe, not within a component — "4 of 15" is what a cook
@@ -163,10 +192,11 @@ export function renderCookMode(recipe, state) {
     `<header class="cm-head">` +
     `<button type="button" class="cm-back" aria-label="Back to the chart">← chart</button>` +
     `<span class="cm-count">${position} of ${total}</span>${componentTitle}` +
+    renderProgress(cook.progress) +
     `</header>` +
     `<div class="cm-body">` +
-    `<p class="cm-text">${esc(step.text)}</p>${mark}` +
-    renderInputs(component, current) +
+    `<p class="cm-text">${esc(step.text)}</p>${mark}${renderTimer(component, current, cook)}` +
+    renderInputs(component, current, cook) +
     `</div>` +
     renderBanner(component, current, done) +
     `<div class="cm-map">${renderMiniMap(plan, { current, done, scale, interactive: true })}</div>` +

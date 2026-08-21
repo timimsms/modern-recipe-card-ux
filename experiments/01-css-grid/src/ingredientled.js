@@ -14,48 +14,13 @@
  */
 
 import { describeOutput } from '../../../packages/core/dist/index.js'
+import { formatQuantity } from './quantity.js'
 
 const esc = (s) =>
   String(s ?? '').replace(
     /[&<>"']/g,
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
   )
-
-const GLYPHS = [
-  [0.125, '⅛'],
-  [1 / 6, '⅙'],
-  [0.25, '¼'],
-  [1 / 3, '⅓'],
-  [0.375, '⅜'],
-  [0.5, '½'],
-  [0.625, '⅝'],
-  [2 / 3, '⅔'],
-  [0.75, '¾'],
-  [0.875, '⅞'],
-]
-
-function amount(value) {
-  if (value && typeof value === 'object') return `${amount(value.from)}–${amount(value.to)}`
-  const whole = Math.floor(value)
-  const rest = value - whole
-  if (rest < 1e-6) return String(whole)
-  for (const [fraction, glyph] of GLYPHS) {
-    if (Math.abs(rest - fraction) < 1e-3) return whole === 0 ? glyph : `${whole}${glyph}`
-  }
-  return String(Number(value.toFixed(2)))
-}
-
-function quantity(q) {
-  if (!q) return ''
-  // R6: non-breaking space, written as an escape so lint can tell it from a plain space.
-  const one = (m) => (m.unit === 'count' ? amount(m.amount) : `${amount(m.amount)}\u00a0${m.unit}`)
-  const parts = []
-  if (q.amount !== undefined) parts.push(one(q))
-  else if (q.unit && q.unit !== 'count') parts.push(q.unit)
-  if (q.of) parts.push(`(${one(q.of)} each)`)
-  if (q.metric) parts.push(`/ ${one(q.metric)}`)
-  return parts.join(' ')
-}
 
 /** Which step consumes each leaf, and how deep into the recipe that step sits. */
 function consumers(component, plan) {
@@ -72,7 +37,7 @@ function consumers(component, plan) {
   return byLeaf
 }
 
-export function renderIngredientLed(recipe) {
+export function renderIngredientLed(recipe, options = {}) {
   const componentCount = recipe.components.length
 
   const sections = recipe.components
@@ -85,7 +50,7 @@ export function renderIngredientLed(recipe) {
         .map((leaf) => {
           const uses = byLeaf.get(leaf.id) ?? []
           const label = leaf.component ? (leaf.label ?? leaf.component) : leaf.item
-          const q = quantity(leaf.quantity)
+          const q = formatQuantity(leaf.quantity, options)
           const note = leaf.note ? `<span class="note">${esc(leaf.note)}</span>` : ''
 
           // Distance from the finished dish, as a proportion. A bar rather than a step number,

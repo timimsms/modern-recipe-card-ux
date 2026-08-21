@@ -82,6 +82,9 @@ describe('things that do not scale', () => {
   it('handles a quantity with a unit and no number', () => {
     const scaled = scaleQuantity({ unit: 'pinch' } as Quantity, 2)
     expect(scaled.unscalable).toBe('as needed')
+    // Not "1 pinch". Supplying a 1 so the arithmetic has something to chew on invents a
+    // precision the source deliberately withheld — caught by a chart that started saying it.
+    expect(formatScaled(scaled)).toBe('pinch')
   })
 
   // Two 15 oz cans at 2× is four 15 oz cans. There is no 30 oz can.

@@ -9,7 +9,13 @@
  * No framework, no bundler, no build step. Loads `@recipe/core` straight from `dist/`.
  */
 
-import { formatTemperature, isUnattended } from '../../../packages/core/dist/index.js'
+import {
+  formatTemperature,
+  ingredientKey,
+  isUnattended,
+  stepKey,
+} from '../../../packages/core/dist/index.js'
+import { formatQuantity, unscalableNote } from './quantity.js'
 
 /**
  * The corpus transcribes step text faithfully, and the sources write the temperature *into* the
@@ -227,11 +233,15 @@ export function renderChart(component, plan, options = {}) {
       // `checked` is rendered in, so gathering an ingredient in one view is still gathered in
       // the next. One model, two views — PHASE-04's rule, and the reason state does not live
       // in the DOM.
-      const checked = options.checkedIngredients?.has(cell.ref) ? ' checked' : ''
+      // Qualified by component: shepherd's pie has a `salt` leaf in both, and a flat id meant
+      // ticking the potatoes' salt also ticked the pie's — including through the `:has()` rules
+      // below, which is a wrong answer with no JavaScript involved at all.
+      const key = ingredientKey(component, cell.ref)
+      const checked = options.checkedIngredients?.has(key) ? ' checked' : ''
       parts.push(
-        `<label class="cell ing${cell.duplicate ? ' dup' : ''}" style="${area};${edgeStyle(cell.edges)}" data-row="${esc(cell.ref)}">` +
-          `<input type="checkbox" class="tick" data-ing="${esc(cell.ref)}"${checked}>` +
-          `<span class="ing-text">${renderLeaf(leaf)}</span></label>`,
+        `<label class="cell ing${cell.duplicate ? ' dup' : ''}" style="${area};${edgeStyle(cell.edges)}" data-row="${esc(key)}">` +
+          `<input type="checkbox" class="tick" data-ing="${esc(key)}"${checked}>` +
+          `<span class="ing-text">${renderLeaf(leaf, options)}</span></label>`,
       )
       continue
     }
@@ -268,12 +278,16 @@ export function renderChart(component, plan, options = {}) {
 
     // A step cell is the way into cook mode, so it has to be operable — a real role and a tab
     // stop, not a div that happens to respond to clicks.
-    const complete = options.doneSteps?.has(cell.ref) ? ' complete' : ''
+    const complete = options.doneSteps?.has(stepKey(component, cell.ref)) ? ' complete' : ''
     parts.push(
       `<div class="cell step d${shadeFor(cell.depth, plan.maxDepth, options.ramp)}${isUnattended(step.effort) ? ' unatt' : ''}${micro ? ' collapsed' : ''}${complete}" ` +
         `role="button" tabindex="0" data-step="${esc(cell.ref)}" ` +
         `aria-label="${esc(step.text)}${complete ? ', done' : ''}. Open in cook mode." ` +
-        `style="${area};${edgeStyle(cell.edges)}" data-fed-by="${esc(feedsOf(component, plan, cell.ref).join(' '))}">` +
+        `style="${area};${edgeStyle(cell.edges)}" data-fed-by="${esc(
+          feedsOf(component, plan, cell.ref)
+            .map((id) => ingredientKey(component, id))
+            .join(' '),
+        )}">` +
         `${chips}${body}${temp}${markFor(step, polarity)}</div>`,
     )
   }
@@ -300,60 +314,20 @@ function feedsOf(component, plan, stepId) {
   return [...out]
 }
 
-function renderLeaf(leaf) {
+function renderLeaf(leaf, options = {}) {
   if (!leaf) return ''
   if (leaf.component) {
     return `<span class="ref">${esc(leaf.label ?? leaf.component)}</span>${leaf.note ? `<span class="note">${esc(leaf.note)}</span>` : ''}`
   }
   const q = leaf.quantity
-    ? `<span class="qty">${esc(formatQuantityText(leaf.quantity))}</span>`
+    ? `<span class="qty">${esc(formatQuantity(leaf.quantity, options))}</span>`
     : ''
+  // A quantity that cannot follow the factor says so where it is read, not in a legend. A lie
+  // in a quantity is worse than an omission, because it gets measured out.
+  const warning = unscalableNote(leaf.quantity, options.scale)
   const note = leaf.note ? `<span class="note">${esc(leaf.note)}</span>` : ''
-  return `${q}<span class="item">${esc(leaf.item)}</span>${note}`
-}
-
-/**
- * R6, applied. Unicode fractions, a non-breaking space between quantity and unit so `4 oz`
- * never breaks across lines, an en dash for ranges, and both metric and customary at equal
- * weight rather than one parenthesised as a footnote.
- */
-function formatQuantityText(q) {
-  const parts = []
-  // `count` is the model's placeholder for "this ingredient has a number but no unit" \u2014 two
-  // eggs, one artichoke. Printing it would render "2 count large eggs".
-  const one = (m) =>
-    m.unit === 'count' ? formatAmountText(m.amount) : `${formatAmountText(m.amount)}\u00a0${m.unit}`
-  if (q.amount !== undefined) parts.push(one(q))
-  else if (q.unit && q.unit !== 'count') parts.push(q.unit)
-  if (q.of) parts.push(`(${one(q.of)} each)`)
-  if (q.metric) parts.push(`/ ${one(q.metric)}`)
-  return parts.join(' ')
-}
-
-const GLYPHS = [
-  [0.125, '⅛'],
-  [1 / 6, '⅙'],
-  [0.25, '¼'],
-  [1 / 3, '⅓'],
-  [0.375, '⅜'],
-  [0.5, '½'],
-  [0.625, '⅝'],
-  [2 / 3, '⅔'],
-  [0.75, '¾'],
-  [0.875, '⅞'],
-]
-
-function formatAmountText(amount) {
-  if (amount && typeof amount === 'object') {
-    return `${formatAmountText(amount.from)}\u2013${formatAmountText(amount.to)}`
-  }
-  const whole = Math.floor(amount)
-  const rest = amount - whole
-  if (rest < 1e-6) return String(whole)
-  for (const [value, glyph] of GLYPHS) {
-    if (Math.abs(rest - value) < 1e-3) return whole === 0 ? glyph : `${whole}${glyph}`
-  }
-  return String(Number(amount.toFixed(2)))
+  const flag = warning ? `<span class="note unscalable">${esc(warning)}</span>` : ''
+  return `${q}<span class="item">${esc(leaf.item)}</span>${note}${flag}`
 }
 
 // --- The card -----------------------------------------------------------------------------------
@@ -375,7 +349,7 @@ export function renderCard(recipe, options = {}) {
   // One rule per ingredient, so checking a box propagates through every region it feeds with no
   // JavaScript at all. `:has()` does the work a script would otherwise do.
   const rules = recipe.components
-    .flatMap((c) => c.ingredients.map((l) => l.id))
+    .flatMap((c) => c.ingredients.map((l) => ingredientKey(c, l.id)))
     .map(
       (id) =>
         `.card:has(.tick[data-ing="${cssEscape(id)}"]:checked) [data-row="${cssEscape(id)}"]{opacity:.5}` +

@@ -54,6 +54,25 @@
             <option value="converging">lightest at the finished dish</option>
           </select>
         </label>
+        <label>
+          servings
+          <select id="scale">
+            <option value="0.5">half</option>
+            <option value="1" selected>as written</option>
+            <option value="1.5">1½×</option>
+            <option value="2">double</option>
+            <option value="3">triple</option>
+            <option value="4">4×</option>
+          </select>
+        </label>
+        <label>
+          units
+          <select id="units">
+            <option value="both">both</option>
+            <option value="imperial">imperial</option>
+            <option value="metric">metric</option>
+          </select>
+        </label>
         <label><input type="checkbox" id="grey" /> greyscale</label>
         <label>
           theme
@@ -62,6 +81,13 @@
             <option value="dark">dark</option>
           </select>
         </label>
+        <!-- Kitchen affordances, not view options: they act on your progress rather than on how
+             it is drawn. Start-over is a two-tap confirm because losing an hour of check-offs to
+             a mis-tap is the one unrecoverable thing here. -->
+        <span class="control-group">
+          <button type="button" id="undo" disabled>Undo</button>
+          <button type="button" id="startover">Start over</button>
+        </span>
       </div>
       <div id="cards"></div>
     </main>
