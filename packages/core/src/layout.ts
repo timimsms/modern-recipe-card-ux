@@ -19,14 +19,13 @@
 import { cookSchedule } from './cook.js'
 import {
   childSteps,
-  durationToMinutes,
+  stepMinutes,
   isPassive,
   isUnattended,
   stepsOf,
   subtreeSteps,
   type Component,
   type ComponentId,
-  type Effort,
   type IngredientId,
   type PreludeId,
   type Step,
@@ -195,18 +194,6 @@ export type GridPlan = {
 }
 
 // --- Analysis ------------------------------------------------------------------------------
-
-/**
- * Ordinal fallbacks, used only when a step has no authored duration. They exist so the
- * at-a-glance bar can say something useful about a recipe nobody has timed; `basis` records that
- * the numbers came from here rather than from the source.
- */
-const EFFORT_MINUTES: Record<Effort, number> = {
-  quick: 2,
-  minutes: 6,
-  'long-unattended': 30,
-  passive: 480,
-}
 
 type Analysis = {
   /**
@@ -431,16 +418,6 @@ const NO_EDGES: Edges = { top: 'none', right: 'none', bottom: 'none', left: 'non
 
 // --- Timing -------------------------------------------------------------------------------------
 
-/** Elapsed minutes for one step, including any repeat cadence. */
-function elapsedOf(step: Step): number {
-  const base = step.duration ? durationToMinutes(step.duration) : EFFORT_MINUTES[step.effort]
-  if (!step.repeat) return base
-  const gap = step.repeat.every ? durationToMinutes(step.repeat.every) : 0
-  // "fold every 30 min, 3 times" is one instruction with a cadence: the folds themselves are
-  // trivial, the elapsed time is the waiting between them.
-  return base * step.repeat.times + gap * Math.max(0, step.repeat.times - 1)
-}
-
 function timingFor(component: Component, criticalPath: StepId[]): TimingSummary {
   const steps = stepsOf(component)
   const authored = steps.filter((s) => s.duration).length
@@ -453,7 +430,7 @@ function timingFor(component: Component, criticalPath: StepId[]): TimingSummary 
   let passiveTotal = 0
 
   for (const step of steps) {
-    const minutes = elapsedOf(step)
+    const minutes = stepMinutes(step)
     serialTotal += minutes
     if (isPassive(step.effort)) passiveTotal += minutes
     if (!isUnattended(step.effort)) handsOn += minutes
@@ -462,7 +439,7 @@ function timingFor(component: Component, criticalPath: StepId[]): TimingSummary 
 
   const criticalPathDuration = criticalPath.reduce((sum, id) => {
     const step = component.steps[id]
-    return sum + (step ? elapsedOf(step) : 0)
+    return sum + (step ? stepMinutes(step) : 0)
   }, 0)
 
   const schedule = cookSchedule(component)
@@ -495,7 +472,7 @@ function criticalPathOf(component: Component): StepId[] {
       const r = walk(child.id)
       if (r.total > deepest.total) deepest = r
     }
-    const result = { total: deepest.total + elapsedOf(step), path: [...deepest.path, id] }
+    const result = { total: deepest.total + stepMinutes(step), path: [...deepest.path, id] }
     best.set(id, result)
     return result
   }

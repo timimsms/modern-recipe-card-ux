@@ -337,6 +337,34 @@ export function durationToMinutes(d: Duration, bound: 'min' | 'max' = 'max'): nu
   return value * MINUTES_PER[d.unit]
 }
 
+/**
+ * Ordinal fallbacks, used only when a step has no authored duration. They exist so the
+ * at-a-glance bar can say something useful about a recipe nobody has timed; the layout engine's
+ * `basis` field records that the numbers came from here rather than from the source.
+ */
+const EFFORT_MINUTES: Record<Effort, number> = {
+  quick: 2,
+  minutes: 6,
+  'long-unattended': 30,
+  passive: 480,
+}
+
+/**
+ * Elapsed minutes for one step, including any repeat cadence.
+ *
+ * Lives here rather than in the layout engine because the timing summary, the cook schedule and
+ * the progress bar must agree to the minute. Three copies of this had already drifted apart into
+ * three files before the fourth caller made the problem obvious.
+ */
+export function stepMinutes(step: Step): number {
+  const base = step.duration ? durationToMinutes(step.duration) : EFFORT_MINUTES[step.effort]
+  if (!step.repeat) return base
+  const gap = step.repeat.every ? durationToMinutes(step.repeat.every) : 0
+  // "fold every 30 min, 3 times" is one instruction with a cadence: the folds themselves are
+  // trivial, the elapsed time is the waiting between them.
+  return base * step.repeat.times + gap * Math.max(0, step.repeat.times - 1)
+}
+
 export type Temperature = {
   f?: number
   c?: number

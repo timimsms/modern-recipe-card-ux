@@ -10,7 +10,7 @@
 
 import {
   describeOutput,
-  durationToMinutes,
+  stepMinutes,
   findLeaf,
   isUnattended,
   stepsOf,
@@ -18,19 +18,8 @@ import {
   type Component,
   type IngredientId,
   type Leaf,
-  type Step,
   type StepId,
 } from './model.js'
-
-/** Same ordinal fallbacks the layout engine uses when a step carries no authored duration. */
-const EFFORT_MINUTES = { quick: 2, minutes: 6, 'long-unattended': 30, passive: 480 } as const
-
-function elapsedOf(step: Step): number {
-  const base = step.duration ? durationToMinutes(step.duration) : EFFORT_MINUTES[step.effort]
-  if (!step.repeat) return base
-  const gap = step.repeat.every ? durationToMinutes(step.repeat.every) : 0
-  return base * step.repeat.times + gap * Math.max(0, step.repeat.times - 1)
-}
 
 /**
  * Steps whose inputs are all satisfied and which are not already done or in progress.
@@ -111,12 +100,12 @@ export function cookSchedule(component: Component): CookSchedule {
     order.push(next)
 
     if (isUnattended(step.effort)) {
-      running.push({ id: next, finishAt: clock + elapsedOf(step) })
+      running.push({ id: next, finishAt: clock + stepMinutes(step) })
       continue
     }
 
     // Hands-on work occupies the cook, so the clock advances.
-    clock += elapsedOf(step)
+    clock += stepMinutes(step)
     done.add(next)
     for (const finished of running.filter((r) => r.finishAt <= clock)) {
       done.add(finished.id)
