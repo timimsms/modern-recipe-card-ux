@@ -1,0 +1,811 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`golden layouts — left-packed > beef-stroganoff 1`] = `
+"── beef-stroganoff / stroganoff ──
+10 rows × 9 cols · left-packed · reuse=chip
+beef-tenderloin       cut-strips            brown                 cook-onion            cook-mushrooms        reduce                stir-in               simmer-beef           add-dill
+butter                ···· 1                │                     │                     │                     │                     │                     │                     │
+onion                 fine-dice             ···· 1                │                     │                     │                     │                     │                     │
+button-mushrooms      slice-mushrooms       ···· leader 2         ─                     │                     │                     │                     │                     │
+beef-broth            ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │
+cognac                ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │
+sour-cream            ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │
+dijon-mustard         ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │
+dill-weed             ···· leader 7         ─                     ─                     ─                     ─                     ─                     ─                     │
+salt-pepper           ···· leader 7         ─                     ─                     ─                     ─                     ─                     ─                     │
+
+linearization: cut-strips → brown → fine-dice → cook-onion → slice-mushrooms → cook-mushrooms → reduce → stir-in → simmer-beef → add-dill
+criticalPath:  cut-strips → brown → cook-onion → cook-mushrooms → reduce → stir-in → simmer-beef → add-dill
+timing[approx]: start-to-finish 49m · serial 61m · saved 12m · hands-on 46m · longest walk-away 15m"
+`;
+
+exports[`golden layouts — left-packed > braised-short-ribs 1`] = `
+"── braised-short-ribs / ribs ──
+10 rows × 9 cols · left-packed · reuse=chip
+prelude[0] spans 9
+short-ribs            season                sear                  soffritto             darken-paste          deglaze               assemble              braise                rest
+salt-pepper           │                     │                     │                     │                     │                     │                     │                     │
+oil                   ···· 1                │                     │                     │                     │                     │                     │                     │
+onion                 chop                  ···· 1                │                     │                     │                     │                     │                     │
+carrot                │                     ···· 1                │                     │                     │                     │                     │                     │
+garlic                │                     ···· 1                │                     │                     │                     │                     │                     │
+tomato-paste          ···· leader 3         ─                     ─                     │                     │                     │                     │                     │
+wine                  ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │
+stock                 ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │
+thyme                 ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │
+
+linearization: season → sear → chop → soffritto → darken-paste → deglaze → assemble → braise → rest
+criticalPath:  season → sear → soffritto → darken-paste → deglaze → assemble → braise → rest
+timing[approx]: start-to-finish 269m · serial 274m · saved 5m · hands-on 44m · longest walk-away 210m"
+`;
+
+exports[`golden layouts — left-packed > deep-narrow 1`] = `
+"── deep-narrow / only ──
+3 rows × 13 cols · left-packed · reuse=chip
+base                  step-1                step-2                step-3                step-4                step-5                step-6                step-7                step-8                step-9                step-10               step-11               step-12
+middle                ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │                     │                     │                     │                     │
+finish                ···· leader 11        ─                     ─                     ─                     ─                     ─                     ─                     ─                     ─                     ─                     ─                     │
+
+linearization: step-1 → step-2 → step-3 → step-4 → step-5 → step-6 → step-7 → step-8 → step-9 → step-10 → step-11 → step-12
+criticalPath:  step-1 → step-2 → step-3 → step-4 → step-5 → step-6 → step-7 → step-8 → step-9 → step-10 → step-11 → step-12
+timing[approx]: start-to-finish 48m · serial 48m · saved 0m · hands-on 18m · longest walk-away 10m"
+`;
+
+exports[`golden layouts — left-packed > degenerate 1`] = `
+"── degenerate / only ──
+1 rows × 2 cols · left-packed · reuse=chip
+water                 boil
+
+linearization: boil
+criticalPath:  boil
+timing[approx]: start-to-finish 6m · serial 6m · saved 0m · hands-on 6m · longest walk-away 0m"
+`;
+
+exports[`golden layouts — left-packed > espresso-brownies 1`] = `
+"── espresso-brownies / brownies ──
+9 rows × 6 cols · left-packed · reuse=chip
+prelude[0] spans 6
+prelude[1] spans 6
+butter                melt                  mix-wet               mix-eggs              fold-in               bake
+sugar                 ···· 1                │                     │                     │                     │
+vanilla               ···· 1                │                     │                     │                     │
+espresso              ···· 1                │                     │                     │                     │
+eggs                  ···· leader 2         ─                     │                     │                     │
+flour                 ···· leader 3         ─                     ─                     │                     │
+cocoa                 ···· leader 3         ─                     ─                     │                     │
+baking-soda           ···· leader 3         ─                     ─                     │                     │
+salt                  ···· leader 3         ─                     ─                     │                     │
+
+linearization: melt → mix-wet → mix-eggs → fold-in → bake
+criticalPath:  melt → mix-wet → mix-eggs → fold-in → bake
+timing[approx]: start-to-finish 52m · serial 52m · saved 0m · hands-on 12m · longest walk-away 40m"
+`;
+
+exports[`golden layouts — left-packed > fennel-citrus-salad 1`] = `
+"── fennel-citrus-salad / salad ──
+9 rows × 4 cols · left-packed · reuse=chip
+fennel                shave                 dress                 serve
+oranges               supreme               │                     │
+oil                   dressing              │                     │
+lemon                 │                     │                     │
+honey                 │                     │                     │
+salt                  │                     │                     │
+mint                  ···· leader 2         ─                     │
+pistachios            ···· leader 2         ─                     │
+flaky-salt            ···· leader 2         ─                     │
+
+linearization: shave → supreme → dressing → dress → serve
+criticalPath:  supreme → dress → serve
+timing[exact]: start-to-finish 17m · serial 24m · saved 7m · hands-on 14m · longest walk-away 10m"
+`;
+
+exports[`golden layouts — left-packed > grilled-artichokes 1`] = `
+"── grilled-artichokes / artichokes ──
+3 rows × 8 cols · left-packed · reuse=chip
+prelude[0] spans 8
+prelude[1] spans 8
+artichoke             trim                  steam                 cut                   brush                 season                grill-up              grill-down
+olive-oil             ···· leader 3         ─                     ─                     │                     │                     │                     │
+salt-pepper           ···· leader 4         ─                     ─                     ─                     │                     │                     │
+
+linearization: trim → steam → cut → brush → season → grill-up → grill-down
+criticalPath:  trim → steam → cut → brush → season → grill-up → grill-down
+timing[approx]: start-to-finish 42m · serial 42m · saved 0m · hands-on 27m · longest walk-away 15m"
+`;
+
+exports[`golden layouts — left-packed > long-text 1`] = `
+"── long-text / only ──
+3 rows × 3 cols · left-packed · reuse=chip
+prelude[0] spans 3
+onion                 sweat                 finish
+butter                │                     │
+stock                 ···· 1                │
+
+linearization: sweat → finish
+criticalPath:  sweat → finish
+timing[exact]: start-to-finish 85m · serial 85m · saved 0m · hands-on 0m · longest walk-away 60m"
+`;
+
+exports[`golden layouts — left-packed > no-knead-bread 1`] = `
+"── no-knead-bread / loaf ──
+4 rows × 10 cols · left-packed · reuse=chip
+prelude[0] spans 10
+flour                 whisk-dry             mix                   autolyse              folds                 bulk                  shape                 proof                 bake-covered          bake-uncovered
+salt                  │                     │                     │                     │                     │                     │                     │                     │                     │
+yeast                 │                     │                     │                     │                     │                     │                     │                     │                     │
+water                 ···· 1                │                     │                     │                     │                     │                     │                     │                     │
+
+linearization: whisk-dry → mix → autolyse → folds → bulk → shape → proof → bake-covered → bake-uncovered
+criticalPath:  whisk-dry → mix → autolyse → folds → bulk → shape → proof → bake-covered → bake-uncovered
+timing[approx]: start-to-finish 1352m · serial 1352m · saved 0m · hands-on 72m · longest walk-away 1080m · passive 1080m"
+`;
+
+exports[`golden layouts — left-packed > reuse-split 1`] = `
+"── reuse-split / crumble ──
+4 rows × 5 cols · left-packed · reuse=chip
+butter                cream                 batter                topping               bake
+sugar                 │                     │                     │                     │
+flour                 ···· 1                │                     │                     │
+oats                  ···· leader 2         ─                     │                     │
+
+linearization: cream → batter → topping → bake
+criticalPath:  cream → batter → topping → bake
+timing[approx]: start-to-finish 54m · serial 54m · saved 0m · hands-on 14m · longest walk-away 40m
+connection[chip]: butter (row 0) → topping (row 0, col 3)"
+`;
+
+exports[`golden layouts — left-packed > shepherds-pie 1`] = `
+"── shepherds-pie / mashed-potatoes ──
+5 rows × 4 cols · left-packed · reuse=chip
+russet-potatoes       boil                  mash                  season
+reserved-water        ···· 1                │                     │
+unsalted-butter       ···· 1                │                     │
+salt                  ···· leader 2         ─                     │
+ground-white-pepper   ···· leader 2         ─                     │
+
+linearization: boil → mash → season
+criticalPath:  boil → mash → season
+timing[approx]: start-to-finish 23m · serial 23m · saved 0m · hands-on 8m · longest walk-away 15m
+
+── shepherds-pie / shepherds-pie ──
+15 rows × 11 cols · left-packed · reuse=chip
+prelude[0] spans 11
+vegetable-oil         heat                  sweat                 cook-meat             mix-and-cook          thicken               season                cover-with-potatoes   drop-butter           cover-with-paprika    bake
+onion                 dice                  │                     │                     │                     │                     │                     │                     │                     │                     │
+carrot                │                     │                     │                     │                     │                     │                     │                     │                     │                     │
+celery-stalk          │                     │                     │                     │                     │                     │                     │                     │                     │                     │
+ground-lamb           ···· leader 2         ─                     │                     │                     │                     │                     │                     │                     │                     │
+flour                 ···· leader 3         ─                     ─                     │                     │                     │                     │                     │                     │                     │
+dried-rosemary        ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │                     │                     │
+dried-thyme           ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │                     │                     │
+ground-nutmeg         ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │                     │                     │
+beef-broth            ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │                     │                     │
+salt                  ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │                     │                     │
+ground-black-pepper   ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │                     │                     │
+mashed-potatoes       ···· leader 6         ─                     ─                     ─                     ─                     ─                     │                     │                     │                     │
+butter                cut-butter            ···· leader 6         ─                     ─                     ─                     ─                     ─                     │                     │                     │
+paprika               ···· leader 8         ─                     ─                     ─                     ─                     ─                     ─                     ─                     │                     │
+
+linearization: heat → dice → sweat → cook-meat → mix-and-cook → thicken → season → cover-with-potatoes → cut-butter → drop-butter → cover-with-paprika → bake
+criticalPath:  dice → sweat → cook-meat → mix-and-cook → thicken → season → cover-with-potatoes → drop-butter → cover-with-paprika → bake
+timing[approx]: start-to-finish 72m · serial 76m · saved 4m · hands-on 46m · longest walk-away 30m"
+`;
+
+exports[`golden layouts — left-packed > spinach-artichoke-skillet 1`] = `
+"── spinach-artichoke-skillet / skillet ──
+16 rows × 7 cols · left-packed · reuse=chip
+olive-oil             heat-fat              aromatics             artichokes            wilt-spinach          simmer-sauce          finish
+butter                │                     │                     │                     │                     │                     │
+shallot               ···· 1                │                     │                     │                     │                     │
+garlic                ···· 1                │                     │                     │                     │                     │
+capers                ···· 1                │                     │                     │                     │                     │
+red-pepper-flakes     ···· 1                │                     │                     │                     │                     │
+artichoke-hearts      ···· leader 2         ─                     │                     │                     │                     │
+kosher-salt           ···· leader 2         ─                     │                     │                     │                     │
+black-pepper          ···· leader 2         ─                     │                     │                     │                     │
+spinach               ···· leader 3         ─                     ─                     │                     │                     │
+cannellini-beans      ···· leader 4         ─                     ─                     ─                     │                     │
+heavy-cream           ···· leader 4         ─                     ─                     ─                     │                     │
+nutmeg                ···· leader 4         ─                     ─                     ─                     │                     │
+parmesan              ···· leader 5         ─                     ─                     ─                     ─                     │
+lemon-zest            ···· leader 5         ─                     ─                     ─                     ─                     │
+lemon-juice           ···· leader 5         ─                     ─                     ─                     ─                     │
+
+linearization: heat-fat → aromatics → artichokes → wilt-spinach → simmer-sauce → finish
+criticalPath:  heat-fat → aromatics → artichokes → wilt-spinach → simmer-sauce → finish
+timing[approx]: start-to-finish 27m · serial 27m · saved 0m · hands-on 27m · longest walk-away 0m"
+`;
+
+exports[`golden layouts — left-packed > unicode 1`] = `
+"── unicode / cake ──
+6 rows × 4 cols · left-packed · reuse=chip
+prelude[0] spans 4
+flour                 sift                  fold                  bake
+sugar                 │                     │                     │
+salt                  │                     │                     │
+butter                cream                 │                     │
+lemon                 │                     │                     │
+creme                 │                     │                     │
+
+linearization: sift → cream → fold → bake
+criticalPath:  cream → fold → bake
+timing[approx]: start-to-finish 43m · serial 45m · saved 2m · hands-on 10m · longest walk-away 35m"
+`;
+
+exports[`golden layouts — left-packed > wide-shallow 1`] = `
+"── wide-shallow / only ──
+25 rows × 3 cols · left-packed · reuse=chip
+ing-1-1               combine-1             assemble
+ing-1-2               │                     │
+ing-1-3               │                     │
+ing-1-4               │                     │
+ing-1-5               │                     │
+ing-2-1               combine-2             │
+ing-2-2               │                     │
+ing-2-3               │                     │
+ing-2-4               │                     │
+ing-2-5               │                     │
+ing-3-1               combine-3             │
+ing-3-2               │                     │
+ing-3-3               │                     │
+ing-3-4               │                     │
+ing-3-5               │                     │
+ing-4-1               combine-4             │
+ing-4-2               │                     │
+ing-4-3               │                     │
+ing-4-4               │                     │
+ing-4-5               │                     │
+ing-5-1               combine-5             │
+ing-5-2               │                     │
+ing-5-3               │                     │
+ing-5-4               │                     │
+ing-5-5               │                     │
+
+linearization: combine-1 → combine-2 → combine-3 → combine-4 → combine-5 → assemble
+criticalPath:  combine-1 → assemble
+timing[approx]: start-to-finish 8m · serial 16m · saved 8m · hands-on 16m · longest walk-away 0m"
+`;
+
+exports[`golden layouts — right-packed > beef-stroganoff 1`] = `
+"── beef-stroganoff / stroganoff ──
+10 rows × 9 cols · right-packed · reuse=chip
+beef-tenderloin       cut-strips            brown                 cook-onion            cook-mushrooms        reduce                stir-in               simmer-beef           add-dill
+butter                ···· 1                │                     │                     │                     │                     │                     │                     │
+onion                 ···· 1                fine-dice             │                     │                     │                     │                     │                     │
+button-mushrooms      ···· leader 2         ─                     slice-mushrooms       │                     │                     │                     │                     │
+beef-broth            ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │
+cognac                ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │
+sour-cream            ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │
+dijon-mustard         ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │
+dill-weed             ···· leader 7         ─                     ─                     ─                     ─                     ─                     ─                     │
+salt-pepper           ···· leader 7         ─                     ─                     ─                     ─                     ─                     ─                     │
+
+linearization: cut-strips → brown → fine-dice → cook-onion → slice-mushrooms → cook-mushrooms → reduce → stir-in → simmer-beef → add-dill
+criticalPath:  cut-strips → brown → cook-onion → cook-mushrooms → reduce → stir-in → simmer-beef → add-dill
+timing[approx]: start-to-finish 49m · serial 61m · saved 12m · hands-on 46m · longest walk-away 15m"
+`;
+
+exports[`golden layouts — right-packed > braised-short-ribs 1`] = `
+"── braised-short-ribs / ribs ──
+10 rows × 9 cols · right-packed · reuse=chip
+prelude[0] spans 9
+short-ribs            season                sear                  soffritto             darken-paste          deglaze               assemble              braise                rest
+salt-pepper           │                     │                     │                     │                     │                     │                     │                     │
+oil                   ···· 1                │                     │                     │                     │                     │                     │                     │
+onion                 ···· 1                chop                  │                     │                     │                     │                     │                     │
+carrot                ···· 1                │                     │                     │                     │                     │                     │                     │
+garlic                ···· 1                │                     │                     │                     │                     │                     │                     │
+tomato-paste          ···· leader 3         ─                     ─                     │                     │                     │                     │                     │
+wine                  ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │
+stock                 ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │
+thyme                 ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │
+
+linearization: season → sear → chop → soffritto → darken-paste → deglaze → assemble → braise → rest
+criticalPath:  season → sear → soffritto → darken-paste → deglaze → assemble → braise → rest
+timing[approx]: start-to-finish 269m · serial 274m · saved 5m · hands-on 44m · longest walk-away 210m"
+`;
+
+exports[`golden layouts — right-packed > deep-narrow 1`] = `
+"── deep-narrow / only ──
+3 rows × 13 cols · right-packed · reuse=chip
+base                  step-1                step-2                step-3                step-4                step-5                step-6                step-7                step-8                step-9                step-10               step-11               step-12
+middle                ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │                     │                     │                     │                     │
+finish                ···· leader 11        ─                     ─                     ─                     ─                     ─                     ─                     ─                     ─                     ─                     ─                     │
+
+linearization: step-1 → step-2 → step-3 → step-4 → step-5 → step-6 → step-7 → step-8 → step-9 → step-10 → step-11 → step-12
+criticalPath:  step-1 → step-2 → step-3 → step-4 → step-5 → step-6 → step-7 → step-8 → step-9 → step-10 → step-11 → step-12
+timing[approx]: start-to-finish 48m · serial 48m · saved 0m · hands-on 18m · longest walk-away 10m"
+`;
+
+exports[`golden layouts — right-packed > degenerate 1`] = `
+"── degenerate / only ──
+1 rows × 2 cols · right-packed · reuse=chip
+water                 boil
+
+linearization: boil
+criticalPath:  boil
+timing[approx]: start-to-finish 6m · serial 6m · saved 0m · hands-on 6m · longest walk-away 0m"
+`;
+
+exports[`golden layouts — right-packed > espresso-brownies 1`] = `
+"── espresso-brownies / brownies ──
+9 rows × 6 cols · right-packed · reuse=chip
+prelude[0] spans 6
+prelude[1] spans 6
+butter                melt                  mix-wet               mix-eggs              fold-in               bake
+sugar                 ···· 1                │                     │                     │                     │
+vanilla               ···· 1                │                     │                     │                     │
+espresso              ···· 1                │                     │                     │                     │
+eggs                  ···· leader 2         ─                     │                     │                     │
+flour                 ···· leader 3         ─                     ─                     │                     │
+cocoa                 ···· leader 3         ─                     ─                     │                     │
+baking-soda           ···· leader 3         ─                     ─                     │                     │
+salt                  ···· leader 3         ─                     ─                     │                     │
+
+linearization: melt → mix-wet → mix-eggs → fold-in → bake
+criticalPath:  melt → mix-wet → mix-eggs → fold-in → bake
+timing[approx]: start-to-finish 52m · serial 52m · saved 0m · hands-on 12m · longest walk-away 40m"
+`;
+
+exports[`golden layouts — right-packed > fennel-citrus-salad 1`] = `
+"── fennel-citrus-salad / salad ──
+9 rows × 4 cols · right-packed · reuse=chip
+fennel                shave                 dress                 serve
+oranges               supreme               │                     │
+oil                   dressing              │                     │
+lemon                 │                     │                     │
+honey                 │                     │                     │
+salt                  │                     │                     │
+mint                  ···· leader 2         ─                     │
+pistachios            ···· leader 2         ─                     │
+flaky-salt            ···· leader 2         ─                     │
+
+linearization: shave → supreme → dressing → dress → serve
+criticalPath:  supreme → dress → serve
+timing[exact]: start-to-finish 17m · serial 24m · saved 7m · hands-on 14m · longest walk-away 10m"
+`;
+
+exports[`golden layouts — right-packed > grilled-artichokes 1`] = `
+"── grilled-artichokes / artichokes ──
+3 rows × 8 cols · right-packed · reuse=chip
+prelude[0] spans 8
+prelude[1] spans 8
+artichoke             trim                  steam                 cut                   brush                 season                grill-up              grill-down
+olive-oil             ···· leader 3         ─                     ─                     │                     │                     │                     │
+salt-pepper           ···· leader 4         ─                     ─                     ─                     │                     │                     │
+
+linearization: trim → steam → cut → brush → season → grill-up → grill-down
+criticalPath:  trim → steam → cut → brush → season → grill-up → grill-down
+timing[approx]: start-to-finish 42m · serial 42m · saved 0m · hands-on 27m · longest walk-away 15m"
+`;
+
+exports[`golden layouts — right-packed > long-text 1`] = `
+"── long-text / only ──
+3 rows × 3 cols · right-packed · reuse=chip
+prelude[0] spans 3
+onion                 sweat                 finish
+butter                │                     │
+stock                 ···· 1                │
+
+linearization: sweat → finish
+criticalPath:  sweat → finish
+timing[exact]: start-to-finish 85m · serial 85m · saved 0m · hands-on 0m · longest walk-away 60m"
+`;
+
+exports[`golden layouts — right-packed > no-knead-bread 1`] = `
+"── no-knead-bread / loaf ──
+4 rows × 10 cols · right-packed · reuse=chip
+prelude[0] spans 10
+flour                 whisk-dry             mix                   autolyse              folds                 bulk                  shape                 proof                 bake-covered          bake-uncovered
+salt                  │                     │                     │                     │                     │                     │                     │                     │                     │
+yeast                 │                     │                     │                     │                     │                     │                     │                     │                     │
+water                 ···· 1                │                     │                     │                     │                     │                     │                     │                     │
+
+linearization: whisk-dry → mix → autolyse → folds → bulk → shape → proof → bake-covered → bake-uncovered
+criticalPath:  whisk-dry → mix → autolyse → folds → bulk → shape → proof → bake-covered → bake-uncovered
+timing[approx]: start-to-finish 1352m · serial 1352m · saved 0m · hands-on 72m · longest walk-away 1080m · passive 1080m"
+`;
+
+exports[`golden layouts — right-packed > reuse-split 1`] = `
+"── reuse-split / crumble ──
+4 rows × 5 cols · right-packed · reuse=chip
+butter                cream                 batter                topping               bake
+sugar                 │                     │                     │                     │
+flour                 ···· 1                │                     │                     │
+oats                  ···· leader 2         ─                     │                     │
+
+linearization: cream → batter → topping → bake
+criticalPath:  cream → batter → topping → bake
+timing[approx]: start-to-finish 54m · serial 54m · saved 0m · hands-on 14m · longest walk-away 40m
+connection[chip]: butter (row 0) → topping (row 0, col 3)"
+`;
+
+exports[`golden layouts — right-packed > shepherds-pie 1`] = `
+"── shepherds-pie / mashed-potatoes ──
+5 rows × 4 cols · right-packed · reuse=chip
+russet-potatoes       boil                  mash                  season
+reserved-water        ···· 1                │                     │
+unsalted-butter       ···· 1                │                     │
+salt                  ···· leader 2         ─                     │
+ground-white-pepper   ···· leader 2         ─                     │
+
+linearization: boil → mash → season
+criticalPath:  boil → mash → season
+timing[approx]: start-to-finish 23m · serial 23m · saved 0m · hands-on 8m · longest walk-away 15m
+
+── shepherds-pie / shepherds-pie ──
+15 rows × 11 cols · right-packed · reuse=chip
+prelude[0] spans 11
+vegetable-oil         heat                  sweat                 cook-meat             mix-and-cook          thicken               season                cover-with-potatoes   drop-butter           cover-with-paprika    bake
+onion                 dice                  │                     │                     │                     │                     │                     │                     │                     │                     │
+carrot                │                     │                     │                     │                     │                     │                     │                     │                     │                     │
+celery-stalk          │                     │                     │                     │                     │                     │                     │                     │                     │                     │
+ground-lamb           ···· leader 2         ─                     │                     │                     │                     │                     │                     │                     │                     │
+flour                 ···· leader 3         ─                     ─                     │                     │                     │                     │                     │                     │                     │
+dried-rosemary        ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │                     │                     │
+dried-thyme           ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │                     │                     │
+ground-nutmeg         ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │                     │                     │
+beef-broth            ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │                     │                     │
+salt                  ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │                     │                     │
+ground-black-pepper   ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │                     │                     │
+mashed-potatoes       ···· leader 6         ─                     ─                     ─                     ─                     ─                     │                     │                     │                     │
+butter                ···· leader 6         ─                     ─                     ─                     ─                     ─                     cut-butter            │                     │                     │
+paprika               ···· leader 8         ─                     ─                     ─                     ─                     ─                     ─                     ─                     │                     │
+
+linearization: heat → dice → sweat → cook-meat → mix-and-cook → thicken → season → cover-with-potatoes → cut-butter → drop-butter → cover-with-paprika → bake
+criticalPath:  dice → sweat → cook-meat → mix-and-cook → thicken → season → cover-with-potatoes → drop-butter → cover-with-paprika → bake
+timing[approx]: start-to-finish 72m · serial 76m · saved 4m · hands-on 46m · longest walk-away 30m"
+`;
+
+exports[`golden layouts — right-packed > spinach-artichoke-skillet 1`] = `
+"── spinach-artichoke-skillet / skillet ──
+16 rows × 7 cols · right-packed · reuse=chip
+olive-oil             heat-fat              aromatics             artichokes            wilt-spinach          simmer-sauce          finish
+butter                │                     │                     │                     │                     │                     │
+shallot               ···· 1                │                     │                     │                     │                     │
+garlic                ···· 1                │                     │                     │                     │                     │
+capers                ···· 1                │                     │                     │                     │                     │
+red-pepper-flakes     ···· 1                │                     │                     │                     │                     │
+artichoke-hearts      ···· leader 2         ─                     │                     │                     │                     │
+kosher-salt           ···· leader 2         ─                     │                     │                     │                     │
+black-pepper          ···· leader 2         ─                     │                     │                     │                     │
+spinach               ···· leader 3         ─                     ─                     │                     │                     │
+cannellini-beans      ···· leader 4         ─                     ─                     ─                     │                     │
+heavy-cream           ···· leader 4         ─                     ─                     ─                     │                     │
+nutmeg                ···· leader 4         ─                     ─                     ─                     │                     │
+parmesan              ···· leader 5         ─                     ─                     ─                     ─                     │
+lemon-zest            ···· leader 5         ─                     ─                     ─                     ─                     │
+lemon-juice           ···· leader 5         ─                     ─                     ─                     ─                     │
+
+linearization: heat-fat → aromatics → artichokes → wilt-spinach → simmer-sauce → finish
+criticalPath:  heat-fat → aromatics → artichokes → wilt-spinach → simmer-sauce → finish
+timing[approx]: start-to-finish 27m · serial 27m · saved 0m · hands-on 27m · longest walk-away 0m"
+`;
+
+exports[`golden layouts — right-packed > unicode 1`] = `
+"── unicode / cake ──
+6 rows × 4 cols · right-packed · reuse=chip
+prelude[0] spans 4
+flour                 sift                  fold                  bake
+sugar                 │                     │                     │
+salt                  │                     │                     │
+butter                cream                 │                     │
+lemon                 │                     │                     │
+creme                 │                     │                     │
+
+linearization: sift → cream → fold → bake
+criticalPath:  cream → fold → bake
+timing[approx]: start-to-finish 43m · serial 45m · saved 2m · hands-on 10m · longest walk-away 35m"
+`;
+
+exports[`golden layouts — right-packed > wide-shallow 1`] = `
+"── wide-shallow / only ──
+25 rows × 3 cols · right-packed · reuse=chip
+ing-1-1               combine-1             assemble
+ing-1-2               │                     │
+ing-1-3               │                     │
+ing-1-4               │                     │
+ing-1-5               │                     │
+ing-2-1               combine-2             │
+ing-2-2               │                     │
+ing-2-3               │                     │
+ing-2-4               │                     │
+ing-2-5               │                     │
+ing-3-1               combine-3             │
+ing-3-2               │                     │
+ing-3-3               │                     │
+ing-3-4               │                     │
+ing-3-5               │                     │
+ing-4-1               combine-4             │
+ing-4-2               │                     │
+ing-4-3               │                     │
+ing-4-4               │                     │
+ing-4-5               │                     │
+ing-5-1               combine-5             │
+ing-5-2               │                     │
+ing-5-3               │                     │
+ing-5-4               │                     │
+ing-5-5               │                     │
+
+linearization: combine-1 → combine-2 → combine-3 → combine-4 → combine-5 → assemble
+criticalPath:  combine-1 → assemble
+timing[approx]: start-to-finish 8m · serial 16m · saved 8m · hands-on 16m · longest walk-away 0m"
+`;
+
+exports[`golden layouts — stretch-to-merge > beef-stroganoff 1`] = `
+"── beef-stroganoff / stroganoff ──
+10 rows × 9 cols · stretch-to-merge · reuse=chip
+beef-tenderloin       cut-strips            brown                 cook-onion            cook-mushrooms        reduce                stir-in               simmer-beef           add-dill
+butter                ···· 1                │                     │                     │                     │                     │                     │                     │
+onion                 fine-dice ⇥2          ─                     │                     │                     │                     │                     │                     │
+button-mushrooms      slice-mushrooms ⇥3    ─                     ─                     │                     │                     │                     │                     │
+beef-broth            ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │
+cognac                ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │
+sour-cream            ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │
+dijon-mustard         ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │
+dill-weed             ···· leader 7         ─                     ─                     ─                     ─                     ─                     ─                     │
+salt-pepper           ···· leader 7         ─                     ─                     ─                     ─                     ─                     ─                     │
+
+linearization: cut-strips → brown → fine-dice → cook-onion → slice-mushrooms → cook-mushrooms → reduce → stir-in → simmer-beef → add-dill
+criticalPath:  cut-strips → brown → cook-onion → cook-mushrooms → reduce → stir-in → simmer-beef → add-dill
+timing[approx]: start-to-finish 49m · serial 61m · saved 12m · hands-on 46m · longest walk-away 15m"
+`;
+
+exports[`golden layouts — stretch-to-merge > braised-short-ribs 1`] = `
+"── braised-short-ribs / ribs ──
+10 rows × 9 cols · stretch-to-merge · reuse=chip
+prelude[0] spans 9
+short-ribs            season                sear                  soffritto             darken-paste          deglaze               assemble              braise                rest
+salt-pepper           │                     │                     │                     │                     │                     │                     │                     │
+oil                   ···· 1                │                     │                     │                     │                     │                     │                     │
+onion                 chop ⇥2               ─                     │                     │                     │                     │                     │                     │
+carrot                │                     ─                     │                     │                     │                     │                     │                     │
+garlic                │                     ─                     │                     │                     │                     │                     │                     │
+tomato-paste          ···· leader 3         ─                     ─                     │                     │                     │                     │                     │
+wine                  ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │
+stock                 ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │
+thyme                 ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │
+
+linearization: season → sear → chop → soffritto → darken-paste → deglaze → assemble → braise → rest
+criticalPath:  season → sear → soffritto → darken-paste → deglaze → assemble → braise → rest
+timing[approx]: start-to-finish 269m · serial 274m · saved 5m · hands-on 44m · longest walk-away 210m"
+`;
+
+exports[`golden layouts — stretch-to-merge > deep-narrow 1`] = `
+"── deep-narrow / only ──
+3 rows × 13 cols · stretch-to-merge · reuse=chip
+base                  step-1                step-2                step-3                step-4                step-5                step-6                step-7                step-8                step-9                step-10               step-11               step-12
+middle                ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │                     │                     │                     │                     │
+finish                ···· leader 11        ─                     ─                     ─                     ─                     ─                     ─                     ─                     ─                     ─                     ─                     │
+
+linearization: step-1 → step-2 → step-3 → step-4 → step-5 → step-6 → step-7 → step-8 → step-9 → step-10 → step-11 → step-12
+criticalPath:  step-1 → step-2 → step-3 → step-4 → step-5 → step-6 → step-7 → step-8 → step-9 → step-10 → step-11 → step-12
+timing[approx]: start-to-finish 48m · serial 48m · saved 0m · hands-on 18m · longest walk-away 10m"
+`;
+
+exports[`golden layouts — stretch-to-merge > degenerate 1`] = `
+"── degenerate / only ──
+1 rows × 2 cols · stretch-to-merge · reuse=chip
+water                 boil
+
+linearization: boil
+criticalPath:  boil
+timing[approx]: start-to-finish 6m · serial 6m · saved 0m · hands-on 6m · longest walk-away 0m"
+`;
+
+exports[`golden layouts — stretch-to-merge > espresso-brownies 1`] = `
+"── espresso-brownies / brownies ──
+9 rows × 6 cols · stretch-to-merge · reuse=chip
+prelude[0] spans 6
+prelude[1] spans 6
+butter                melt                  mix-wet               mix-eggs              fold-in               bake
+sugar                 ···· 1                │                     │                     │                     │
+vanilla               ···· 1                │                     │                     │                     │
+espresso              ···· 1                │                     │                     │                     │
+eggs                  ···· leader 2         ─                     │                     │                     │
+flour                 ···· leader 3         ─                     ─                     │                     │
+cocoa                 ···· leader 3         ─                     ─                     │                     │
+baking-soda           ···· leader 3         ─                     ─                     │                     │
+salt                  ···· leader 3         ─                     ─                     │                     │
+
+linearization: melt → mix-wet → mix-eggs → fold-in → bake
+criticalPath:  melt → mix-wet → mix-eggs → fold-in → bake
+timing[approx]: start-to-finish 52m · serial 52m · saved 0m · hands-on 12m · longest walk-away 40m"
+`;
+
+exports[`golden layouts — stretch-to-merge > fennel-citrus-salad 1`] = `
+"── fennel-citrus-salad / salad ──
+9 rows × 4 cols · stretch-to-merge · reuse=chip
+fennel                shave                 dress                 serve
+oranges               supreme               │                     │
+oil                   dressing              │                     │
+lemon                 │                     │                     │
+honey                 │                     │                     │
+salt                  │                     │                     │
+mint                  ···· leader 2         ─                     │
+pistachios            ···· leader 2         ─                     │
+flaky-salt            ···· leader 2         ─                     │
+
+linearization: shave → supreme → dressing → dress → serve
+criticalPath:  supreme → dress → serve
+timing[exact]: start-to-finish 17m · serial 24m · saved 7m · hands-on 14m · longest walk-away 10m"
+`;
+
+exports[`golden layouts — stretch-to-merge > grilled-artichokes 1`] = `
+"── grilled-artichokes / artichokes ──
+3 rows × 8 cols · stretch-to-merge · reuse=chip
+prelude[0] spans 8
+prelude[1] spans 8
+artichoke             trim                  steam                 cut                   brush                 season                grill-up              grill-down
+olive-oil             ···· leader 3         ─                     ─                     │                     │                     │                     │
+salt-pepper           ···· leader 4         ─                     ─                     ─                     │                     │                     │
+
+linearization: trim → steam → cut → brush → season → grill-up → grill-down
+criticalPath:  trim → steam → cut → brush → season → grill-up → grill-down
+timing[approx]: start-to-finish 42m · serial 42m · saved 0m · hands-on 27m · longest walk-away 15m"
+`;
+
+exports[`golden layouts — stretch-to-merge > long-text 1`] = `
+"── long-text / only ──
+3 rows × 3 cols · stretch-to-merge · reuse=chip
+prelude[0] spans 3
+onion                 sweat                 finish
+butter                │                     │
+stock                 ···· 1                │
+
+linearization: sweat → finish
+criticalPath:  sweat → finish
+timing[exact]: start-to-finish 85m · serial 85m · saved 0m · hands-on 0m · longest walk-away 60m"
+`;
+
+exports[`golden layouts — stretch-to-merge > no-knead-bread 1`] = `
+"── no-knead-bread / loaf ──
+4 rows × 10 cols · stretch-to-merge · reuse=chip
+prelude[0] spans 10
+flour                 whisk-dry             mix                   autolyse              folds                 bulk                  shape                 proof                 bake-covered          bake-uncovered
+salt                  │                     │                     │                     │                     │                     │                     │                     │                     │
+yeast                 │                     │                     │                     │                     │                     │                     │                     │                     │
+water                 ···· 1                │                     │                     │                     │                     │                     │                     │                     │
+
+linearization: whisk-dry → mix → autolyse → folds → bulk → shape → proof → bake-covered → bake-uncovered
+criticalPath:  whisk-dry → mix → autolyse → folds → bulk → shape → proof → bake-covered → bake-uncovered
+timing[approx]: start-to-finish 1352m · serial 1352m · saved 0m · hands-on 72m · longest walk-away 1080m · passive 1080m"
+`;
+
+exports[`golden layouts — stretch-to-merge > reuse-split 1`] = `
+"── reuse-split / crumble ──
+4 rows × 5 cols · stretch-to-merge · reuse=chip
+butter                cream                 batter                topping               bake
+sugar                 │                     │                     │                     │
+flour                 ···· 1                │                     │                     │
+oats                  ···· leader 2         ─                     │                     │
+
+linearization: cream → batter → topping → bake
+criticalPath:  cream → batter → topping → bake
+timing[approx]: start-to-finish 54m · serial 54m · saved 0m · hands-on 14m · longest walk-away 40m
+connection[chip]: butter (row 0) → topping (row 0, col 3)"
+`;
+
+exports[`golden layouts — stretch-to-merge > shepherds-pie 1`] = `
+"── shepherds-pie / mashed-potatoes ──
+5 rows × 4 cols · stretch-to-merge · reuse=chip
+russet-potatoes       boil                  mash                  season
+reserved-water        ···· 1                │                     │
+unsalted-butter       ···· 1                │                     │
+salt                  ···· leader 2         ─                     │
+ground-white-pepper   ···· leader 2         ─                     │
+
+linearization: boil → mash → season
+criticalPath:  boil → mash → season
+timing[approx]: start-to-finish 23m · serial 23m · saved 0m · hands-on 8m · longest walk-away 15m
+
+── shepherds-pie / shepherds-pie ──
+15 rows × 11 cols · stretch-to-merge · reuse=chip
+prelude[0] spans 11
+vegetable-oil         heat                  sweat                 cook-meat             mix-and-cook          thicken               season                cover-with-potatoes   drop-butter           cover-with-paprika    bake
+onion                 dice                  │                     │                     │                     │                     │                     │                     │                     │                     │
+carrot                │                     │                     │                     │                     │                     │                     │                     │                     │                     │
+celery-stalk          │                     │                     │                     │                     │                     │                     │                     │                     │                     │
+ground-lamb           ···· leader 2         ─                     │                     │                     │                     │                     │                     │                     │                     │
+flour                 ···· leader 3         ─                     ─                     │                     │                     │                     │                     │                     │                     │
+dried-rosemary        ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │                     │                     │
+dried-thyme           ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │                     │                     │
+ground-nutmeg         ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │                     │                     │
+beef-broth            ···· leader 4         ─                     ─                     ─                     │                     │                     │                     │                     │                     │
+salt                  ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │                     │                     │
+ground-black-pepper   ···· leader 5         ─                     ─                     ─                     ─                     │                     │                     │                     │                     │
+mashed-potatoes       ···· leader 6         ─                     ─                     ─                     ─                     ─                     │                     │                     │                     │
+butter                cut-butter ⇥7         ─                     ─                     ─                     ─                     ─                     ─                     │                     │                     │
+paprika               ···· leader 8         ─                     ─                     ─                     ─                     ─                     ─                     ─                     │                     │
+
+linearization: heat → dice → sweat → cook-meat → mix-and-cook → thicken → season → cover-with-potatoes → cut-butter → drop-butter → cover-with-paprika → bake
+criticalPath:  dice → sweat → cook-meat → mix-and-cook → thicken → season → cover-with-potatoes → drop-butter → cover-with-paprika → bake
+timing[approx]: start-to-finish 72m · serial 76m · saved 4m · hands-on 46m · longest walk-away 30m"
+`;
+
+exports[`golden layouts — stretch-to-merge > spinach-artichoke-skillet 1`] = `
+"── spinach-artichoke-skillet / skillet ──
+16 rows × 7 cols · stretch-to-merge · reuse=chip
+olive-oil             heat-fat              aromatics             artichokes            wilt-spinach          simmer-sauce          finish
+butter                │                     │                     │                     │                     │                     │
+shallot               ···· 1                │                     │                     │                     │                     │
+garlic                ···· 1                │                     │                     │                     │                     │
+capers                ···· 1                │                     │                     │                     │                     │
+red-pepper-flakes     ···· 1                │                     │                     │                     │                     │
+artichoke-hearts      ···· leader 2         ─                     │                     │                     │                     │
+kosher-salt           ···· leader 2         ─                     │                     │                     │                     │
+black-pepper          ···· leader 2         ─                     │                     │                     │                     │
+spinach               ···· leader 3         ─                     ─                     │                     │                     │
+cannellini-beans      ···· leader 4         ─                     ─                     ─                     │                     │
+heavy-cream           ···· leader 4         ─                     ─                     ─                     │                     │
+nutmeg                ···· leader 4         ─                     ─                     ─                     │                     │
+parmesan              ···· leader 5         ─                     ─                     ─                     ─                     │
+lemon-zest            ···· leader 5         ─                     ─                     ─                     ─                     │
+lemon-juice           ···· leader 5         ─                     ─                     ─                     ─                     │
+
+linearization: heat-fat → aromatics → artichokes → wilt-spinach → simmer-sauce → finish
+criticalPath:  heat-fat → aromatics → artichokes → wilt-spinach → simmer-sauce → finish
+timing[approx]: start-to-finish 27m · serial 27m · saved 0m · hands-on 27m · longest walk-away 0m"
+`;
+
+exports[`golden layouts — stretch-to-merge > unicode 1`] = `
+"── unicode / cake ──
+6 rows × 4 cols · stretch-to-merge · reuse=chip
+prelude[0] spans 4
+flour                 sift                  fold                  bake
+sugar                 │                     │                     │
+salt                  │                     │                     │
+butter                cream                 │                     │
+lemon                 │                     │                     │
+creme                 │                     │                     │
+
+linearization: sift → cream → fold → bake
+criticalPath:  cream → fold → bake
+timing[approx]: start-to-finish 43m · serial 45m · saved 2m · hands-on 10m · longest walk-away 35m"
+`;
+
+exports[`golden layouts — stretch-to-merge > wide-shallow 1`] = `
+"── wide-shallow / only ──
+25 rows × 3 cols · stretch-to-merge · reuse=chip
+ing-1-1               combine-1             assemble
+ing-1-2               │                     │
+ing-1-3               │                     │
+ing-1-4               │                     │
+ing-1-5               │                     │
+ing-2-1               combine-2             │
+ing-2-2               │                     │
+ing-2-3               │                     │
+ing-2-4               │                     │
+ing-2-5               │                     │
+ing-3-1               combine-3             │
+ing-3-2               │                     │
+ing-3-3               │                     │
+ing-3-4               │                     │
+ing-3-5               │                     │
+ing-4-1               combine-4             │
+ing-4-2               │                     │
+ing-4-3               │                     │
+ing-4-4               │                     │
+ing-4-5               │                     │
+ing-5-1               combine-5             │
+ing-5-2               │                     │
+ing-5-3               │                     │
+ing-5-4               │                     │
+ing-5-5               │                     │
+
+linearization: combine-1 → combine-2 → combine-3 → combine-4 → combine-5 → assemble
+criticalPath:  combine-1 → assemble
+timing[approx]: start-to-finish 8m · serial 16m · saved 8m · hands-on 16m · longest walk-away 0m"
+`;
+
+exports[`parallel saving across the corpus > is recorded for every recipe 1`] = `
+"beef-stroganoff/stroganoff: saves 12m of 61m (20%)
+braised-short-ribs/ribs: saves 5m of 274m (2%)
+espresso-brownies/brownies: saves 0m of 52m (0%)
+fennel-citrus-salad/salad: saves 7m of 24m (29%)
+grilled-artichokes/artichokes: saves 0m of 42m (0%)
+no-knead-bread/loaf: saves 0m of 1352m (0%)
+shepherds-pie/mashed-potatoes: saves 0m of 23m (0%)
+shepherds-pie/shepherds-pie: saves 4m of 76m (5%)
+spinach-artichoke-skillet/skillet: saves 0m of 27m (0%)"
+`;
