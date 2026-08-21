@@ -194,11 +194,14 @@ body {
   display: grid;
   gap: var(--space-gap);
   grid-template-columns:
-    minmax(var(--space-ingredient-column), max-content)
-    repeat(var(--cols), minmax(var(--space-step-column-min), 1fr));
+    minmax(var(--space-ingredient-column), var(--space-ingredient-column-max))
+    repeat(var(--cols), minmax(var(--space-step-column-min), var(--space-step-column-max)));
   grid-template-rows: repeat(var(--rows), minmax(2.3rem, auto));
+  /* Deliberately not `min-width: 100%`. Stretching the tracks to fill a wide viewport makes
+     every cell enormous and every line of text a thin ribbon inside it. A chart is a chart, not
+     a layout — it should be as wide as it needs to be and no wider. */
   width: max-content;
-  min-width: 100%;
+  max-width: 100%;
 }
 
 .cell {
@@ -225,7 +228,7 @@ body {
 }
 /* R9: long step text wraps inside its own region rather than forcing the column wider. */
 .step-text {
-  max-width: var(--space-step-measure);
+  max-width: 100%;
 }
 
 /* R5: fill ramps by depth from the root, so the shading reads as "how close to done".

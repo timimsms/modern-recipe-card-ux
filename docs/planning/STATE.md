@@ -19,7 +19,7 @@ derived edges, groups, linearization, critical path and `TimingSummary`. 200 tes
 framework. 274 tests pass. **E1 — the item that gated the token freeze — is resolved.**
 
 ```sh
-python3 -m http.server 8731        # then open /experiments/01-css-grid/
+pnpm serve        # then open http://localhost:8731/experiments/01-css-grid/
 ```
 
 ```sh
@@ -81,9 +81,9 @@ to the `Artifact` tool as `url` — otherwise a new URL is minted instead of upd
 3. **Q3 — table vs. CSS Grid substrate.** Deferred to Phase 06 by design; needs real screen readers.
    Q1 turned up evidence here: a table cannot express "nothing is here", which is part of why R1's
    stray-border complaint exists at all.
-4. **R5's depth ramp does nothing on a long chain.** Bread is nine deep, the ramp has five steps,
-   and everything past depth 4 clamps flat. The shading is built for wide, shallow convergence.
-   Raised by the E1 render; should be settled before Phase 03 closes.
+4. **Multi-component charts share no row rhythm.** Shepherd's pie renders mashed potatoes (4
+   columns) above the pie (11), and the two grids align on nothing. PHASE-03 proposed `subgrid`;
+   nothing has been tried.
 
 **Resolved:** Q1 (`findings/Q1-column-assignment.md`), I4 (`findings/I4-reuse.md`),
 Q4 (`findings/Q4-authoring-ergonomics.md`), Q5 (`findings/Q5-time-axis.md`),
@@ -107,20 +107,27 @@ that EDGE-CASES' "revisit if common" condition is met; Phase 03 should answer it
 **Finish Phase 03.** The renderer works and the gate is cleared; what remains is the acceptance
 list in `phases/PHASE-03`, most of which is unstarted:
 
-1. **Fix R5's depth ramp on long chains** (open question 4 above). This is the one that could still
-   move the tokens, so do it before anything is called frozen.
-2. **Visual regression baselines.** Playwright screenshots of every corpus recipe at a fixed width,
+1. **Visual regression baselines.** Playwright screenshots of every corpus recipe at a fixed width,
    committed. These become the fidelity reference Phase 08 scores the other tracks against, so
    nothing downstream is trustworthy until they exist.
-3. **Verify the R1–R7 claims against `IMG_4225`** rather than asserting them. The brownies chart is
-   the one every complaint in the Threads audit was written about.
-4. **Check `long-text.json` does not blow out column widths** (R9), and that greyscale print stays
-   interpretable.
+2. **Greyscale print check.** The ramp is a luminance scale so it should survive by construction,
+   but that has been reasoned, not printed.
+3. **R7 check-off is written but unexercised.** The generated `:has()` rules render; nobody has
+   clicked a box and confirmed the fill propagates.
 
 Already done and not worth redoing: the leader rule is drawn from `PlacedCell.leader`; the
 at-a-glance bar handles `parallelSaving: 0` by dropping the field and saying "nothing overlaps in
 this recipe — the steps run in order"; check-off propagates with no JavaScript, via one generated
-`:has()` rule per ingredient.
+`:has()` rule per ingredient. Both of PHASE-03's own open questions are settled — the depth ramp
+scales to `GridPlan.maxDepth` per chart, and it runs **darkest at the finished dish**.
+
+R9 is met by capping the grid *tracks*, not the text. Capping the text inside an uncapped column
+gave the worst of both: a 621px cell with its text wrapping in a 130px ribbon. With ceilings on
+the tracks, `long-text.json` renders 996px wide instead of 1,749.
+
+**Serve with `pnpm serve`,** not `python -m http.server`. The tracks have no build step and
+nothing fingerprints filenames, so a plain server hands the browser a cached module or stylesheet
+after every edit — this cost real time twice.
 
 ## Things a future session should not re-derive
 

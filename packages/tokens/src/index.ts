@@ -82,7 +82,14 @@ export const dark: Palette = {
  * print preserves. Group identity then comes from rule weight and position, which R5 wanted as
  * the redundant channel anyway.
  *
- * Values are mix percentages of `rule` into `surface`, indexed by distance from the root.
+ * Values are mix percentages of `rule` into `surface`, **darkest at the finished dish**. PHASE-03
+ * asked whether the ramp should run the other way — lightest at the root, reading as "converging
+ * toward finished". Rendered on shepherd's pie, that inverts the emphasis: the eye is pulled left
+ * to the raw ingredients, the deepest prep steps become the heaviest cells on the chart, and the
+ * finished dish — the one cell everything else exists to produce — is the palest thing on it.
+ *
+ * A renderer scales these to the chart's own `GridPlan.maxDepth` rather than using the index
+ * directly; an absolute mapping collapses on a long chain.
  *
  * Five steps, not more. Percentage is not linear in perceived luminance, so a longer ramp
  * bunches up at the shallow end — the seven-step version tested at 1.03 between its last two
@@ -143,10 +150,18 @@ export const space = {
   gap: '2px',
   cellPaddingY: '0.4rem',
   cellPaddingX: '0.5rem',
-  /** R9: step text wraps inside its region rather than forcing the column wider. */
-  stepMeasure: '18ch',
+  /**
+   * R9, as track ceilings rather than a text measure.
+   *
+   * Capping the *text* inside an uncapped column produced the worst of both: the column stretched
+   * to whatever was available and the text sat in a narrow ribbon inside it — a 621px cell
+   * wrapping at 18ch. Capping the column instead means long text wraps because it has run out of
+   * column, which is what R9 actually asks for, and a 20rem column is ~45 characters at step size.
+   */
   ingredientColumn: '13rem',
+  ingredientColumnMax: '22rem',
   stepColumnMin: '6.5rem',
+  stepColumnMax: '20rem',
   radius: '2px',
 } as const
 

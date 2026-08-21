@@ -38,6 +38,13 @@
           </select>
         </label>
         <label>
+          shading
+          <select id="ramp">
+            <option value="accumulating">darkest at the finished dish</option>
+            <option value="converging">lightest at the finished dish</option>
+          </select>
+        </label>
+        <label>
           theme
           <select id="theme">
             <option value="light">light</option>
@@ -47,11 +54,11 @@
       </div>
       <div id="cards"></div>
     </main>
-    <!-- Imported with a cache-buster rather than linked directly. This track has no build step,
-         so an edited module is otherwise served from Chrome's cache and you end up debugging
-         code you already fixed. -->
+    <!-- Serve with `pnpm serve`, which sends no-store. A plain static server will hand you a
+         cached module or stylesheet after an edit, because this track has no build step and
+         nothing fingerprints the filenames. -->
     <script type="module">
-      import(`./src/main.js?v=${Date.now()}`).catch((error) => {
+      import('./src/main.js').catch((error) => {
         document.getElementById('cards').innerHTML =
           `<pre class="failure">${error.stack ?? error.message}</pre>`
       })

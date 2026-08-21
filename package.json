@@ -15,6 +15,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "serve": "node scripts/serve.mjs",
     "boundaries": "depcruise packages experiments --config .dependency-cruiser.cjs",
     "check": "pnpm typecheck && pnpm lint && pnpm boundaries && pnpm format:check && pnpm test"
   },

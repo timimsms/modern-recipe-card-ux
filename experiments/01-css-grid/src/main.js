@@ -34,6 +34,7 @@ const picker = document.getElementById('recipe')
 const strategy = document.getElementById('strategy')
 const reuse = document.getElementById('reuse')
 const markRule = document.getElementById('markrule')
+const ramp = document.getElementById('ramp')
 
 for (const group of [
   { label: 'recipes', items: RECIPES, dir: 'recipes' },
@@ -60,7 +61,7 @@ async function show() {
   recipe.plans = recipe.components.map((c) =>
     layout(c, { columns: strategy.value, reuse: reuse.value }),
   )
-  root.innerHTML = renderCard(recipe, { markRule: markRule.value })
+  root.innerHTML = renderCard(recipe, { markRule: markRule.value, ramp: ramp.value })
   document.title = `${recipe.title} — track 01`
 }
 
@@ -75,7 +76,7 @@ async function refresh() {
   }
 }
 
-for (const control of [picker, strategy, reuse, markRule])
+for (const control of [picker, strategy, reuse, markRule, ramp])
   control.addEventListener('change', refresh)
 
 const theme = document.getElementById('theme')

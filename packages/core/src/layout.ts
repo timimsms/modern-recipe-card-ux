@@ -156,6 +156,12 @@ export type GridPlan = {
   columnCount: number
   /** Equals the number of rows in the ingredient column after any reuse expansion. */
   rows: number
+  /**
+   * Distance from the root to the furthest step. A renderer needs this to scale a depth-based
+   * encoding to the chart it is actually drawing: an absolute ramp collapses on a long chain,
+   * where more than half the cells end up in whichever bucket the scale bottoms out in.
+   */
+  maxDepth: number
   cells: PlacedCell[]
   preludes: PlacedPrelude[]
   groups: PlacedGroup[]
@@ -598,6 +604,7 @@ export function layout(component: Component, options: LayoutOptions = {}): GridP
     reuse: opts.reuse,
     columnCount: maxColumn + 1,
     rows,
+    maxDepth: a.maxDepth,
     cells: cells.sort((x, y) => x.row - y.row || x.col - y.col),
     preludes: component.prelude.map((p, order) => ({
       ref: p.id,

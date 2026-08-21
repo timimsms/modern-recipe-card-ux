@@ -54,9 +54,10 @@
   --space-gap: 2px;
   --space-cell-padding-y: 0.4rem;
   --space-cell-padding-x: 0.5rem;
-  --space-step-measure: 18ch;
   --space-ingredient-column: 13rem;
+  --space-ingredient-column-max: 22rem;
   --space-step-column-min: 6.5rem;
+  --space-step-column-max: 20rem;
   --space-radius: 2px;
 }
 

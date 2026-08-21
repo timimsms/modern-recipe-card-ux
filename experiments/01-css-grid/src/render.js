@@ -145,6 +145,26 @@ export function renderGlance(recipe, component, plan, options = {}) {
 
 // --- The chart ---------------------------------------------------------------------------------
 
+/** How many fills the token ramp defines. Kept in step with `depthRamp` in @recipe/tokens. */
+const RAMP_STEPS = 5
+
+/**
+ * Which fill a cell gets, scaled to the chart it is in rather than to an absolute depth.
+ *
+ * An absolute mapping looked fine on the brownies (4 deep) and collapsed on everything longer:
+ * 7 of shepherd's pie's 12 step cells landed in the flattest bucket, and the deep half of the
+ * chain — where "how close to done" is most worth knowing — came out uniformly flat.
+ *
+ * Normalising means the same depth can shade differently in two recipes. That is the same trade
+ * Q5 already accepted for the duration bars, and it is the right one: a reader sees one chart at
+ * a time, and what the ramp encodes is progress through *this* recipe.
+ */
+function shadeFor(depth, maxDepth, direction) {
+  const span = Math.max(1, maxDepth)
+  const index = Math.round((depth / span) * (RAMP_STEPS - 1))
+  return direction === 'converging' ? RAMP_STEPS - 1 - index : index
+}
+
 function edgeStyle(edges) {
   return ['top', 'right', 'bottom', 'left']
     .map((side) => `border-${side}-width:var(--edge-${edges[side]})`)
@@ -222,7 +242,7 @@ export function renderChart(component, plan, options = {}) {
         : ''
 
     parts.push(
-      `<div class="cell step d${Math.min(cell.depth, 4)}${isUnattended(step.effort) ? ' unatt' : ''}" ` +
+      `<div class="cell step d${shadeFor(cell.depth, plan.maxDepth, options.ramp)}${isUnattended(step.effort) ? ' unatt' : ''}" ` +
         `style="${area};${edgeStyle(cell.edges)}" data-fed-by="${esc(feedsOf(component, plan, cell.ref).join(' '))}">` +
         `${chips}<span class="step-text">${esc(step.text)}</span>${temp}${markFor(step, polarity)}</div>`,
     )
