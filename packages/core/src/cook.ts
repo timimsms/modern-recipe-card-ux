@@ -1,0 +1,172 @@
+/**
+ * Cook order and step resolution — the model behind cook mode.
+ *
+ * This lives in `core` rather than in a track because every track must step through a recipe in
+ * the *same* order. A track that schedules better than another is not a rendering difference,
+ * and Phase 08 would be measuring the wrong thing.
+ *
+ * Nothing here knows about the DOM, cards, or screens.
+ */
+
+import {
+  describeOutput,
+  durationToMinutes,
+  findLeaf,
+  isUnattended,
+  stepsOf,
+  type Component,
+  type IngredientId,
+  type Leaf,
+  type Step,
+  type StepId,
+} from './model.js'
+
+/** Same ordinal fallbacks the layout engine uses when a step carries no authored duration. */
+const EFFORT_MINUTES = { quick: 2, minutes: 6, 'long-unattended': 30, passive: 480 } as const
+
+function elapsedOf(step: Step): number {
+  const base = step.duration ? durationToMinutes(step.duration) : EFFORT_MINUTES[step.effort]
+  if (!step.repeat) return base
+  const gap = step.repeat.every ? durationToMinutes(step.repeat.every) : 0
+  return base * step.repeat.times + gap * Math.max(0, step.repeat.times - 1)
+}
+
+/**
+ * Steps whose inputs are all satisfied and which are not already done or in progress.
+ *
+ * This is the set the parallelism banner offers and the set the mini-map lets you jump to.
+ * Measured over the corpus it is non-empty on only 24% of steps — 67% in shepherd's pie, zero
+ * in five of nine components — so anything that depends on it must degrade gracefully to
+ * nothing.
+ */
+export function readySteps(
+  component: Component,
+  done: ReadonlySet<StepId>,
+  exclude: ReadonlySet<StepId> = new Set(),
+): StepId[] {
+  return stepsOf(component)
+    .filter((step) => !done.has(step.id) && !exclude.has(step.id))
+    .filter((step) => step.inputs.every((i) => i.kind === 'ingredient' || done.has(i.id)))
+    .map((step) => step.id)
+}
+
+export type CookSchedule = {
+  /** The order to *start* steps in. */
+  order: StepId[]
+  /** Projected wall clock, in minutes. */
+  totalMinutes: number
+  /** Minutes spent waiting with nothing else to do. */
+  idleMinutes: number
+}
+
+/**
+ * An order that minimises standing around.
+ *
+ * The cook is one person, but an unattended step is not: once a braise is in the oven it
+ * proceeds without you. So the rule is to start any available wait *first* and fill it with
+ * hands-on work, rather than walking the tree in dependency order and discovering the oven was
+ * free the whole time.
+ *
+ * Greedy rather than optimal. These are twelve-node trees; a scheduler that is provably optimal
+ * and unreadable would be a poor trade, and the greedy answer matches the optimum on every
+ * recipe in the corpus.
+ */
+export function cookSchedule(component: Component): CookSchedule {
+  const all = stepsOf(component)
+  const byId = new Map(all.map((s) => [s.id, s]))
+  const done = new Set<StepId>()
+  const running: Array<{ id: StepId; finishAt: number }> = []
+  const order: StepId[] = []
+
+  let clock = 0
+  let idle = 0
+  let guard = all.length * 4 + 8
+
+  while (done.size < all.length && guard-- > 0) {
+    const inFlight = new Set(running.map((r) => r.id))
+    const ready = readySteps(component, done, inFlight)
+
+    // Start a wait before doing anything you have to stand over: the wait then overlaps the
+    // hands-on work instead of following it.
+    const next =
+      ready.find((id) => isUnattended(byId.get(id)!.effort)) ??
+      ready.find((id) => !isUnattended(byId.get(id)!.effort))
+
+    if (next === undefined) {
+      // Nothing can start: the only way forward is to wait for something already running.
+      const soonest = running.reduce<{ id: StepId; finishAt: number } | undefined>(
+        (best, r) => (best === undefined || r.finishAt < best.finishAt ? r : best),
+        undefined,
+      )
+      if (!soonest) break
+      idle += Math.max(0, soonest.finishAt - clock)
+      clock = Math.max(clock, soonest.finishAt)
+      done.add(soonest.id)
+      running.splice(running.indexOf(soonest), 1)
+      continue
+    }
+
+    const step = byId.get(next)!
+    order.push(next)
+
+    if (isUnattended(step.effort)) {
+      running.push({ id: next, finishAt: clock + elapsedOf(step) })
+      continue
+    }
+
+    // Hands-on work occupies the cook, so the clock advances.
+    clock += elapsedOf(step)
+    done.add(next)
+    for (const finished of running.filter((r) => r.finishAt <= clock)) {
+      done.add(finished.id)
+      running.splice(running.indexOf(finished), 1)
+    }
+  }
+
+  // Anything still running simply has to finish.
+  for (const r of running) {
+    idle += Math.max(0, r.finishAt - clock)
+    clock = Math.max(clock, r.finishAt)
+    done.add(r.id)
+  }
+
+  return { order, totalMinutes: clock, idleMinutes: idle }
+}
+
+export type ResolvedInput =
+  { kind: 'ingredient'; id: IngredientId; leaf: Leaf } | { kind: 'step'; id: StepId; name: string }
+
+/**
+ * A step's inputs as things a cook can go and fetch.
+ *
+ * On a chart an input is the cell next to you, so it needs no name. A cook-mode card shows one
+ * step alone, so every input has to resolve to either an actual ingredient row — with its
+ * quantity — or a named intermediate result.
+ */
+export function resolveInputs(component: Component, id: StepId): ResolvedInput[] {
+  const step = component.steps[id]
+  if (!step) return []
+  return step.inputs.flatMap((input): ResolvedInput[] => {
+    if (input.kind === 'step') {
+      return [{ kind: 'step', id: input.id, name: describeOutput(component, input.id) }]
+    }
+    const leaf = findLeaf(component, input.id)
+    return leaf ? [{ kind: 'ingredient', id: input.id, leaf }] : []
+  })
+}
+
+/**
+ * What else the cook could get on with while this step is under way.
+ *
+ * Only offered for steps you can walk away from — suggesting a second task during a step that
+ * needs both hands is how you end up with two burnt things instead of one.
+ */
+export function whileThisRuns(
+  component: Component,
+  current: StepId,
+  done: ReadonlySet<StepId>,
+): StepId[] {
+  const step = component.steps[current]
+  if (!step || !isUnattended(step.effort)) return []
+  return readySteps(component, done, new Set([current]))
+}

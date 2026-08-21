@@ -62,6 +62,45 @@ the two now agree exactly, which is a useful confirmation that both are measurin
 So W5 is not a style warning. **An implicit join destroys the recipe's only claim on the format**,
 and the validator now catches it before a chart is ever drawn.
 
+## Worse than that: the saving needs a second person
+
+Added during Phase 04, when the cook-mode scheduler made it measurable.
+
+`criticalPathDuration` is the longest dependency chain, which is the right answer to "how long
+is this recipe" and the **wrong** answer to "when will I eat". A critical path assumes unlimited
+hands: it happily runs `dice the onion` and `slice the mushrooms` at the same instant. One cook
+cannot. Waits overlap work — a braise proceeds without you — but two hands-on steps never
+overlap each other.
+
+`cookSchedule` computes what one person can actually achieve. Comparing the two:
+
+| Component | Critical path | One cook | |
+| --- | --- | --- | --- |
+| beef-stroganoff | 49m | 61m | **unreachable alone by 12m** |
+| fennel-citrus-salad | 17m | 24m | **unreachable alone by 7m** |
+| braised-short-ribs | 269m | 274m | **unreachable alone by 5m** |
+| shepherds-pie | 72m | 76m | **unreachable alone by 4m** |
+| the other five | — | — | reachable alone |
+
+**The gap equals `parallelSaving` exactly, on every recipe where either is non-zero.** That is
+not a coincidence — it is the same quantity seen from two directions. Every minute this format
+claims to save is a minute that requires somebody else in the kitchen.
+
+So the earlier finding understates the problem. It is not that the saving is small; on this
+corpus, for one cook, **the saving is zero everywhere**.
+
+What survives unharmed: convergence structure, `longestWalkAway`, and the mini-map. Knowing that
+a bread has eighteen hours of waiting in it, or that a step's inputs are two prior results rather
+than raw ingredients, does not depend on any of this.
+
+### What changed as a result
+
+- `TimingSummary` gained `singleCook` and `idle`. The at-a-glance bar's **start to finish now
+  reports `singleCook`**, because a summary bar is read by one person deciding whether to begin.
+- "Saved in parallel" is **no longer a field**. It is a sentence, and it names its condition:
+  *"12 min of this could be saved with a second pair of hands."* A number in a bar reads as a
+  promise; that sentence is a conditional, which is what it always was.
+
 ## Consequences
 
 - **Phase 03's at-a-glance bar must handle a zero honestly.** Rendering "saved in parallel: 0 min"

@@ -52,8 +52,9 @@ function render(plan: GridPlan): string {
   lines.push(`criticalPath:  ${plan.criticalPath.join(' → ')}`)
   const t = plan.timing
   lines.push(
-    `timing[${t.basis}]: start-to-finish ${t.criticalPathDuration}m · serial ${t.serialTotal}m · ` +
-      `saved ${t.parallelSaving}m · hands-on ${t.handsOn}m · longest walk-away ${t.longestWalkAway}m` +
+    `timing[${t.basis}]: one cook ${t.singleCook}m (idle ${t.idle}m) · critical path ` +
+      `${t.criticalPathDuration}m · serial ${t.serialTotal}m · saved ${t.parallelSaving}m · ` +
+      `hands-on ${t.handsOn}m · longest walk-away ${t.longestWalkAway}m` +
       (t.passiveTotal ? ` · passive ${t.passiveTotal}m` : ''),
   )
   for (const c of plan.connections) {
@@ -115,6 +116,24 @@ describe('parallel saving across the corpus', () => {
           const t = layout(component).timing
           const pct = t.serialTotal === 0 ? 0 : Math.round((t.parallelSaving / t.serialTotal) * 100)
           return `${entry.slug}/${component.id}: saves ${t.parallelSaving}m of ${t.serialTotal}m (${pct}%)`
+        }),
+      )
+      .join('\n')
+    expect(report).toMatchSnapshot()
+  })
+
+  /**
+   * The critical path assumes unlimited hands. This records what one person can actually
+   * achieve, because the difference turned out to be the entire claimed saving.
+   */
+  it('is compared against what a single cook can reach', () => {
+    const report = loadRecipes()
+      .flatMap((entry) =>
+        entry.recipe.components.map((component) => {
+          const t = layout(component).timing
+          const gap = t.singleCook - t.criticalPathDuration
+          const verdict = gap > 0 ? `unreachable alone by ${gap}m` : 'reachable alone'
+          return `${entry.slug}/${component.id}: critical path ${t.criticalPathDuration}m · one cook ${t.singleCook}m — ${verdict}`
         }),
       )
       .join('\n')

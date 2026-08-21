@@ -100,15 +100,14 @@ export function renderGlance(recipe, component, plan, options = {}) {
   ]
 
   if (t.basis !== 'none') {
-    fields.push({ label: 'start to finish', value: minutes(t.criticalPathDuration), tone: 'total' })
+    // `singleCook`, not `criticalPathDuration`. The critical path assumes unlimited hands and
+    // lets two attended steps run at once; measured across the corpus it is unreachable by a
+    // person cooking alone on every recipe where it differs from this. A summary bar is read by
+    // one person deciding whether to start, so it gets the number they can actually achieve.
+    fields.push({ label: 'start to finish', value: minutes(t.singleCook), tone: 'total' })
     fields.push({ label: 'hands-on', value: minutes(t.handsOn) })
     if (t.longestWalkAway > 0) {
       fields.push({ label: 'longest walk-away', value: minutes(t.longestWalkAway), tone: 'away' })
-    }
-    // A zero here is the honest answer for most of this corpus, and hiding it would be the
-    // dishonest one — but it is not worth a whole field, so it becomes a sentence instead.
-    if (t.parallelSaving > 0) {
-      fields.push({ label: 'saved in parallel', value: minutes(t.parallelSaving), tone: 'saved' })
     }
   }
 
@@ -135,8 +134,13 @@ export function renderGlance(recipe, component, plan, options = {}) {
 
   const notes = []
   if (t.basis === 'approx') notes.push('times are approximate — most steps are not timed')
-  if (t.basis !== 'none' && t.parallelSaving === 0 && plan.linearization.length > 1) {
-    notes.push('nothing overlaps in this recipe — the steps run in order')
+  if (t.basis !== 'none' && plan.linearization.length > 1) {
+    // Two different claims, and only one of them is ever true.
+    notes.push(
+      t.parallelSaving === 0
+        ? 'nothing overlaps in this recipe — the steps run in order'
+        : `${minutes(t.parallelSaving)} of this could be saved with a second pair of hands`,
+    )
   }
   const note = notes.length ? `<p class="glance-note">${esc(notes.join(' · '))}</p>` : ''
 

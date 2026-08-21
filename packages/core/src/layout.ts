@@ -16,6 +16,7 @@
  *    this file, and it defaults to a reference chip: one row, one quantity.
  */
 
+import { cookSchedule } from './cook.js'
 import {
   childSteps,
   durationToMinutes,
@@ -129,8 +130,26 @@ export type Connection = {
 export type TimingBasis = 'exact' | 'approx' | 'none'
 
 export type TimingSummary = {
-  /** True wall clock: the longest chain, never the sum. */
+  /**
+   * The longest chain, never the sum.
+   *
+   * **This assumes unlimited hands.** It is the right number for "how long is this recipe" in
+   * the abstract and the wrong one for "when will I eat", because it lets two attended steps
+   * happen at once. Prefer `singleCook` for anything shown to a person cooking alone.
+   */
   criticalPathDuration: number
+  /**
+   * Start to finish for one cook: waits overlap hands-on work, but two hands-on steps never
+   * overlap each other.
+   *
+   * Measured across the corpus this is *larger* than `criticalPathDuration` on exactly the four
+   * components where `parallelSaving` is non-zero, by exactly the saving — so on this corpus
+   * every minute the format claims to save requires a second person. See
+   * findings/P02-parallel-saving.md.
+   */
+  singleCook: number
+  /** Minutes the lone cook spends waiting with nothing else to do. */
+  idle: number
   /** Σ all step durations — what a numbered list would cost. */
   serialTotal: number
   parallelSaving: number
@@ -446,8 +465,12 @@ function timingFor(component: Component, criticalPath: StepId[]): TimingSummary 
     return sum + (step ? elapsedOf(step) : 0)
   }, 0)
 
+  const schedule = cookSchedule(component)
+
   return {
     criticalPathDuration,
+    singleCook: schedule.totalMinutes,
+    idle: schedule.idleMinutes,
     serialTotal,
     parallelSaving: serialTotal - criticalPathDuration,
     handsOn,

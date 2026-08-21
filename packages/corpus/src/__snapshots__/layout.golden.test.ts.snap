@@ -16,7 +16,7 @@ salt-pepper           ···· leader 7         ─                     ─     
 
 linearization: cut-strips → brown → fine-dice → cook-onion → slice-mushrooms → cook-mushrooms → reduce → stir-in → simmer-beef → add-dill
 criticalPath:  cut-strips → brown → cook-onion → cook-mushrooms → reduce → stir-in → simmer-beef → add-dill
-timing[approx]: start-to-finish 49m · serial 61m · saved 12m · hands-on 46m · longest walk-away 15m"
+timing[approx]: one cook 61m (idle 15m) · critical path 49m · serial 61m · saved 12m · hands-on 46m · longest walk-away 15m"
 `;
 
 exports[`golden layouts — left-packed > braised-short-ribs 1`] = `
@@ -36,7 +36,7 @@ thyme                 ···· leader 5         ─                     ─     
 
 linearization: season → sear → chop → soffritto → darken-paste → deglaze → assemble → braise → rest
 criticalPath:  season → sear → soffritto → darken-paste → deglaze → assemble → braise → rest
-timing[approx]: start-to-finish 269m · serial 274m · saved 5m · hands-on 44m · longest walk-away 210m"
+timing[approx]: one cook 274m (idle 230m) · critical path 269m · serial 274m · saved 5m · hands-on 44m · longest walk-away 210m"
 `;
 
 exports[`golden layouts — left-packed > deep-narrow 1`] = `
@@ -48,7 +48,7 @@ finish                ···· leader 11        ─                     ─     
 
 linearization: step-1 → step-2 → step-3 → step-4 → step-5 → step-6 → step-7 → step-8 → step-9 → step-10 → step-11 → step-12
 criticalPath:  step-1 → step-2 → step-3 → step-4 → step-5 → step-6 → step-7 → step-8 → step-9 → step-10 → step-11 → step-12
-timing[approx]: start-to-finish 48m · serial 48m · saved 0m · hands-on 18m · longest walk-away 10m"
+timing[approx]: one cook 48m (idle 30m) · critical path 48m · serial 48m · saved 0m · hands-on 18m · longest walk-away 10m"
 `;
 
 exports[`golden layouts — left-packed > degenerate 1`] = `
@@ -58,7 +58,7 @@ water                 boil
 
 linearization: boil
 criticalPath:  boil
-timing[approx]: start-to-finish 6m · serial 6m · saved 0m · hands-on 6m · longest walk-away 0m"
+timing[approx]: one cook 6m (idle 0m) · critical path 6m · serial 6m · saved 0m · hands-on 6m · longest walk-away 0m"
 `;
 
 exports[`golden layouts — left-packed > espresso-brownies 1`] = `
@@ -78,7 +78,7 @@ salt                  ···· leader 3         ─                     ─     
 
 linearization: melt → mix-wet → mix-eggs → fold-in → bake
 criticalPath:  melt → mix-wet → mix-eggs → fold-in → bake
-timing[approx]: start-to-finish 52m · serial 52m · saved 0m · hands-on 12m · longest walk-away 40m"
+timing[approx]: one cook 52m (idle 40m) · critical path 52m · serial 52m · saved 0m · hands-on 12m · longest walk-away 40m"
 `;
 
 exports[`golden layouts — left-packed > fennel-citrus-salad 1`] = `
@@ -96,7 +96,7 @@ flaky-salt            ···· leader 2         ─                     │
 
 linearization: shave → supreme → dressing → dress → serve
 criticalPath:  supreme → dress → serve
-timing[exact]: start-to-finish 17m · serial 24m · saved 7m · hands-on 14m · longest walk-away 10m"
+timing[exact]: one cook 24m (idle 10m) · critical path 17m · serial 24m · saved 7m · hands-on 14m · longest walk-away 10m"
 `;
 
 exports[`golden layouts — left-packed > grilled-artichokes 1`] = `
@@ -110,7 +110,7 @@ salt-pepper           ···· leader 4         ─                     ─     
 
 linearization: trim → steam → cut → brush → season → grill-up → grill-down
 criticalPath:  trim → steam → cut → brush → season → grill-up → grill-down
-timing[approx]: start-to-finish 42m · serial 42m · saved 0m · hands-on 27m · longest walk-away 15m"
+timing[approx]: one cook 42m (idle 15m) · critical path 42m · serial 42m · saved 0m · hands-on 27m · longest walk-away 15m"
 `;
 
 exports[`golden layouts — left-packed > long-text 1`] = `
@@ -123,7 +123,7 @@ stock                 ···· 1                │
 
 linearization: sweat → finish
 criticalPath:  sweat → finish
-timing[exact]: start-to-finish 85m · serial 85m · saved 0m · hands-on 0m · longest walk-away 60m"
+timing[exact]: one cook 85m (idle 85m) · critical path 85m · serial 85m · saved 0m · hands-on 0m · longest walk-away 60m"
 `;
 
 exports[`golden layouts — left-packed > no-knead-bread 1`] = `
@@ -137,7 +137,7 @@ water                 ···· 1                │                     │     
 
 linearization: whisk-dry → mix → autolyse → folds → bulk → shape → proof → bake-covered → bake-uncovered
 criticalPath:  whisk-dry → mix → autolyse → folds → bulk → shape → proof → bake-covered → bake-uncovered
-timing[approx]: start-to-finish 1352m · serial 1352m · saved 0m · hands-on 72m · longest walk-away 1080m · passive 1080m"
+timing[approx]: one cook 1352m (idle 1280m) · critical path 1352m · serial 1352m · saved 0m · hands-on 72m · longest walk-away 1080m · passive 1080m"
 `;
 
 exports[`golden layouts — left-packed > reuse-split 1`] = `
@@ -150,7 +150,7 @@ oats                  ···· leader 2         ─                     │     
 
 linearization: cream → batter → topping → bake
 criticalPath:  cream → batter → topping → bake
-timing[approx]: start-to-finish 54m · serial 54m · saved 0m · hands-on 14m · longest walk-away 40m
+timing[approx]: one cook 54m (idle 40m) · critical path 54m · serial 54m · saved 0m · hands-on 14m · longest walk-away 40m
 connection[chip]: butter (row 0) → topping (row 0, col 3)"
 `;
 
@@ -165,7 +165,7 @@ ground-white-pepper   ···· leader 2         ─                     │
 
 linearization: boil → mash → season
 criticalPath:  boil → mash → season
-timing[approx]: start-to-finish 23m · serial 23m · saved 0m · hands-on 8m · longest walk-away 15m
+timing[approx]: one cook 23m (idle 15m) · critical path 23m · serial 23m · saved 0m · hands-on 8m · longest walk-away 15m
 
 ── shepherds-pie / shepherds-pie ──
 15 rows × 11 cols · left-packed · reuse=chip
@@ -188,7 +188,7 @@ paprika               ···· leader 8         ─                     ─     
 
 linearization: heat → dice → sweat → cook-meat → mix-and-cook → thicken → season → cover-with-potatoes → cut-butter → drop-butter → cover-with-paprika → bake
 criticalPath:  dice → sweat → cook-meat → mix-and-cook → thicken → season → cover-with-potatoes → drop-butter → cover-with-paprika → bake
-timing[approx]: start-to-finish 72m · serial 76m · saved 4m · hands-on 46m · longest walk-away 30m"
+timing[approx]: one cook 76m (idle 30m) · critical path 72m · serial 76m · saved 4m · hands-on 46m · longest walk-away 30m"
 `;
 
 exports[`golden layouts — left-packed > spinach-artichoke-skillet 1`] = `
@@ -213,7 +213,7 @@ lemon-juice           ···· leader 5         ─                     ─     
 
 linearization: heat-fat → aromatics → artichokes → wilt-spinach → simmer-sauce → finish
 criticalPath:  heat-fat → aromatics → artichokes → wilt-spinach → simmer-sauce → finish
-timing[approx]: start-to-finish 27m · serial 27m · saved 0m · hands-on 27m · longest walk-away 0m"
+timing[approx]: one cook 27m (idle 0m) · critical path 27m · serial 27m · saved 0m · hands-on 27m · longest walk-away 0m"
 `;
 
 exports[`golden layouts — left-packed > unicode 1`] = `
@@ -229,7 +229,7 @@ creme                 │                     │                     │
 
 linearization: sift → cream → fold → bake
 criticalPath:  cream → fold → bake
-timing[approx]: start-to-finish 43m · serial 45m · saved 2m · hands-on 10m · longest walk-away 35m"
+timing[approx]: one cook 45m (idle 35m) · critical path 43m · serial 45m · saved 2m · hands-on 10m · longest walk-away 35m"
 `;
 
 exports[`golden layouts — left-packed > wide-shallow 1`] = `
@@ -263,7 +263,7 @@ ing-5-5               │                     │
 
 linearization: combine-1 → combine-2 → combine-3 → combine-4 → combine-5 → assemble
 criticalPath:  combine-1 → assemble
-timing[approx]: start-to-finish 8m · serial 16m · saved 8m · hands-on 16m · longest walk-away 0m"
+timing[approx]: one cook 16m (idle 0m) · critical path 8m · serial 16m · saved 8m · hands-on 16m · longest walk-away 0m"
 `;
 
 exports[`golden layouts — right-packed > beef-stroganoff 1`] = `
@@ -282,7 +282,7 @@ salt-pepper           ···· leader 7         ─                     ─     
 
 linearization: cut-strips → brown → fine-dice → cook-onion → slice-mushrooms → cook-mushrooms → reduce → stir-in → simmer-beef → add-dill
 criticalPath:  cut-strips → brown → cook-onion → cook-mushrooms → reduce → stir-in → simmer-beef → add-dill
-timing[approx]: start-to-finish 49m · serial 61m · saved 12m · hands-on 46m · longest walk-away 15m"
+timing[approx]: one cook 61m (idle 15m) · critical path 49m · serial 61m · saved 12m · hands-on 46m · longest walk-away 15m"
 `;
 
 exports[`golden layouts — right-packed > braised-short-ribs 1`] = `
@@ -302,7 +302,7 @@ thyme                 ···· leader 5         ─                     ─     
 
 linearization: season → sear → chop → soffritto → darken-paste → deglaze → assemble → braise → rest
 criticalPath:  season → sear → soffritto → darken-paste → deglaze → assemble → braise → rest
-timing[approx]: start-to-finish 269m · serial 274m · saved 5m · hands-on 44m · longest walk-away 210m"
+timing[approx]: one cook 274m (idle 230m) · critical path 269m · serial 274m · saved 5m · hands-on 44m · longest walk-away 210m"
 `;
 
 exports[`golden layouts — right-packed > deep-narrow 1`] = `
@@ -314,7 +314,7 @@ finish                ···· leader 11        ─                     ─     
 
 linearization: step-1 → step-2 → step-3 → step-4 → step-5 → step-6 → step-7 → step-8 → step-9 → step-10 → step-11 → step-12
 criticalPath:  step-1 → step-2 → step-3 → step-4 → step-5 → step-6 → step-7 → step-8 → step-9 → step-10 → step-11 → step-12
-timing[approx]: start-to-finish 48m · serial 48m · saved 0m · hands-on 18m · longest walk-away 10m"
+timing[approx]: one cook 48m (idle 30m) · critical path 48m · serial 48m · saved 0m · hands-on 18m · longest walk-away 10m"
 `;
 
 exports[`golden layouts — right-packed > degenerate 1`] = `
@@ -324,7 +324,7 @@ water                 boil
 
 linearization: boil
 criticalPath:  boil
-timing[approx]: start-to-finish 6m · serial 6m · saved 0m · hands-on 6m · longest walk-away 0m"
+timing[approx]: one cook 6m (idle 0m) · critical path 6m · serial 6m · saved 0m · hands-on 6m · longest walk-away 0m"
 `;
 
 exports[`golden layouts — right-packed > espresso-brownies 1`] = `
@@ -344,7 +344,7 @@ salt                  ···· leader 3         ─                     ─     
 
 linearization: melt → mix-wet → mix-eggs → fold-in → bake
 criticalPath:  melt → mix-wet → mix-eggs → fold-in → bake
-timing[approx]: start-to-finish 52m · serial 52m · saved 0m · hands-on 12m · longest walk-away 40m"
+timing[approx]: one cook 52m (idle 40m) · critical path 52m · serial 52m · saved 0m · hands-on 12m · longest walk-away 40m"
 `;
 
 exports[`golden layouts — right-packed > fennel-citrus-salad 1`] = `
@@ -362,7 +362,7 @@ flaky-salt            ···· leader 2         ─                     │
 
 linearization: shave → supreme → dressing → dress → serve
 criticalPath:  supreme → dress → serve
-timing[exact]: start-to-finish 17m · serial 24m · saved 7m · hands-on 14m · longest walk-away 10m"
+timing[exact]: one cook 24m (idle 10m) · critical path 17m · serial 24m · saved 7m · hands-on 14m · longest walk-away 10m"
 `;
 
 exports[`golden layouts — right-packed > grilled-artichokes 1`] = `
@@ -376,7 +376,7 @@ salt-pepper           ···· leader 4         ─                     ─     
 
 linearization: trim → steam → cut → brush → season → grill-up → grill-down
 criticalPath:  trim → steam → cut → brush → season → grill-up → grill-down
-timing[approx]: start-to-finish 42m · serial 42m · saved 0m · hands-on 27m · longest walk-away 15m"
+timing[approx]: one cook 42m (idle 15m) · critical path 42m · serial 42m · saved 0m · hands-on 27m · longest walk-away 15m"
 `;
 
 exports[`golden layouts — right-packed > long-text 1`] = `
@@ -389,7 +389,7 @@ stock                 ···· 1                │
 
 linearization: sweat → finish
 criticalPath:  sweat → finish
-timing[exact]: start-to-finish 85m · serial 85m · saved 0m · hands-on 0m · longest walk-away 60m"
+timing[exact]: one cook 85m (idle 85m) · critical path 85m · serial 85m · saved 0m · hands-on 0m · longest walk-away 60m"
 `;
 
 exports[`golden layouts — right-packed > no-knead-bread 1`] = `
@@ -403,7 +403,7 @@ water                 ···· 1                │                     │     
 
 linearization: whisk-dry → mix → autolyse → folds → bulk → shape → proof → bake-covered → bake-uncovered
 criticalPath:  whisk-dry → mix → autolyse → folds → bulk → shape → proof → bake-covered → bake-uncovered
-timing[approx]: start-to-finish 1352m · serial 1352m · saved 0m · hands-on 72m · longest walk-away 1080m · passive 1080m"
+timing[approx]: one cook 1352m (idle 1280m) · critical path 1352m · serial 1352m · saved 0m · hands-on 72m · longest walk-away 1080m · passive 1080m"
 `;
 
 exports[`golden layouts — right-packed > reuse-split 1`] = `
@@ -416,7 +416,7 @@ oats                  ···· leader 2         ─                     │     
 
 linearization: cream → batter → topping → bake
 criticalPath:  cream → batter → topping → bake
-timing[approx]: start-to-finish 54m · serial 54m · saved 0m · hands-on 14m · longest walk-away 40m
+timing[approx]: one cook 54m (idle 40m) · critical path 54m · serial 54m · saved 0m · hands-on 14m · longest walk-away 40m
 connection[chip]: butter (row 0) → topping (row 0, col 3)"
 `;
 
@@ -431,7 +431,7 @@ ground-white-pepper   ···· leader 2         ─                     │
 
 linearization: boil → mash → season
 criticalPath:  boil → mash → season
-timing[approx]: start-to-finish 23m · serial 23m · saved 0m · hands-on 8m · longest walk-away 15m
+timing[approx]: one cook 23m (idle 15m) · critical path 23m · serial 23m · saved 0m · hands-on 8m · longest walk-away 15m
 
 ── shepherds-pie / shepherds-pie ──
 15 rows × 11 cols · right-packed · reuse=chip
@@ -454,7 +454,7 @@ paprika               ···· leader 8         ─                     ─     
 
 linearization: heat → dice → sweat → cook-meat → mix-and-cook → thicken → season → cover-with-potatoes → cut-butter → drop-butter → cover-with-paprika → bake
 criticalPath:  dice → sweat → cook-meat → mix-and-cook → thicken → season → cover-with-potatoes → drop-butter → cover-with-paprika → bake
-timing[approx]: start-to-finish 72m · serial 76m · saved 4m · hands-on 46m · longest walk-away 30m"
+timing[approx]: one cook 76m (idle 30m) · critical path 72m · serial 76m · saved 4m · hands-on 46m · longest walk-away 30m"
 `;
 
 exports[`golden layouts — right-packed > spinach-artichoke-skillet 1`] = `
@@ -479,7 +479,7 @@ lemon-juice           ···· leader 5         ─                     ─     
 
 linearization: heat-fat → aromatics → artichokes → wilt-spinach → simmer-sauce → finish
 criticalPath:  heat-fat → aromatics → artichokes → wilt-spinach → simmer-sauce → finish
-timing[approx]: start-to-finish 27m · serial 27m · saved 0m · hands-on 27m · longest walk-away 0m"
+timing[approx]: one cook 27m (idle 0m) · critical path 27m · serial 27m · saved 0m · hands-on 27m · longest walk-away 0m"
 `;
 
 exports[`golden layouts — right-packed > unicode 1`] = `
@@ -495,7 +495,7 @@ creme                 │                     │                     │
 
 linearization: sift → cream → fold → bake
 criticalPath:  cream → fold → bake
-timing[approx]: start-to-finish 43m · serial 45m · saved 2m · hands-on 10m · longest walk-away 35m"
+timing[approx]: one cook 45m (idle 35m) · critical path 43m · serial 45m · saved 2m · hands-on 10m · longest walk-away 35m"
 `;
 
 exports[`golden layouts — right-packed > wide-shallow 1`] = `
@@ -529,7 +529,7 @@ ing-5-5               │                     │
 
 linearization: combine-1 → combine-2 → combine-3 → combine-4 → combine-5 → assemble
 criticalPath:  combine-1 → assemble
-timing[approx]: start-to-finish 8m · serial 16m · saved 8m · hands-on 16m · longest walk-away 0m"
+timing[approx]: one cook 16m (idle 0m) · critical path 8m · serial 16m · saved 8m · hands-on 16m · longest walk-away 0m"
 `;
 
 exports[`golden layouts — stretch-to-merge > beef-stroganoff 1`] = `
@@ -548,7 +548,7 @@ salt-pepper           ···· leader 7         ─                     ─     
 
 linearization: cut-strips → brown → fine-dice → cook-onion → slice-mushrooms → cook-mushrooms → reduce → stir-in → simmer-beef → add-dill
 criticalPath:  cut-strips → brown → cook-onion → cook-mushrooms → reduce → stir-in → simmer-beef → add-dill
-timing[approx]: start-to-finish 49m · serial 61m · saved 12m · hands-on 46m · longest walk-away 15m"
+timing[approx]: one cook 61m (idle 15m) · critical path 49m · serial 61m · saved 12m · hands-on 46m · longest walk-away 15m"
 `;
 
 exports[`golden layouts — stretch-to-merge > braised-short-ribs 1`] = `
@@ -568,7 +568,7 @@ thyme                 ···· leader 5         ─                     ─     
 
 linearization: season → sear → chop → soffritto → darken-paste → deglaze → assemble → braise → rest
 criticalPath:  season → sear → soffritto → darken-paste → deglaze → assemble → braise → rest
-timing[approx]: start-to-finish 269m · serial 274m · saved 5m · hands-on 44m · longest walk-away 210m"
+timing[approx]: one cook 274m (idle 230m) · critical path 269m · serial 274m · saved 5m · hands-on 44m · longest walk-away 210m"
 `;
 
 exports[`golden layouts — stretch-to-merge > deep-narrow 1`] = `
@@ -580,7 +580,7 @@ finish                ···· leader 11        ─                     ─     
 
 linearization: step-1 → step-2 → step-3 → step-4 → step-5 → step-6 → step-7 → step-8 → step-9 → step-10 → step-11 → step-12
 criticalPath:  step-1 → step-2 → step-3 → step-4 → step-5 → step-6 → step-7 → step-8 → step-9 → step-10 → step-11 → step-12
-timing[approx]: start-to-finish 48m · serial 48m · saved 0m · hands-on 18m · longest walk-away 10m"
+timing[approx]: one cook 48m (idle 30m) · critical path 48m · serial 48m · saved 0m · hands-on 18m · longest walk-away 10m"
 `;
 
 exports[`golden layouts — stretch-to-merge > degenerate 1`] = `
@@ -590,7 +590,7 @@ water                 boil
 
 linearization: boil
 criticalPath:  boil
-timing[approx]: start-to-finish 6m · serial 6m · saved 0m · hands-on 6m · longest walk-away 0m"
+timing[approx]: one cook 6m (idle 0m) · critical path 6m · serial 6m · saved 0m · hands-on 6m · longest walk-away 0m"
 `;
 
 exports[`golden layouts — stretch-to-merge > espresso-brownies 1`] = `
@@ -610,7 +610,7 @@ salt                  ···· leader 3         ─                     ─     
 
 linearization: melt → mix-wet → mix-eggs → fold-in → bake
 criticalPath:  melt → mix-wet → mix-eggs → fold-in → bake
-timing[approx]: start-to-finish 52m · serial 52m · saved 0m · hands-on 12m · longest walk-away 40m"
+timing[approx]: one cook 52m (idle 40m) · critical path 52m · serial 52m · saved 0m · hands-on 12m · longest walk-away 40m"
 `;
 
 exports[`golden layouts — stretch-to-merge > fennel-citrus-salad 1`] = `
@@ -628,7 +628,7 @@ flaky-salt            ···· leader 2         ─                     │
 
 linearization: shave → supreme → dressing → dress → serve
 criticalPath:  supreme → dress → serve
-timing[exact]: start-to-finish 17m · serial 24m · saved 7m · hands-on 14m · longest walk-away 10m"
+timing[exact]: one cook 24m (idle 10m) · critical path 17m · serial 24m · saved 7m · hands-on 14m · longest walk-away 10m"
 `;
 
 exports[`golden layouts — stretch-to-merge > grilled-artichokes 1`] = `
@@ -642,7 +642,7 @@ salt-pepper           ···· leader 4         ─                     ─     
 
 linearization: trim → steam → cut → brush → season → grill-up → grill-down
 criticalPath:  trim → steam → cut → brush → season → grill-up → grill-down
-timing[approx]: start-to-finish 42m · serial 42m · saved 0m · hands-on 27m · longest walk-away 15m"
+timing[approx]: one cook 42m (idle 15m) · critical path 42m · serial 42m · saved 0m · hands-on 27m · longest walk-away 15m"
 `;
 
 exports[`golden layouts — stretch-to-merge > long-text 1`] = `
@@ -655,7 +655,7 @@ stock                 ···· 1                │
 
 linearization: sweat → finish
 criticalPath:  sweat → finish
-timing[exact]: start-to-finish 85m · serial 85m · saved 0m · hands-on 0m · longest walk-away 60m"
+timing[exact]: one cook 85m (idle 85m) · critical path 85m · serial 85m · saved 0m · hands-on 0m · longest walk-away 60m"
 `;
 
 exports[`golden layouts — stretch-to-merge > no-knead-bread 1`] = `
@@ -669,7 +669,7 @@ water                 ···· 1                │                     │     
 
 linearization: whisk-dry → mix → autolyse → folds → bulk → shape → proof → bake-covered → bake-uncovered
 criticalPath:  whisk-dry → mix → autolyse → folds → bulk → shape → proof → bake-covered → bake-uncovered
-timing[approx]: start-to-finish 1352m · serial 1352m · saved 0m · hands-on 72m · longest walk-away 1080m · passive 1080m"
+timing[approx]: one cook 1352m (idle 1280m) · critical path 1352m · serial 1352m · saved 0m · hands-on 72m · longest walk-away 1080m · passive 1080m"
 `;
 
 exports[`golden layouts — stretch-to-merge > reuse-split 1`] = `
@@ -682,7 +682,7 @@ oats                  ···· leader 2         ─                     │     
 
 linearization: cream → batter → topping → bake
 criticalPath:  cream → batter → topping → bake
-timing[approx]: start-to-finish 54m · serial 54m · saved 0m · hands-on 14m · longest walk-away 40m
+timing[approx]: one cook 54m (idle 40m) · critical path 54m · serial 54m · saved 0m · hands-on 14m · longest walk-away 40m
 connection[chip]: butter (row 0) → topping (row 0, col 3)"
 `;
 
@@ -697,7 +697,7 @@ ground-white-pepper   ···· leader 2         ─                     │
 
 linearization: boil → mash → season
 criticalPath:  boil → mash → season
-timing[approx]: start-to-finish 23m · serial 23m · saved 0m · hands-on 8m · longest walk-away 15m
+timing[approx]: one cook 23m (idle 15m) · critical path 23m · serial 23m · saved 0m · hands-on 8m · longest walk-away 15m
 
 ── shepherds-pie / shepherds-pie ──
 15 rows × 11 cols · stretch-to-merge · reuse=chip
@@ -720,7 +720,7 @@ paprika               ···· leader 8         ─                     ─     
 
 linearization: heat → dice → sweat → cook-meat → mix-and-cook → thicken → season → cover-with-potatoes → cut-butter → drop-butter → cover-with-paprika → bake
 criticalPath:  dice → sweat → cook-meat → mix-and-cook → thicken → season → cover-with-potatoes → drop-butter → cover-with-paprika → bake
-timing[approx]: start-to-finish 72m · serial 76m · saved 4m · hands-on 46m · longest walk-away 30m"
+timing[approx]: one cook 76m (idle 30m) · critical path 72m · serial 76m · saved 4m · hands-on 46m · longest walk-away 30m"
 `;
 
 exports[`golden layouts — stretch-to-merge > spinach-artichoke-skillet 1`] = `
@@ -745,7 +745,7 @@ lemon-juice           ···· leader 5         ─                     ─     
 
 linearization: heat-fat → aromatics → artichokes → wilt-spinach → simmer-sauce → finish
 criticalPath:  heat-fat → aromatics → artichokes → wilt-spinach → simmer-sauce → finish
-timing[approx]: start-to-finish 27m · serial 27m · saved 0m · hands-on 27m · longest walk-away 0m"
+timing[approx]: one cook 27m (idle 0m) · critical path 27m · serial 27m · saved 0m · hands-on 27m · longest walk-away 0m"
 `;
 
 exports[`golden layouts — stretch-to-merge > unicode 1`] = `
@@ -761,7 +761,7 @@ creme                 │                     │                     │
 
 linearization: sift → cream → fold → bake
 criticalPath:  cream → fold → bake
-timing[approx]: start-to-finish 43m · serial 45m · saved 2m · hands-on 10m · longest walk-away 35m"
+timing[approx]: one cook 45m (idle 35m) · critical path 43m · serial 45m · saved 2m · hands-on 10m · longest walk-away 35m"
 `;
 
 exports[`golden layouts — stretch-to-merge > wide-shallow 1`] = `
@@ -795,7 +795,19 @@ ing-5-5               │                     │
 
 linearization: combine-1 → combine-2 → combine-3 → combine-4 → combine-5 → assemble
 criticalPath:  combine-1 → assemble
-timing[approx]: start-to-finish 8m · serial 16m · saved 8m · hands-on 16m · longest walk-away 0m"
+timing[approx]: one cook 16m (idle 0m) · critical path 8m · serial 16m · saved 8m · hands-on 16m · longest walk-away 0m"
+`;
+
+exports[`parallel saving across the corpus > is compared against what a single cook can reach 1`] = `
+"beef-stroganoff/stroganoff: critical path 49m · one cook 61m — unreachable alone by 12m
+braised-short-ribs/ribs: critical path 269m · one cook 274m — unreachable alone by 5m
+espresso-brownies/brownies: critical path 52m · one cook 52m — reachable alone
+fennel-citrus-salad/salad: critical path 17m · one cook 24m — unreachable alone by 7m
+grilled-artichokes/artichokes: critical path 42m · one cook 42m — reachable alone
+no-knead-bread/loaf: critical path 1352m · one cook 1352m — reachable alone
+shepherds-pie/mashed-potatoes: critical path 23m · one cook 23m — reachable alone
+shepherds-pie/shepherds-pie: critical path 72m · one cook 76m — unreachable alone by 4m
+spinach-artichoke-skillet/skillet: critical path 27m · one cook 27m — reachable alone"
 `;
 
 exports[`parallel saving across the corpus > is recorded for every recipe 1`] = `
