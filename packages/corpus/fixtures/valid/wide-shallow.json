@@ -1,0 +1,89 @@
+{
+  "id": "wide-shallow",
+  "title": "Wide Shallow",
+  "yield": "25 ingredients, depth 2 — tall and narrow",
+  "servings": 4,
+  "components": [
+    {
+      "id": "only",
+      "prelude": [],
+      "ingredients": [
+        { "id": "ing-1-1", "quantity": { "amount": 1, "unit": "Tbs" }, "item": "ingredient 1.1" },
+        { "id": "ing-1-2", "quantity": { "amount": 2, "unit": "Tbs" }, "item": "ingredient 1.2" },
+        { "id": "ing-1-3", "quantity": { "amount": 3, "unit": "Tbs" }, "item": "ingredient 1.3" },
+        { "id": "ing-1-4", "quantity": { "amount": 4, "unit": "Tbs" }, "item": "ingredient 1.4" },
+        { "id": "ing-1-5", "quantity": { "amount": 5, "unit": "Tbs" }, "item": "ingredient 1.5" },
+        { "id": "ing-2-1", "quantity": { "amount": 1, "unit": "Tbs" }, "item": "ingredient 2.1" },
+        { "id": "ing-2-2", "quantity": { "amount": 2, "unit": "Tbs" }, "item": "ingredient 2.2" },
+        { "id": "ing-2-3", "quantity": { "amount": 3, "unit": "Tbs" }, "item": "ingredient 2.3" },
+        { "id": "ing-2-4", "quantity": { "amount": 4, "unit": "Tbs" }, "item": "ingredient 2.4" },
+        { "id": "ing-2-5", "quantity": { "amount": 5, "unit": "Tbs" }, "item": "ingredient 2.5" },
+        { "id": "ing-3-1", "quantity": { "amount": 1, "unit": "Tbs" }, "item": "ingredient 3.1" },
+        { "id": "ing-3-2", "quantity": { "amount": 2, "unit": "Tbs" }, "item": "ingredient 3.2" },
+        { "id": "ing-3-3", "quantity": { "amount": 3, "unit": "Tbs" }, "item": "ingredient 3.3" },
+        { "id": "ing-3-4", "quantity": { "amount": 4, "unit": "Tbs" }, "item": "ingredient 3.4" },
+        { "id": "ing-3-5", "quantity": { "amount": 5, "unit": "Tbs" }, "item": "ingredient 3.5" },
+        { "id": "ing-4-1", "quantity": { "amount": 1, "unit": "Tbs" }, "item": "ingredient 4.1" },
+        { "id": "ing-4-2", "quantity": { "amount": 2, "unit": "Tbs" }, "item": "ingredient 4.2" },
+        { "id": "ing-4-3", "quantity": { "amount": 3, "unit": "Tbs" }, "item": "ingredient 4.3" },
+        { "id": "ing-4-4", "quantity": { "amount": 4, "unit": "Tbs" }, "item": "ingredient 4.4" },
+        { "id": "ing-4-5", "quantity": { "amount": 5, "unit": "Tbs" }, "item": "ingredient 4.5" },
+        { "id": "ing-5-1", "quantity": { "amount": 1, "unit": "Tbs" }, "item": "ingredient 5.1" },
+        { "id": "ing-5-2", "quantity": { "amount": 2, "unit": "Tbs" }, "item": "ingredient 5.2" },
+        { "id": "ing-5-3", "quantity": { "amount": 3, "unit": "Tbs" }, "item": "ingredient 5.3" },
+        { "id": "ing-5-4", "quantity": { "amount": 4, "unit": "Tbs" }, "item": "ingredient 5.4" },
+        { "id": "ing-5-5", "quantity": { "amount": 5, "unit": "Tbs" }, "item": "ingredient 5.5" }
+      ],
+      "root": "assemble",
+      "steps": {
+        "combine-1": {
+          "id": "combine-1",
+          "inputs": ["ing-1-1", "ing-1-2", "ing-1-3", "ing-1-4", "ing-1-5"],
+          "text": "combine group 1",
+          "effort": "quick",
+          "technique": "mix",
+          "group": "g1"
+        },
+        "combine-2": {
+          "id": "combine-2",
+          "inputs": ["ing-2-1", "ing-2-2", "ing-2-3", "ing-2-4", "ing-2-5"],
+          "text": "combine group 2",
+          "effort": "quick",
+          "technique": "mix",
+          "group": "g2"
+        },
+        "combine-3": {
+          "id": "combine-3",
+          "inputs": ["ing-3-1", "ing-3-2", "ing-3-3", "ing-3-4", "ing-3-5"],
+          "text": "combine group 3",
+          "effort": "quick",
+          "technique": "mix",
+          "group": "g3"
+        },
+        "combine-4": {
+          "id": "combine-4",
+          "inputs": ["ing-4-1", "ing-4-2", "ing-4-3", "ing-4-4", "ing-4-5"],
+          "text": "combine group 4",
+          "effort": "quick",
+          "technique": "mix",
+          "group": "g4"
+        },
+        "combine-5": {
+          "id": "combine-5",
+          "inputs": ["ing-5-1", "ing-5-2", "ing-5-3", "ing-5-4", "ing-5-5"],
+          "text": "combine group 5",
+          "effort": "quick",
+          "technique": "mix",
+          "group": "g5"
+        },
+        "assemble": {
+          "id": "assemble",
+          "inputs": ["combine-1", "combine-2", "combine-3", "combine-4", "combine-5"],
+          "text": "stir everything together",
+          "effort": "minutes",
+          "technique": "assemble"
+        }
+      }
+    }
+  ]
+}

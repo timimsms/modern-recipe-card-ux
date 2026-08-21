@@ -1,0 +1,51 @@
+{
+  "id": "dangling-component-ref",
+  "title": "E6 — Dangling Component Reference",
+  "yield": "the pie eats mashed potatoes that are defined after it (I5)",
+  "components": [
+    {
+      "id": "pie",
+      "title": "Pie",
+      "prelude": [],
+      "ingredients": [
+        { "id": "beef", "quantity": { "amount": 1, "unit": "lb" }, "item": "ground beef" },
+        { "id": "mash-ref", "component": "mashed-potatoes", "label": "mashed potatoes" }
+      ],
+      "root": "assemble",
+      "steps": {
+        "brown": {
+          "id": "brown",
+          "inputs": ["beef"],
+          "text": "brown",
+          "effort": "minutes",
+          "technique": "brown"
+        },
+        "assemble": {
+          "id": "assemble",
+          "inputs": ["brown", "mash-ref"],
+          "text": "spread the mash over the beef",
+          "effort": "minutes",
+          "technique": "assemble"
+        }
+      }
+    },
+    {
+      "id": "mashed-potatoes",
+      "title": "Mashed potatoes",
+      "prelude": [],
+      "ingredients": [
+        { "id": "potatoes", "quantity": { "amount": 2, "unit": "lb" }, "item": "russet potatoes" }
+      ],
+      "root": "mash",
+      "steps": {
+        "mash": {
+          "id": "mash",
+          "inputs": ["potatoes"],
+          "text": "boil and mash",
+          "effort": "long-unattended",
+          "duration": { "min": 20, "unit": "min" }
+        }
+      }
+    }
+  ]
+}

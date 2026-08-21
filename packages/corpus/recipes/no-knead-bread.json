@@ -1,0 +1,124 @@
+{
+  "id": "no-knead-bread",
+  "title": "No-Knead Bread",
+  "yield": "one 1-1/2 lb (700 g) round loaf",
+  "servings": 8,
+  "components": [
+    {
+      "id": "loaf",
+      "prelude": [
+        {
+          "id": "p-dutch-oven",
+          "text": "Preheat a covered Dutch oven to 450°F (230°C) for 45 min. before baking",
+          "temperature": { "f": 450, "c": 230 },
+          "equipment": ["oven", "dutch oven"]
+        }
+      ],
+      "ingredients": [
+        {
+          "id": "flour",
+          "quantity": { "amount": 3, "unit": "cup", "metric": { "amount": 400, "unit": "g" } },
+          "item": "bread flour"
+        },
+        {
+          "id": "salt",
+          "quantity": { "amount": "1-1/4", "unit": "tsp", "metric": { "amount": 8, "unit": "g" } },
+          "item": "table salt"
+        },
+        {
+          "id": "yeast",
+          "quantity": { "amount": "1/4", "unit": "tsp", "metric": { "amount": 1, "unit": "g" } },
+          "item": "instant yeast"
+        },
+        {
+          "id": "water",
+          "quantity": {
+            "amount": "1-1/2",
+            "unit": "cup",
+            "metric": { "amount": 355, "unit": "mL" }
+          },
+          "item": "water",
+          "note": "cool, about 60°F (16°C)"
+        }
+      ],
+      "root": "bake-uncovered",
+      "steps": {
+        "whisk-dry": {
+          "id": "whisk-dry",
+          "inputs": ["flour", "salt", "yeast"],
+          "text": "whisk together",
+          "effort": "quick",
+          "technique": "whisk"
+        },
+        "mix": {
+          "id": "mix",
+          "inputs": ["whisk-dry", "water"],
+          "text": "stir to a shaggy dough — no kneading",
+          "effort": "quick",
+          "technique": "mix"
+        },
+        "autolyse": {
+          "id": "autolyse",
+          "inputs": ["mix"],
+          "text": "cover and rest",
+          "effort": "long-unattended",
+          "duration": { "min": 30, "unit": "min" },
+          "technique": "rest"
+        },
+        "folds": {
+          "id": "folds",
+          "inputs": ["autolyse"],
+          "text": "fold the dough over itself in the bowl",
+          "effort": "quick",
+          "duration": { "min": 1, "unit": "min" },
+          "repeat": { "times": 3, "every": { "min": 30, "unit": "min" } },
+          "technique": "fold"
+        },
+        "bulk": {
+          "id": "bulk",
+          "inputs": ["folds"],
+          "text": "cover and ferment at room temperature until doubled and bubbled",
+          "effort": "passive",
+          "duration": { "min": 12, "max": 18, "unit": "hour" },
+          "technique": "ferment"
+        },
+        "shape": {
+          "id": "shape",
+          "inputs": ["bulk"],
+          "text": "shape into a tight round",
+          "effort": "minutes",
+          "duration": { "min": 5, "unit": "min" },
+          "technique": "knead"
+        },
+        "proof": {
+          "id": "proof",
+          "inputs": ["shape"],
+          "text": "proof seam side down until puffy",
+          "effort": "long-unattended",
+          "duration": { "min": 60, "max": 120, "unit": "min" },
+          "technique": "rest"
+        },
+        "bake-covered": {
+          "id": "bake-covered",
+          "inputs": ["proof"],
+          "text": "bake covered",
+          "effort": "long-unattended",
+          "duration": { "min": 30, "unit": "min" },
+          "temperature": { "f": 450, "c": 230 },
+          "technique": "bake",
+          "equipment": ["oven", "dutch oven"]
+        },
+        "bake-uncovered": {
+          "id": "bake-uncovered",
+          "inputs": ["bake-covered"],
+          "text": "uncover and bake until deep brown and hollow-sounding",
+          "effort": "long-unattended",
+          "duration": { "min": 15, "max": 20, "unit": "min" },
+          "temperature": { "f": 450, "c": 230 },
+          "technique": "bake",
+          "equipment": ["oven", "dutch oven"]
+        }
+      }
+    }
+  ]
+}

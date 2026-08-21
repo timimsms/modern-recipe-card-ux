@@ -1,0 +1,17 @@
+{
+  "name": "@experiment/css-grid",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Reference renderer. Vanilla HTML/CSS: Grid, subgrid, container queries. No bundler.",
+  "scripts": {
+    "build": "node -e \"process.stdout.write('01-css-grid: no build step by design\\n')\"",
+    "dev": "node --run serve",
+    "serve": "npx --yes serve ."
+  },
+  "dependencies": {
+    "@recipe/core": "workspace:*",
+    "@recipe/corpus": "workspace:*",
+    "@recipe/tokens": "workspace:*"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "@recipe/corpus",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Transcribed recipes and stress fixtures, validated against @recipe/core.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./recipes/*": "./recipes/*",
+    "./fixtures/*": "./fixtures/*"
+  },
+  "files": [
+    "dist",
+    "recipes",
+    "fixtures"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@recipe/core": "workspace:*"
+  }
+}

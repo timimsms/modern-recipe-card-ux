@@ -1,0 +1,33 @@
+{
+  "id": "undeclared-reuse",
+  "title": "E5 — Undeclared Reuse",
+  "yield": "reuse-split.json with the \"reuse\" declaration removed — the same tree, now an accident (I4)",
+  "components": [
+    {
+      "id": "only",
+      "prelude": [],
+      "ingredients": [
+        { "id": "butter", "quantity": { "amount": 4, "unit": "Tbs" }, "item": "unsalted butter" },
+        { "id": "sugar", "quantity": { "amount": 1, "unit": "cup" }, "item": "sugar" },
+        { "id": "oats", "quantity": { "amount": 1, "unit": "cup" }, "item": "rolled oats" }
+      ],
+      "root": "topping",
+      "steps": {
+        "cream": {
+          "id": "cream",
+          "inputs": ["butter", "sugar"],
+          "text": "cream half the butter with the sugar",
+          "effort": "minutes",
+          "technique": "cream"
+        },
+        "topping": {
+          "id": "topping",
+          "inputs": ["cream", "oats", "butter"],
+          "text": "rub the reserved butter into the oats and scatter over",
+          "effort": "minutes",
+          "technique": "assemble"
+        }
+      }
+    }
+  ]
+}

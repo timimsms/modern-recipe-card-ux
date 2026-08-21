@@ -1,0 +1,30 @@
+{
+  "id": "orphan-ingredient",
+  "title": "E1 — Orphan Ingredient",
+  "yield": "jenelope1st's \"missing instructions for the dry ingredients\", promoted to a build failure (R3)",
+  "components": [
+    {
+      "id": "only",
+      "prelude": [],
+      "ingredients": [
+        { "id": "flour", "quantity": { "amount": 1, "unit": "cup" }, "item": "flour" },
+        { "id": "sugar", "quantity": { "amount": 1, "unit": "cup" }, "item": "sugar" },
+        {
+          "id": "baking-powder",
+          "quantity": { "amount": 1, "unit": "tsp" },
+          "item": "baking powder"
+        }
+      ],
+      "root": "mix",
+      "steps": {
+        "mix": {
+          "id": "mix",
+          "inputs": ["flour", "sugar"],
+          "text": "mix",
+          "effort": "quick",
+          "technique": "mix"
+        }
+      }
+    }
+  ]
+}

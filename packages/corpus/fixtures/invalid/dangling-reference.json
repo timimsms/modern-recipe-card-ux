@@ -1,0 +1,24 @@
+{
+  "id": "dangling-reference",
+  "title": "E7 — Dangling Reference",
+  "yield": "a typo'd id — the precondition every other check depends on",
+  "components": [
+    {
+      "id": "only",
+      "prelude": [],
+      "ingredients": [
+        { "id": "flour", "quantity": { "amount": 1, "unit": "cup" }, "item": "flour" }
+      ],
+      "root": "mix",
+      "steps": {
+        "mix": {
+          "id": "mix",
+          "inputs": [{ "kind": "ingredient", "id": "flor" }],
+          "text": "mix",
+          "effort": "quick",
+          "technique": "mix"
+        }
+      }
+    }
+  ]
+}

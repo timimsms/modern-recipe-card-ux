@@ -1,0 +1,96 @@
+{
+  "id": "fennel-citrus-salad",
+  "title": "Shaved Fennel and Citrus Salad",
+  "yield": "serves 4 as a side",
+  "servings": 4,
+  "components": [
+    {
+      "id": "salad",
+      "prelude": [],
+      "ingredients": [
+        {
+          "id": "fennel",
+          "quantity": { "amount": 2, "unit": "count" },
+          "item": "fennel bulbs",
+          "note": "fronds reserved"
+        },
+        { "id": "oranges", "quantity": { "amount": 3, "unit": "count" }, "item": "navel oranges" },
+        {
+          "id": "oil",
+          "quantity": { "amount": 3, "unit": "Tbs", "metric": { "amount": 45, "unit": "mL" } },
+          "item": "extra-virgin olive oil"
+        },
+        {
+          "id": "lemon",
+          "quantity": { "amount": 2, "unit": "Tbs", "metric": { "amount": 30, "unit": "mL" } },
+          "item": "lemon juice"
+        },
+        {
+          "id": "honey",
+          "quantity": { "amount": 1, "unit": "tsp", "metric": { "amount": 5, "unit": "mL" } },
+          "item": "honey"
+        },
+        { "id": "salt", "quantity": { "amount": "1/2", "unit": "tsp" }, "item": "table salt" },
+        {
+          "id": "mint",
+          "quantity": { "amount": "1/4", "unit": "cup" },
+          "item": "mint leaves",
+          "note": "torn",
+          "role": "garnish"
+        },
+        {
+          "id": "pistachios",
+          "quantity": { "amount": "1/4", "unit": "cup", "metric": { "amount": 30, "unit": "g" } },
+          "item": "pistachios",
+          "note": "toasted and roughly chopped",
+          "role": "garnish"
+        },
+        { "id": "flaky-salt", "item": "flaky sea salt", "role": "garnish" }
+      ],
+      "root": "serve",
+      "steps": {
+        "shave": {
+          "id": "shave",
+          "inputs": ["fennel"],
+          "text": "shave paper-thin on a mandoline",
+          "effort": "minutes",
+          "duration": { "min": 5, "unit": "min" },
+          "technique": "slice",
+          "equipment": ["mandoline"]
+        },
+        "supreme": {
+          "id": "supreme",
+          "inputs": ["oranges"],
+          "text": "cut into supremes over a bowl, catching the juice",
+          "effort": "minutes",
+          "duration": { "min": 6, "unit": "min" },
+          "technique": "slice"
+        },
+        "dressing": {
+          "id": "dressing",
+          "inputs": ["oil", "lemon", "honey", "salt"],
+          "text": "whisk with the caught orange juice",
+          "effort": "quick",
+          "duration": { "min": 2, "unit": "min" },
+          "technique": "whisk"
+        },
+        "dress": {
+          "id": "dress",
+          "inputs": ["shave", "supreme", "dressing"],
+          "text": "toss gently and let sit 10 min. to soften",
+          "effort": "long-unattended",
+          "duration": { "min": 10, "unit": "min" },
+          "technique": "assemble"
+        },
+        "serve": {
+          "id": "serve",
+          "inputs": ["dress", "mint", "pistachios", "flaky-salt"],
+          "text": "scatter over and finish with the reserved fronds",
+          "effort": "quick",
+          "duration": { "min": 1, "unit": "min" },
+          "technique": "serve"
+        }
+      }
+    }
+  ]
+}

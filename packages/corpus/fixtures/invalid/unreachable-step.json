@@ -1,0 +1,31 @@
+{
+  "id": "unreachable-step",
+  "title": "E2 — Unreachable Step",
+  "yield": "a step that produces something nothing ever eats",
+  "components": [
+    {
+      "id": "only",
+      "prelude": [],
+      "ingredients": [
+        { "id": "flour", "quantity": { "amount": 1, "unit": "cup" }, "item": "flour" },
+        { "id": "sugar", "quantity": { "amount": 1, "unit": "cup" }, "item": "sugar" }
+      ],
+      "root": "mix",
+      "steps": {
+        "mix": {
+          "id": "mix",
+          "inputs": ["flour", "sugar"],
+          "text": "mix",
+          "effort": "quick",
+          "technique": "mix"
+        },
+        "glaze": {
+          "id": "glaze",
+          "inputs": ["sugar"],
+          "text": "make a glaze nobody pours",
+          "effort": "quick"
+        }
+      }
+    }
+  ]
+}

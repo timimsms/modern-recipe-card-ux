@@ -1,0 +1,137 @@
+{
+  "id": "braised-short-ribs",
+  "title": "Braised Short Ribs",
+  "yield": "serves 4 over polenta or mashed potatoes",
+  "servings": 4,
+  "components": [
+    {
+      "id": "ribs",
+      "prelude": [
+        {
+          "id": "p-oven",
+          "text": "Preheat oven to 325°F (163°C)",
+          "temperature": { "f": 325, "c": 163 },
+          "equipment": ["oven"]
+        }
+      ],
+      "ingredients": [
+        {
+          "id": "short-ribs",
+          "quantity": { "amount": 4, "unit": "lb", "metric": { "amount": 1800, "unit": "g" } },
+          "item": "bone-in beef short ribs",
+          "note": "cut into 3-in (8 cm) lengths"
+        },
+        { "id": "salt-pepper", "item": "salt and pepper" },
+        {
+          "id": "oil",
+          "quantity": { "amount": 2, "unit": "Tbs", "metric": { "amount": 30, "unit": "mL" } },
+          "item": "vegetable oil"
+        },
+        { "id": "onion", "quantity": { "amount": 1, "unit": "count" }, "item": "large onion" },
+        { "id": "carrot", "quantity": { "amount": 2, "unit": "count" }, "item": "carrots" },
+        { "id": "garlic", "quantity": { "amount": 4, "unit": "clove" }, "item": "garlic" },
+        {
+          "id": "tomato-paste",
+          "quantity": { "amount": 2, "unit": "Tbs", "metric": { "amount": 30, "unit": "mL" } },
+          "item": "tomato paste"
+        },
+        {
+          "id": "wine",
+          "quantity": { "amount": 2, "unit": "cup", "metric": { "amount": 475, "unit": "mL" } },
+          "item": "dry red wine"
+        },
+        {
+          "id": "stock",
+          "quantity": { "amount": 2, "unit": "cup", "metric": { "amount": 475, "unit": "mL" } },
+          "item": "beef stock"
+        },
+        {
+          "id": "thyme",
+          "quantity": { "amount": 4, "unit": "sprig" },
+          "item": "thyme",
+          "approximate": true
+        }
+      ],
+      "root": "rest",
+      "steps": {
+        "season": {
+          "id": "season",
+          "inputs": ["short-ribs", "salt-pepper"],
+          "text": "season all over",
+          "effort": "quick",
+          "technique": "season"
+        },
+        "sear": {
+          "id": "sear",
+          "inputs": ["season", "oil"],
+          "text": "sear in batches until darkly browned, then set aside",
+          "effort": "minutes",
+          "duration": { "min": 15, "unit": "min" },
+          "technique": "sear",
+          "equipment": ["dutch oven"]
+        },
+        "chop": {
+          "id": "chop",
+          "inputs": ["onion", "carrot", "garlic"],
+          "text": "chop coarsely",
+          "effort": "minutes",
+          "duration": { "min": 5, "unit": "min" },
+          "technique": "chop"
+        },
+        "soffritto": {
+          "id": "soffritto",
+          "inputs": ["sear", "chop"],
+          "text": "cook in the rendered fat until softened",
+          "effort": "minutes",
+          "duration": { "min": 8, "unit": "min" },
+          "technique": "saute",
+          "equipment": ["dutch oven"]
+        },
+        "darken-paste": {
+          "id": "darken-paste",
+          "inputs": ["soffritto", "tomato-paste"],
+          "text": "stir until it darkens",
+          "effort": "quick",
+          "duration": { "min": 2, "unit": "min" },
+          "technique": "saute",
+          "equipment": ["dutch oven"]
+        },
+        "deglaze": {
+          "id": "deglaze",
+          "inputs": ["darken-paste", "wine"],
+          "text": "deglaze and reduce by half",
+          "effort": "minutes",
+          "duration": { "min": 10, "unit": "min" },
+          "technique": "simmer",
+          "equipment": ["dutch oven"]
+        },
+        "assemble": {
+          "id": "assemble",
+          "inputs": ["deglaze", "stock", "thyme"],
+          "text": "return the ribs, add stock to come halfway up, tuck in the thyme",
+          "effort": "quick",
+          "technique": "assemble",
+          "equipment": ["dutch oven"]
+        },
+        "braise": {
+          "id": "braise",
+          "inputs": ["assemble"],
+          "text": "cover and braise until a fork slides out with no resistance",
+          "effort": "long-unattended",
+          "duration": { "min": 180, "max": 210, "unit": "min" },
+          "temperature": { "f": 325, "c": 163 },
+          "technique": "roast",
+          "equipment": ["oven", "dutch oven"]
+        },
+        "rest": {
+          "id": "rest",
+          "inputs": ["braise"],
+          "text": "rest in the liquid, then skim the fat",
+          "effort": "long-unattended",
+          "duration": { "min": 20, "unit": "min" },
+          "technique": "rest"
+        }
+      }
+    }
+  ]
+}

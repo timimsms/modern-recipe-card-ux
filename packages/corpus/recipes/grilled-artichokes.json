@@ -1,0 +1,100 @@
+{
+  "id": "grilled-artichokes",
+  "title": "Grilled Artichokes",
+  "servings": 1,
+  "source": {
+    "name": "Cooking For Engineers",
+    "url": "https://www.cookingforengineers.com/recipe/111/Grilled-Artichokes/trn"
+  },
+  "components": [
+    {
+      "id": "artichokes",
+      "prelude": [
+        {
+          "id": "p-water",
+          "text": "Boil 1 in. (2.5 cm) water in pot with steamer attachment",
+          "equipment": ["pot", "steamer attachment"]
+        },
+        {
+          "id": "p-grill",
+          "text": "Preheat grill",
+          "temperature": { "label": "medium" },
+          "equipment": ["grill"]
+        }
+      ],
+      "ingredients": [
+        {
+          "id": "artichoke",
+          "quantity": { "amount": 1, "unit": "count" },
+          "item": "large artichoke"
+        },
+        {
+          "id": "olive-oil",
+          "quantity": { "amount": 1, "unit": "tsp", "metric": { "amount": 5, "unit": "mL" } },
+          "item": "olive oil"
+        },
+        { "id": "salt-pepper", "item": "salt and pepper" }
+      ],
+      "root": "grill-down",
+      "steps": {
+        "trim": {
+          "id": "trim",
+          "inputs": ["artichoke"],
+          "text": "trim",
+          "effort": "minutes",
+          "technique": "trim"
+        },
+        "steam": {
+          "id": "steam",
+          "inputs": ["trim"],
+          "text": "steam 15 min.",
+          "effort": "long-unattended",
+          "duration": { "min": 15, "unit": "min" },
+          "technique": "steam",
+          "equipment": ["pot", "steamer attachment"]
+        },
+        "cut": {
+          "id": "cut",
+          "inputs": ["steam"],
+          "text": "cut from tip to base",
+          "effort": "quick",
+          "technique": "slice"
+        },
+        "brush": {
+          "id": "brush",
+          "inputs": ["cut", "olive-oil"],
+          "text": "brush",
+          "effort": "quick",
+          "technique": "brush"
+        },
+        "season": {
+          "id": "season",
+          "inputs": ["brush", "salt-pepper"],
+          "text": "season",
+          "effort": "quick",
+          "technique": "season"
+        },
+        "grill-up": {
+          "id": "grill-up",
+          "inputs": ["season"],
+          "text": "grill 10 min. medium heat with cut side up",
+          "effort": "minutes",
+          "duration": { "min": 10, "unit": "min" },
+          "temperature": { "label": "medium" },
+          "technique": "grill",
+          "equipment": ["grill"]
+        },
+        "grill-down": {
+          "id": "grill-down",
+          "inputs": ["grill-up"],
+          "text": "grill 5 min. cut side down",
+          "effort": "minutes",
+          "duration": { "min": 5, "unit": "min" },
+          "temperature": { "label": "medium" },
+          "technique": "grill",
+          "equipment": ["grill"]
+        }
+      }
+    }
+  ]
+}

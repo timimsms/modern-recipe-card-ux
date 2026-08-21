@@ -1,0 +1,225 @@
+{
+  "id": "shepherds-pie",
+  "title": "Shepherd's Pie",
+  "source": { "name": "Cooking For Engineers" },
+  "components": [
+    {
+      "id": "mashed-potatoes",
+      "title": "Mashed potatoes",
+      "prelude": [],
+      "ingredients": [
+        {
+          "id": "russet-potatoes",
+          "quantity": { "amount": "1-1/2", "unit": "lb", "metric": { "amount": 700, "unit": "g" } },
+          "item": "russet potatoes"
+        },
+        {
+          "id": "reserved-water",
+          "quantity": { "amount": "1/2", "unit": "cup", "metric": { "amount": 120, "unit": "mL" } },
+          "item": "water",
+          "note": "reserved from boiling potatoes"
+        },
+        {
+          "id": "unsalted-butter",
+          "quantity": { "amount": 1, "unit": "Tbs", "metric": { "amount": 14, "unit": "g" } },
+          "item": "unsalted butter"
+        },
+        { "id": "salt", "item": "salt" },
+        { "id": "ground-white-pepper", "item": "ground white pepper" }
+      ],
+      "root": "season",
+      "steps": {
+        "boil": {
+          "id": "boil",
+          "inputs": ["russet-potatoes"],
+          "text": "boil until tender (15 min.)",
+          "effort": "long-unattended",
+          "duration": { "min": 15, "unit": "min" },
+          "technique": "boil"
+        },
+        "mash": {
+          "id": "mash",
+          "inputs": ["boil", "reserved-water", "unsalted-butter"],
+          "text": "mash",
+          "effort": "minutes"
+        },
+        "season": {
+          "id": "season",
+          "inputs": ["mash", "salt", "ground-white-pepper"],
+          "text": "season to taste",
+          "effort": "quick",
+          "technique": "season"
+        }
+      }
+    },
+    {
+      "id": "shepherds-pie",
+      "title": "Shepherd's pie",
+      "prelude": [
+        {
+          "id": "p-oven",
+          "text": "Preheat oven to 400°F (204°C)",
+          "temperature": { "f": 400, "c": 204 },
+          "equipment": ["oven"]
+        }
+      ],
+      "ingredients": [
+        {
+          "id": "vegetable-oil",
+          "quantity": { "amount": 3, "unit": "Tbs", "metric": { "amount": 45, "unit": "mL" } },
+          "item": "vegetable oil"
+        },
+        {
+          "id": "onion",
+          "quantity": { "amount": 1, "unit": "count", "metric": { "amount": 110, "unit": "g" } },
+          "item": "medium onion"
+        },
+        {
+          "id": "carrot",
+          "quantity": { "amount": 1, "unit": "count", "metric": { "amount": 61, "unit": "g" } },
+          "item": "medium carrot"
+        },
+        {
+          "id": "celery-stalk",
+          "quantity": { "amount": 1, "unit": "count", "metric": { "amount": 40, "unit": "g" } },
+          "item": "medium celery stalk"
+        },
+        {
+          "id": "ground-lamb",
+          "quantity": { "amount": 1, "unit": "lb", "metric": { "amount": 450, "unit": "g" } },
+          "item": "ground lamb"
+        },
+        {
+          "id": "flour",
+          "quantity": { "amount": 1, "unit": "Tbs", "metric": { "amount": 8, "unit": "g" } },
+          "item": "all-purpose flour"
+        },
+        {
+          "id": "dried-rosemary",
+          "quantity": { "amount": 1, "unit": "tsp", "metric": { "amount": "1-1/5", "unit": "g" } },
+          "item": "dried rosemary"
+        },
+        {
+          "id": "dried-thyme",
+          "quantity": { "amount": 1, "unit": "tsp", "metric": { "amount": 1, "unit": "g" } },
+          "item": "dried thyme"
+        },
+        {
+          "id": "ground-nutmeg",
+          "quantity": { "amount": 1, "unit": "pinch", "approximate": true },
+          "item": "ground nutmeg"
+        },
+        {
+          "id": "beef-broth",
+          "quantity": { "amount": 1, "unit": "cup", "metric": { "amount": 235, "unit": "mL" } },
+          "item": "beef broth"
+        },
+        { "id": "salt", "item": "salt" },
+        { "id": "ground-black-pepper", "item": "ground black pepper" },
+        {
+          "id": "mashed-potatoes",
+          "component": "mashed-potatoes",
+          "label": "mashed potatoes",
+          "note": "1-3/4 lb. (800 g)"
+        },
+        {
+          "id": "butter",
+          "quantity": { "amount": 2, "unit": "Tbs", "metric": { "amount": 28, "unit": "g" } },
+          "item": "butter"
+        },
+        { "id": "paprika", "item": "paprika" }
+      ],
+      "root": "bake",
+      "steps": {
+        "heat": { "id": "heat", "inputs": ["vegetable-oil"], "text": "heat", "effort": "quick" },
+        "dice": {
+          "id": "dice",
+          "inputs": ["onion", "carrot", "celery-stalk"],
+          "text": "dice",
+          "effort": "minutes",
+          "technique": "chop"
+        },
+        "sweat": {
+          "id": "sweat",
+          "inputs": ["heat", "dice"],
+          "text": "med-low until tender",
+          "effort": "minutes",
+          "temperature": { "label": "med-low" },
+          "technique": "saute"
+        },
+        "cook-meat": {
+          "id": "cook-meat",
+          "inputs": ["sweat", "ground-lamb"],
+          "text": "cook until meat is no longer pink",
+          "effort": "minutes",
+          "technique": "brown"
+        },
+        "mix-and-cook": {
+          "id": "mix-and-cook",
+          "inputs": ["cook-meat", "flour"],
+          "text": "mix and cook",
+          "effort": "minutes",
+          "technique": "mix"
+        },
+        "thicken": {
+          "id": "thicken",
+          "inputs": [
+            "mix-and-cook",
+            "dried-rosemary",
+            "dried-thyme",
+            "ground-nutmeg",
+            "beef-broth"
+          ],
+          "text": "stir in and cook until liquid thickens",
+          "effort": "minutes",
+          "technique": "simmer"
+        },
+        "season": {
+          "id": "season",
+          "inputs": ["thicken", "salt", "ground-black-pepper"],
+          "text": "season to taste",
+          "effort": "quick",
+          "technique": "season"
+        },
+        "cover-with-potatoes": {
+          "id": "cover-with-potatoes",
+          "inputs": ["season", "mashed-potatoes"],
+          "text": "cover with potatoes and fluff with fork",
+          "effort": "minutes",
+          "technique": "assemble"
+        },
+        "cut-butter": {
+          "id": "cut-butter",
+          "inputs": ["butter"],
+          "text": "cut up into small pieces",
+          "effort": "quick",
+          "technique": "chop"
+        },
+        "drop-butter": {
+          "id": "drop-butter",
+          "inputs": ["cover-with-potatoes", "cut-butter"],
+          "text": "drop butter pieces on top",
+          "effort": "quick",
+          "technique": "assemble"
+        },
+        "cover-with-paprika": {
+          "id": "cover-with-paprika",
+          "inputs": ["drop-butter", "paprika"],
+          "text": "cover with paprika",
+          "effort": "quick",
+          "technique": "season"
+        },
+        "bake": {
+          "id": "bake",
+          "inputs": ["cover-with-paprika"],
+          "text": "bake 400°F (205°C) 30 min.",
+          "effort": "long-unattended",
+          "duration": { "min": 30, "unit": "min" },
+          "temperature": { "f": 400, "c": 205 },
+          "technique": "bake",
+          "equipment": ["oven"]
+        }
+      }
+    }
+  ]
+}

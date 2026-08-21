@@ -1,0 +1,25 @@
+{
+  "id": "duplicate-id",
+  "title": "E8 — Duplicate Id",
+  "yield": "two rows sharing one id — ids address rows, so this makes the grid unaddressable",
+  "components": [
+    {
+      "id": "only",
+      "prelude": [],
+      "ingredients": [
+        { "id": "flour", "quantity": { "amount": 1, "unit": "cup" }, "item": "all-purpose flour" },
+        { "id": "flour", "quantity": { "amount": 2, "unit": "Tbs" }, "item": "rye flour" }
+      ],
+      "root": "mix",
+      "steps": {
+        "mix": {
+          "id": "mix",
+          "inputs": ["flour"],
+          "text": "mix",
+          "effort": "quick",
+          "technique": "mix"
+        }
+      }
+    }
+  ]
+}

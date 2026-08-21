@@ -1,0 +1,123 @@
+{
+  "id": "spinach-artichoke-skillet",
+  "title": "Spinach & Artichoke White Bean Skillet",
+  "components": [
+    {
+      "id": "skillet",
+      "prelude": [],
+      "ingredients": [
+        { "id": "olive-oil", "quantity": { "amount": 3, "unit": "Tbs" }, "item": "olive oil" },
+        { "id": "butter", "quantity": { "amount": 1, "unit": "Tbs" }, "item": "unsalted butter" },
+        {
+          "id": "shallot",
+          "quantity": { "amount": 1, "unit": "count" },
+          "item": "large shallot",
+          "note": "thinly sliced"
+        },
+        {
+          "id": "garlic",
+          "quantity": { "amount": 5, "unit": "count" },
+          "item": "large garlic cloves",
+          "note": "thiny sliced"
+        },
+        { "id": "capers", "quantity": { "amount": 1, "unit": "tsp" }, "item": "drained capers" },
+        {
+          "id": "red-pepper-flakes",
+          "quantity": { "amount": "1/4", "unit": "tsp" },
+          "item": "crushed red pepper flakes"
+        },
+        {
+          "id": "artichoke-hearts",
+          "quantity": { "amount": 1, "unit": "can", "of": { "amount": 14, "unit": "oz" } },
+          "item": "quartered artichoke hearts",
+          "note": "Cento, drained, chopped"
+        },
+        { "id": "kosher-salt", "quantity": { "amount": 1, "unit": "tsp" }, "item": "kosher salt" },
+        {
+          "id": "black-pepper",
+          "quantity": { "amount": "1/2", "unit": "tsp" },
+          "item": "ground black pepperr"
+        },
+        { "id": "spinach", "quantity": { "amount": 4, "unit": "cup" }, "item": "packed spinach" },
+        {
+          "id": "cannellini-beans",
+          "quantity": { "amount": 2, "unit": "can", "of": { "amount": 15.5, "unit": "oz" } },
+          "item": "cannellini beans",
+          "note": "drained, rinsed"
+        },
+        { "id": "heavy-cream", "quantity": { "amount": 1, "unit": "cup" }, "item": "heavy cream" },
+        {
+          "id": "nutmeg",
+          "quantity": { "unit": "pinch", "approximate": true },
+          "item": "ground nutmeg",
+          "note": "large"
+        },
+        {
+          "id": "parmesan",
+          "quantity": { "amount": "1/2", "unit": "cup" },
+          "item": "shredded parmesan cheese"
+        },
+        {
+          "id": "lemon-zest",
+          "quantity": { "amount": "1/2", "unit": "tsp" },
+          "item": "grated lemon zest"
+        },
+        {
+          "id": "lemon-juice",
+          "quantity": { "amount": 1, "unit": "tsp" },
+          "item": "fresh lemon juice"
+        }
+      ],
+      "root": "finish",
+      "steps": {
+        "heat-fat": {
+          "id": "heat-fat",
+          "inputs": ["olive-oil", "butter"],
+          "text": "heat on med til butter melts",
+          "effort": "quick",
+          "temperature": { "label": "medium" },
+          "technique": "melt"
+        },
+        "aromatics": {
+          "id": "aromatics",
+          "inputs": ["heat-fat", "shallot", "garlic", "capers", "red-pepper-flakes"],
+          "text": "5 to 7 min til golden",
+          "effort": "minutes",
+          "duration": { "min": 5, "max": 7, "unit": "min" },
+          "technique": "saute"
+        },
+        "artichokes": {
+          "id": "artichokes",
+          "inputs": ["aromatics", "artichoke-hearts", "kosher-salt", "black-pepper"],
+          "text": "3 min",
+          "effort": "minutes",
+          "duration": { "min": 3, "unit": "min" },
+          "technique": "saute"
+        },
+        "wilt-spinach": {
+          "id": "wilt-spinach",
+          "inputs": ["artichokes", "spinach"],
+          "text": "1 min",
+          "effort": "quick",
+          "duration": { "min": 1, "unit": "min" }
+        },
+        "simmer-sauce": {
+          "id": "simmer-sauce",
+          "inputs": ["wilt-spinach", "cannellini-beans", "heavy-cream", "nutmeg"],
+          "text": "reduce to med low\n\nbring to a simmer\n\nstir occasionally until sauce is reduced and glossy (10 to 12 min)",
+          "effort": "minutes",
+          "duration": { "min": 10, "max": 12, "unit": "min" },
+          "temperature": { "label": "medium low" },
+          "technique": "simmer"
+        },
+        "finish": {
+          "id": "finish",
+          "inputs": ["simmer-sauce", "parmesan", "lemon-zest", "lemon-juice"],
+          "text": "remove from heat and stir",
+          "effort": "quick",
+          "technique": "mix"
+        }
+      }
+    }
+  ]
+}

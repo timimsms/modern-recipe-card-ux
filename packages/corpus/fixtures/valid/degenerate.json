@@ -1,0 +1,24 @@
+{
+  "id": "degenerate",
+  "title": "Degenerate",
+  "servings": 1,
+  "components": [
+    {
+      "id": "only",
+      "prelude": [],
+      "ingredients": [
+        { "id": "water", "quantity": { "amount": 1, "unit": "cup" }, "item": "water" }
+      ],
+      "root": "boil",
+      "steps": {
+        "boil": {
+          "id": "boil",
+          "inputs": ["water"],
+          "text": "boil",
+          "effort": "minutes",
+          "technique": "boil"
+        }
+      }
+    }
+  ]
+}

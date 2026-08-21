@@ -1,0 +1,54 @@
+{
+  "id": "long-text",
+  "title": "Long Text",
+  "yield": "step text far beyond the W1 threshold — this is R9's fixture",
+  "servings": 2,
+  "components": [
+    {
+      "id": "only",
+      "prelude": [
+        {
+          "id": "p-long",
+          "text": "Set out every bowl, pan, and utensil you will need before starting, because once the butter is in the pan there is no time to go looking for a spatula, and arrange them in the order they are called for below so that your hands never have to cross over the hot burner."
+        }
+      ],
+      "ingredients": [
+        {
+          "id": "onion",
+          "quantity": { "amount": 1, "unit": "count" },
+          "item": "yellow onion",
+          "note": "halved through the root and sliced as thinly as you can manage"
+        },
+        {
+          "id": "butter",
+          "quantity": { "amount": 2, "unit": "Tbs", "metric": { "amount": 28, "unit": "g" } },
+          "item": "unsalted butter"
+        },
+        {
+          "id": "stock",
+          "quantity": { "amount": 2, "unit": "cup", "metric": { "amount": 475, "unit": "mL" } },
+          "item": "chicken stock"
+        }
+      ],
+      "root": "finish",
+      "steps": {
+        "sweat": {
+          "id": "sweat",
+          "inputs": ["onion", "butter"],
+          "text": "Cook the onions in the butter over the lowest heat your stove will hold, stirring every few minutes and scraping the fond off the bottom of the pan each time, until they collapse to about a quarter of their original volume and turn the colour of weak tea — this takes far longer than any recipe admits and cannot be rushed by turning up the heat.",
+          "effort": "long-unattended",
+          "duration": { "min": 45, "max": 60, "unit": "min" },
+          "technique": "saute"
+        },
+        "finish": {
+          "id": "finish",
+          "inputs": ["sweat", "stock"],
+          "text": "Pour in the stock, raise the heat until it barely trembles, and hold it there uncovered until it has reduced by roughly a third and tastes of onion rather than of water.",
+          "effort": "long-unattended",
+          "duration": { "min": 25, "unit": "min" },
+          "technique": "simmer"
+        }
+      }
+    }
+  ]
+}

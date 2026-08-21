@@ -1,0 +1,15 @@
+{
+  "name": "@experiment/svg",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "SVG/canvas dendrogram. Owns the non-planar-edge case (I4 connector strategy).",
+  "scripts": {
+    "build": "node -e \"process.stdout.write('03-svg: not scaffolded until Phase 07\\n')\""
+  },
+  "dependencies": {
+    "@recipe/core": "workspace:*",
+    "@recipe/corpus": "workspace:*",
+    "@recipe/tokens": "workspace:*"
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "id": "beef-stroganoff",
+  "title": "Beef Stroganoff",
+  "yield": "serves 4 when served over noodles or rice",
+  "servings": 4,
+  "source": { "name": "Cooking For Engineers" },
+  "components": [
+    {
+      "id": "stroganoff",
+      "prelude": [],
+      "ingredients": [
+        {
+          "id": "beef-tenderloin",
+          "quantity": { "amount": "1-1/2", "unit": "lb", "metric": { "amount": 700, "unit": "g" } },
+          "item": "beef tenderloin"
+        },
+        { "id": "butter", "quantity": { "amount": 2, "unit": "Tbs" }, "item": "butter" },
+        {
+          "id": "onion",
+          "quantity": { "amount": "1/2", "unit": "count", "metric": { "amount": 60, "unit": "g" } },
+          "item": "medium onion"
+        },
+        {
+          "id": "button-mushrooms",
+          "quantity": { "amount": 8, "unit": "oz", "metric": { "amount": 225, "unit": "g" } },
+          "item": "button mushrooms"
+        },
+        {
+          "id": "beef-broth",
+          "quantity": { "amount": "3/4", "unit": "cup", "metric": { "amount": 180, "unit": "mL" } },
+          "item": "beef broth"
+        },
+        {
+          "id": "cognac",
+          "quantity": { "amount": 2, "unit": "Tbs", "metric": { "amount": 30, "unit": "mL" } },
+          "item": "cognac"
+        },
+        {
+          "id": "sour-cream",
+          "quantity": { "amount": 1, "unit": "cup", "metric": { "amount": 230, "unit": "g" } },
+          "item": "sour cream"
+        },
+        {
+          "id": "dijon-mustard",
+          "quantity": { "amount": 1, "unit": "Tbs", "metric": { "amount": 15, "unit": "g" } },
+          "item": "Dijon mustard"
+        },
+        {
+          "id": "dill-weed",
+          "quantity": { "amount": 1, "unit": "tsp", "metric": { "amount": 1, "unit": "g" } },
+          "item": "dried dill weed"
+        },
+        { "id": "salt-pepper", "item": "salt & pepper" }
+      ],
+      "root": "add-dill",
+      "steps": {
+        "cut-strips": {
+          "id": "cut-strips",
+          "inputs": ["beef-tenderloin"],
+          "text": "cut into thin 1 x 2-in. (2.5 x 5.1-cm) strips",
+          "effort": "minutes",
+          "technique": "slice"
+        },
+        "brown": {
+          "id": "brown",
+          "inputs": ["cut-strips", "butter"],
+          "text": "brown",
+          "effort": "minutes",
+          "technique": "brown"
+        },
+        "fine-dice": {
+          "id": "fine-dice",
+          "inputs": ["onion"],
+          "text": "fine dice",
+          "effort": "minutes",
+          "technique": "chop"
+        },
+        "cook-onion": {
+          "id": "cook-onion",
+          "inputs": ["brown", "fine-dice"],
+          "text": "cook until translucent; deglaze pan",
+          "effort": "minutes",
+          "technique": "saute"
+        },
+        "slice-mushrooms": {
+          "id": "slice-mushrooms",
+          "inputs": ["button-mushrooms"],
+          "text": "slice thickly",
+          "effort": "minutes",
+          "technique": "slice"
+        },
+        "cook-mushrooms": {
+          "id": "cook-mushrooms",
+          "inputs": ["cook-onion", "slice-mushrooms"],
+          "text": "cook until liquid evaporates, 15 min.",
+          "effort": "long-unattended",
+          "duration": { "min": 15, "unit": "min" },
+          "technique": "saute"
+        },
+        "reduce": {
+          "id": "reduce",
+          "inputs": ["cook-mushrooms", "beef-broth", "cognac"],
+          "text": "reduce until sauce coats mushrooms",
+          "effort": "minutes",
+          "technique": "simmer"
+        },
+        "stir-in": {
+          "id": "stir-in",
+          "inputs": ["reduce", "sour-cream", "dijon-mustard"],
+          "text": "stir in",
+          "effort": "quick",
+          "technique": "mix"
+        },
+        "simmer-beef": {
+          "id": "simmer-beef",
+          "inputs": ["stir-in"],
+          "text": "simmer until beef is reheated",
+          "effort": "minutes",
+          "technique": "simmer"
+        },
+        "add-dill": {
+          "id": "add-dill",
+          "inputs": ["simmer-beef", "dill-weed", "salt-pepper"],
+          "text": "add dill and season to taste",
+          "effort": "quick",
+          "technique": "season"
+        }
+      }
+    }
+  ]
+}

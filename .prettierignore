@@ -1,0 +1,10 @@
+dist/
+node_modules/
+sources/
+docs/design/
+pnpm-lock.yaml
+
+# Prose is hand-wrapped and hand-aligned. Reformatting it produces large diffs of pure noise
+# on top of real changes, which is exactly what makes a review hard to read.
+*.md
+

@@ -1,0 +1,25 @@
+{
+  "name": "@recipe/harness",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Bake-off instrumentation: bundle size, perf, a11y, fidelity scoring. Dev-only.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "devDependencies": {
+    "@recipe/core": "workspace:*",
+    "@recipe/corpus": "workspace:*"
+  }
+}

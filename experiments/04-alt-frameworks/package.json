@@ -1,0 +1,15 @@
+{
+  "name": "@experiment/alt-frameworks",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Svelte / Solid / Vue on the identical GridPlan.",
+  "scripts": {
+    "build": "node -e \"process.stdout.write('04-alt-frameworks: not scaffolded until Phase 07\\n')\""
+  },
+  "dependencies": {
+    "@recipe/core": "workspace:*",
+    "@recipe/corpus": "workspace:*",
+    "@recipe/tokens": "workspace:*"
+  }
+}

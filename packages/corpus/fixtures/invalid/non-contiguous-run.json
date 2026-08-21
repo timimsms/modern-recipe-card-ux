@@ -1,0 +1,40 @@
+{
+  "id": "non-contiguous-run",
+  "title": "E4 — Non-contiguous Run",
+  "yield": "the authored ingredient order is not a valid depth-first leaf ordering (I1)",
+  "components": [
+    {
+      "id": "only",
+      "prelude": [],
+      "ingredients": [
+        { "id": "flour", "quantity": { "amount": 1, "unit": "cup" }, "item": "flour" },
+        { "id": "butter", "quantity": { "amount": 4, "unit": "Tbs" }, "item": "butter" },
+        { "id": "sugar", "quantity": { "amount": 1, "unit": "cup" }, "item": "sugar" }
+      ],
+      "root": "combine",
+      "steps": {
+        "sift": {
+          "id": "sift",
+          "inputs": ["flour", "sugar"],
+          "text": "sift together",
+          "effort": "quick",
+          "technique": "sift"
+        },
+        "melt": {
+          "id": "melt",
+          "inputs": ["butter"],
+          "text": "melt",
+          "effort": "quick",
+          "technique": "melt"
+        },
+        "combine": {
+          "id": "combine",
+          "inputs": ["sift", "melt"],
+          "text": "combine",
+          "effort": "quick",
+          "technique": "mix"
+        }
+      }
+    }
+  ]
+}

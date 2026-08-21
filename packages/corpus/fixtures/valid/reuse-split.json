@@ -1,0 +1,74 @@
+{
+  "id": "reuse-split",
+  "title": "Reserve Half the Butter",
+  "yield": "the hard case: one leaf, two consumers (I4)",
+  "servings": 4,
+  "components": [
+    {
+      "id": "crumble",
+      "prelude": [],
+      "ingredients": [
+        {
+          "id": "butter",
+          "quantity": { "amount": 4, "unit": "Tbs", "metric": { "amount": 57, "unit": "g" } },
+          "item": "unsalted butter",
+          "note": "half creamed into the batter, half reserved for the topping"
+        },
+        {
+          "id": "sugar",
+          "quantity": { "amount": "1/2", "unit": "cup", "metric": { "amount": 100, "unit": "g" } },
+          "item": "sugar"
+        },
+        {
+          "id": "flour",
+          "quantity": { "amount": 1, "unit": "cup", "metric": { "amount": 125, "unit": "g" } },
+          "item": "flour"
+        },
+        {
+          "id": "oats",
+          "quantity": { "amount": "1/2", "unit": "cup", "metric": { "amount": 45, "unit": "g" } },
+          "item": "rolled oats"
+        }
+      ],
+      "reuse": [
+        {
+          "leaf": "butter",
+          "note": "half creamed into the batter, half rubbed into the topping. Splitting this into two ingredient rows would be a lie about the shopping list; leaving it undeclared would be a lie about the tree."
+        }
+      ],
+      "root": "bake",
+      "steps": {
+        "cream": {
+          "id": "cream",
+          "inputs": ["butter", "sugar"],
+          "text": "cream half the butter with the sugar",
+          "effort": "minutes",
+          "technique": "cream"
+        },
+        "batter": {
+          "id": "batter",
+          "inputs": ["cream", "flour"],
+          "text": "beat in the flour",
+          "effort": "quick",
+          "technique": "mix"
+        },
+        "topping": {
+          "id": "topping",
+          "inputs": ["batter", "oats", "butter"],
+          "text": "rub the reserved butter into the oats and scatter over",
+          "effort": "minutes",
+          "technique": "assemble"
+        },
+        "bake": {
+          "id": "bake",
+          "inputs": ["topping"],
+          "text": "bake until the topping is golden",
+          "effort": "long-unattended",
+          "duration": { "min": 35, "max": 40, "unit": "min" },
+          "temperature": { "f": 375, "c": 190 },
+          "technique": "bake"
+        }
+      }
+    }
+  ]
+}

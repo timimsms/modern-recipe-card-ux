@@ -1,0 +1,31 @@
+{
+  "id": "cycle",
+  "title": "E3 — Cycle",
+  "yield": "two steps that consume each other",
+  "components": [
+    {
+      "id": "only",
+      "prelude": [],
+      "ingredients": [
+        { "id": "flour", "quantity": { "amount": 1, "unit": "cup" }, "item": "flour" }
+      ],
+      "root": "mix",
+      "steps": {
+        "mix": {
+          "id": "mix",
+          "inputs": ["fold"],
+          "text": "mix",
+          "effort": "quick",
+          "technique": "mix"
+        },
+        "fold": {
+          "id": "fold",
+          "inputs": ["mix", "flour"],
+          "text": "fold",
+          "effort": "quick",
+          "technique": "fold"
+        }
+      }
+    }
+  ]
+}

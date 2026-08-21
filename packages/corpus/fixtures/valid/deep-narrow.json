@@ -1,0 +1,65 @@
+{
+  "id": "deep-narrow",
+  "title": "Deep Narrow",
+  "yield": "3 ingredients, depth 12 — short and very wide",
+  "servings": 1,
+  "components": [
+    {
+      "id": "only",
+      "prelude": [],
+      "ingredients": [
+        { "id": "base", "quantity": { "amount": 1, "unit": "cup" }, "item": "base" },
+        { "id": "middle", "quantity": { "amount": 1, "unit": "tsp" }, "item": "midway addition" },
+        {
+          "id": "finish",
+          "quantity": { "amount": 1, "unit": "pinch" },
+          "item": "finishing salt",
+          "approximate": true
+        }
+      ],
+      "root": "step-12",
+      "steps": {
+        "step-1": { "id": "step-1", "inputs": ["base"], "text": "stage 1", "effort": "quick" },
+        "step-2": { "id": "step-2", "inputs": ["step-1"], "text": "stage 2", "effort": "quick" },
+        "step-3": { "id": "step-3", "inputs": ["step-2"], "text": "stage 3", "effort": "quick" },
+        "step-4": {
+          "id": "step-4",
+          "inputs": ["step-3"],
+          "text": "stage 4",
+          "effort": "long-unattended",
+          "duration": { "min": 10, "unit": "min" }
+        },
+        "step-5": { "id": "step-5", "inputs": ["step-4"], "text": "stage 5", "effort": "quick" },
+        "step-6": {
+          "id": "step-6",
+          "inputs": ["step-5", "middle"],
+          "text": "stage 6",
+          "effort": "quick"
+        },
+        "step-7": { "id": "step-7", "inputs": ["step-6"], "text": "stage 7", "effort": "quick" },
+        "step-8": {
+          "id": "step-8",
+          "inputs": ["step-7"],
+          "text": "stage 8",
+          "effort": "long-unattended",
+          "duration": { "min": 10, "unit": "min" }
+        },
+        "step-9": { "id": "step-9", "inputs": ["step-8"], "text": "stage 9", "effort": "quick" },
+        "step-10": { "id": "step-10", "inputs": ["step-9"], "text": "stage 10", "effort": "quick" },
+        "step-11": {
+          "id": "step-11",
+          "inputs": ["step-10"],
+          "text": "stage 11",
+          "effort": "quick"
+        },
+        "step-12": {
+          "id": "step-12",
+          "inputs": ["step-11", "finish"],
+          "text": "stage 12",
+          "effort": "long-unattended",
+          "duration": { "min": 10, "unit": "min" }
+        }
+      }
+    }
+  ]
+}
