@@ -516,6 +516,33 @@ test.describe('kitchen state', () => {
     await expect(page.locator('.tick[data-ing="brownies/flour"]')).not.toBeChecked()
   })
 
+  /**
+   * PHASE-05's open question, kept under test so both answers stay honest. Linked check-off ends
+   * with every box ticked, which is why it is not the default — see Q7.
+   */
+  test('linked check-off ticks a step\u2019s ingredients; independent does not', async ({
+    page,
+  }) => {
+    await open(page, 'recipes/espresso-brownies')
+    await page.selectOption('#checkoff', 'linked')
+    await page.selectOption('#view', 'cook')
+    await page.click('.cm-next')
+
+    await page.selectOption('#view', 'chart')
+    // `melt` consumes the butter, and nothing else yet.
+    await expect(page.locator('.tick[data-ing="brownies/butter"]')).toBeChecked()
+    await expect(page.locator('.tick[data-ing="brownies/flour"]')).not.toBeChecked()
+  })
+
+  test('independent check-off leaves the ingredient column alone', async ({ page }) => {
+    await open(page, 'recipes/espresso-brownies')
+    await page.selectOption('#view', 'cook')
+    await page.click('.cm-next')
+
+    await page.selectOption('#view', 'chart')
+    await expect(page.locator('.tick[data-ing="brownies/butter"]')).not.toBeChecked()
+  })
+
   /** PHASE-05's 48px rule, on the control that gets used most and with the wettest hands. */
   test('every check-off target clears 48px on a phone', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })

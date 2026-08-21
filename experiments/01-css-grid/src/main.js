@@ -9,6 +9,7 @@
 import {
   condense,
   createStore,
+  ingredientKey,
   layout,
   normalizeRecipe,
   stepKey,
@@ -44,6 +45,7 @@ const picker = document.getElementById('recipe')
 const scaleControl = document.getElementById('scale')
 const scaleAny = document.getElementById('scale-any')
 const units = document.getElementById('units')
+const checkoff = document.getElementById('checkoff')
 const undoButton = document.getElementById('undo')
 const startOver = document.getElementById('startover')
 const strategy = document.getElementById('strategy')
@@ -358,13 +360,14 @@ root.addEventListener('click', (event) => {
     // fills in as you cook — you walk the whole recipe and it still shows nothing complete,
     // which is the one job it has.
     const key = stepKey(current.components[cook.componentIndex], here)
-    if (!store.get().completedSteps.has(key)) store.toggleStep(key)
+    if (!store.get().completedSteps.has(key))
+      completeStep(current.components[cook.componentIndex], here)
     goTo(at + 1)
   } else if (target.closest('.cm-prev')) {
     goTo(at - 1)
   } else if (target.closest('.cm-done')) {
     // Toggling rather than one-way: the commonest kitchen mistake is a mis-tap.
-    store.toggleStep(stepKey(current.components[cook.componentIndex], here))
+    completeStep(current.components[cook.componentIndex], here)
   } else {
     return
   }
@@ -470,7 +473,7 @@ async function refresh() {
  * moment a cook most wants their state kept.
  */
 for (const control of [picker, strategy, reuse]) control.addEventListener('change', refresh)
-for (const control of [markRule, ramp, view]) control.addEventListener('change', draw)
+for (const control of [markRule, ramp, view, checkoff]) control.addEventListener('change', draw)
 
 // R5 claims colour is never the only channel. Checking that should not require devtools, and
 // greyscale is also the closest thing to a print preview without a printer — so it desaturates
@@ -490,6 +493,27 @@ document.documentElement.setAttribute('data-theme', theme.value)
 
 picker.value = 'recipes/espresso-brownies'
 await refresh()
+
+/**
+ * PHASE-05 asks whether finishing a step should tick the ingredients it consumed, and says to
+ * prototype both. Both are here, behind the `check-off` control.
+ *
+ * `linked` ticks a step's own ingredient inputs when it completes. `independent` is the default
+ * — see docs/findings/Q7-two-check-gestures.md for what looking at both showed.
+ */
+function completeStep(component, stepId) {
+  const key = stepKey(component, stepId)
+  const finishing = !store.get().completedSteps.has(key)
+  store.toggleStep(key)
+  if (!finishing || checkoff.value !== 'linked') return
+
+  const state = store.get()
+  for (const input of component.steps[stepId].inputs) {
+    if (input.kind !== 'ingredient') continue
+    const ing = ingredientKey(component, input.id)
+    if (!state.checkedIngredients.has(ing)) store.toggleIngredient(ing)
+  }
+}
 
 /**
  * Completion across the whole recipe, weighted by time rather than by step count.

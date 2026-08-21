@@ -1,10 +1,10 @@
 # Project state — handoff
 
-> Read this first after a context clear. Current as of the close of the Phase 04 build session.
+> Read this first after a context clear. Current as of the close of the Phase 05 build session.
 
 ## Where things stand
 
-**Phases 00 through 04 are built.** 369 unit tests plus 39 browser tests, all green.
+**Phases 00 through 05 are built.** 422 unit tests plus 48 browser tests, all green.
 
 | Phase | State |
 | --- | --- |
@@ -13,14 +13,16 @@
 | 02 Layout engine | `layout(component, opts) → GridPlan`. Three column strategies, three reuse strategies, derived edges, groups, timing. Reproduces the 2004 source table's spans exactly. |
 | 03 Design system & reference renderer | Tokens with contrast validated as a test; `experiments/01-css-grid` with no bundler and no framework; visual baselines; print verified as real PDFs. |
 | 04 Responsive ladder & cook mode | All four presentations from one plan, plus the transition between them. |
+| 05 Interaction & kitchen state | Headless store in core; serving-size scaling with a ladder that climbs and descends; concurrent timers that survive backgrounding; persistence, undo, wake lock, 48px check-off. |
 
 ```sh
 pnpm install
-pnpm check                # typecheck, lint, boundaries, format, 369 tests
+pnpm check                # typecheck, lint, boundaries, format, 422 tests
 pnpm serve                # then open http://localhost:8731/experiments/01-css-grid/
-pnpm test:visual          # 39 browser tests + committed screenshot baselines
+pnpm test:visual          # 48 browser tests + committed screenshot baselines
 pnpm test:print           # renders the corpus to PDF and checks it survives paper
 node scripts/check-recipe.mjs <file.json>
+node scripts/progress-weighting.mjs      # why progress is time-weighted (R7)
 ```
 
 **R8 is answered.** Shepherd's pie is cookable end to end at 390px with **zero horizontal
@@ -31,11 +33,12 @@ unsolved problem in the project and the reason the format spreads as screenshots
 
 | Package                                         | State                                                                                                                                                                       |
 | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/core`                                 | Model, validator, quantity parsing, authoring normaliser, **layout engine**. Zero deps, zero DOM — enforced by a lint rule, a dependency-cruiser rule, and a test that reads the manifest. |
+| `packages/core`                                 | Model, validator, quantity parsing, authoring normaliser, **layout engine**, condense, cook schedule, **kitchen state store**, **scaling**. Zero deps, zero DOM — enforced by a lint rule, a dependency-cruiser rule, and a test that reads the manifest. |
 | `packages/corpus`                               | 8 recipes, 6 valid stress fixtures, 8 invalid fixtures. All validate as intended, and all lay out under every strategy with committed golden files. |
-| `packages/tokens`                               | Placeholder. Phase 03.                                                                                                                                                      |
+| `packages/tokens`                               | Palette, depth ramp, spacing and type scale, with WCAG contrast checked as a test rather than by eye.                                                                        |
 | `packages/harness`                              | Placeholder. Phase 08.                                                                                                                                                      |
-| `experiments/01-css-grid` … `04-alt-frameworks` | Package skeletons only. A cross-track import fails the boundary check — verified by introducing one, not assumed.                                                           |
+| `experiments/01-css-grid`                       | The reference renderer, bound to the store. Four presentations, cook mode, timers, scaling, persistence. No bundler, no framework, no build step.                            |
+| `experiments/02` … `04-alt-frameworks`          | Package skeletons only. A cross-track import fails the boundary check — verified by introducing one, not assumed.                                                           |
 
 The corpus covers all five source recipes plus the three edge-case additions `EDGE-CASES.md`
 called for: `no-knead-bread` (E1 mostly-waiting, E2 overnight, E3 repeated folds),
@@ -102,19 +105,32 @@ that EDGE-CASES' "revisit if common" condition is met; Phase 03 should answer it
 
 ## Recommended next action
 
-**Phase 05 — interaction and kitchen state.** Cook mode already surfaces `duration`; Phase 05
-counts it down. Timers, serving-size scaling over the structured `Quantity` model, unit toggling,
-wake lock, and persistence. Check-off already works and is already shared across views, so the
-new work is timers and scaling.
+**Phase 06 — accessibility.** Phase 05 deliberately built to the obvious standard and left
+verification here: the new controls (scale menu and number, unit toggle, timer start/stop, undo,
+start-over, check-off mode) have had no audit beyond "48px and reachable by keyboard".
 
-Two things to settle early, both cheap and both able to move the design:
+Two things carried forward from Phase 05, both cheap and both able to move the design:
 
 1. **Equipment contention (EDGE-CASES E4).** `Step.equipment` exists and nothing reads it. It is
    what turns the parallelism claim from "topologically possible" into "actually possible" — and
    given Q2 found the banner never fires, this is the more valuable half of that idea.
 2. **Session splitting (EDGE-CASES E2).** `passive` steps mean bread and cures span days. Cook
    mode has no notion of putting a recipe down and coming back, which is exactly what those
-   recipes require.
+   recipes require. Persistence now survives a reload, so the state half exists; what is missing
+   is any way to *say* "this is where I stop today".
+
+Phase 05 is closed, including both of its open questions. Timers live in the shared store with
+the clock injected, which the tests exercise by advancing a fake one. Check-off stays two
+independent gestures — [Q7](../findings/Q7-two-check-gestures.md) built both and found that
+linking them ends with every box ticked, which is information-free at exactly the moment the
+column stops mattering.
+
+Three findings came out of it, all from looking rather than from tests passing:
+[R7](../findings/R7-progress-weighting.md) (a step-count bar overstates by up to 62 points),
+[Q6](../findings/Q6-scaling-ladders.md) (the unit ladder had to learn to descend),
+[I5](../findings/I5-component-scoped-identity.md) (recipe state cannot be keyed by bare ids), and
+[M1](../findings/M1-baselines-measured-the-harness.md) (the visual baselines were measuring the
+control bar).
 
 Already done and not worth redoing: the leader rule is drawn from `PlacedCell.leader`; the
 at-a-glance bar handles `parallelSaving: 0` by dropping the field and saying "nothing overlaps in
