@@ -69,21 +69,43 @@ for (const group of [
   picker.append(optgroup)
 }
 
+/**
+ * Loads the picked recipe and lays it out.
+ *
+ * Two things this deliberately does *not* do.
+ *
+ * It does not reset progress unless the recipe actually changed. `strategy` and `reuse` come
+ * through here too because they change the plan, and resetting on those meant switching from
+ * right-packed to left-packed threw away every box you had ticked — the same bug as the view
+ * switch, one layer down.
+ *
+ * And it does not let a slow load overwrite a newer one. The fetch is async, so a tap on a step
+ * cell during a load opened cook mode correctly and was then clobbered by the load completing
+ * and resetting the cursor. Guarding on a token makes the last request the one that wins.
+ */
+let loadToken = 0
+
 async function show() {
   const path = picker.value
+  const token = ++loadToken
   // Relative to this module, which lives at experiments/01-css-grid/src/.
   const url = new URL(`../../../packages/corpus/${path}.json`, import.meta.url)
   const response = await fetch(url)
   if (!response.ok) throw new Error(`${url.pathname} → ${response.status}`)
   const recipe = normalizeRecipe(await response.json())
+  if (token !== loadToken) return
+
   recipe.plans = recipe.components.map((c) =>
     layout(c, { columns: strategy.value, reuse: reuse.value }),
   )
+  const changed = path !== currentSlug
   current = recipe
   currentSlug = path
-  store.reset()
-  cook = { componentIndex: 0, current: undefined }
-  restore(path)
+  if (changed) {
+    store.reset()
+    cook = { componentIndex: 0, current: undefined }
+    restore(path)
+  }
   draw()
 }
 
@@ -190,6 +212,8 @@ function draw() {
     timers: state.timers,
     scale: state.scale,
     unitSystem: state.unitSystem,
+    // The chart draws the same part-done / all-done marks cook mode does.
+    state,
   }
   root.innerHTML =
     view.value === 'filmstrip'

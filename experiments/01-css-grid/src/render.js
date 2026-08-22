@@ -12,6 +12,8 @@
 import {
   formatTemperature,
   ingredientKey,
+  isComponentComplete,
+  isRecipeComplete,
   isUnattended,
   stepKey,
 } from '../../../packages/core/dist/index.js'
@@ -340,13 +342,23 @@ function renderLeaf(leaf, options = {}) {
 // --- The card -----------------------------------------------------------------------------------
 
 export function renderCard(recipe, options = {}) {
+  // The same two marks cook mode uses, so "part done" and "all done" mean one thing wherever
+  // the reader meets them. On the chart they sit against the component title, which is the only
+  // place a component announces itself.
+  const state = options.state
+  const done = state ? isRecipeComplete(recipe, state) : false
+
   const components = recipe.components
     .map((component, i) => {
       const plan = recipe.plans[i]
-      const title = component.title
-        ? `<h3 class="component-title">${esc(component.title)}</h3>`
+      const partDone = state && !done && isComponentComplete(component, state)
+      const mark = partDone
+        ? `<span class="seal seal-part" aria-hidden="true"></span><span class="component-done">done</span>`
         : ''
-      return `<section class="component">${title}<div class="scroller">${renderChart(component, plan, options)}</div></section>`
+      const title = component.title
+        ? `<h3 class="component-title">${esc(component.title)}${mark}</h3>`
+        : ''
+      return `<section class="component${partDone ? ' part-done' : ''}">${title}<div class="scroller">${renderChart(component, plan, options)}</div></section>`
     })
     .join('')
 
@@ -364,13 +376,19 @@ export function renderCard(recipe, options = {}) {
     )
     .join('')
 
+  const allDone = done
+    ? `<p class="ending all"><span class="seal seal-all" aria-hidden="true"></span>` +
+      `<span><b>All done.</b> ${esc(recipe.title)} is finished.</span></p>`
+    : ''
+
   return (
-    `<article class="card">` +
+    `<article class="card${done ? ' done' : ''}">` +
     `<style>${rules}</style>` +
     `<header class="cardhead"><h2 class="card-title">${esc(recipe.title)}</h2>${source}` +
     (recipe.yield ? `<p class="yield">${esc(recipe.yield)}</p>` : '') +
     `</header>` +
     renderGlance(recipe, recipe.components[recipe.components.length - 1], main, options) +
+    allDone +
     components +
     `</article>`
   )

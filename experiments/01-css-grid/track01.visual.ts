@@ -69,6 +69,10 @@ async function open(page: Page, slug: string) {
   await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
   await page.selectOption('#recipe', slug)
   await page.waitForSelector('.card')
+  // Every geometry assertion below measures type. Without this the card is measured in the
+  // fallback font under parallel load, and row heights come out short — which is how the 48px
+  // check and the condensing check failed once each and then passed on a re-run.
+  await page.evaluate(() => document.fonts.ready)
 }
 
 const name = (slug: string) => slug.replace(/\//g, '-')
@@ -200,6 +204,7 @@ test.describe('the ladder', () => {
     await page.selectOption('#recipe', slug)
     await page.selectOption('#view', view)
     await page.waitForSelector('.card')
+    await page.evaluate(() => document.fonts.ready)
     await page.addStyleTag({ content: HIDE_CONTROLS })
   }
 
@@ -541,6 +546,85 @@ test.describe('kitchen state', () => {
 
     await page.selectOption('#view', 'chart')
     await expect(page.locator('.tick[data-ing="brownies/butter"]')).not.toBeChecked()
+  })
+
+  /**
+   * The mini-map fills completely at the end of *any* component, which is the same picture as
+   * finishing the dish — and then empties, which reads as losing an hour of progress. The step
+   * count is right there and correct; the map is what the eye reads, so the ending gets named
+   * next to it.
+   */
+  test('the end of a part is not the end of the dish', async ({ page }) => {
+    await open(page, 'recipes/shepherds-pie')
+    await page.selectOption('#view', 'cook')
+    for (let i = 0; i < 2; i++) await page.click('.cm-next')
+    await page.click('.cm-done')
+
+    const ending = page.locator('.ending')
+    await expect(ending).toHaveClass(/part/)
+    await expect(ending).toContainText('Mashed potatoes done')
+    await expect(ending).toContainText("Shepherd's pie is next")
+    // Half-filled seal for a part; the full one means the dish.
+    await expect(page.locator('.ending .seal-part')).toBeVisible()
+    await expect(page.locator('.ending .seal-all')).toHaveCount(0)
+
+    // And the map says which part it is showing, so emptying reads as part two.
+    await expect(page.locator('.cm-part')).toContainText('part 1 of 2')
+  })
+
+  test('finishing every part says the dish is done', async ({ page }) => {
+    await open(page, 'recipes/shepherds-pie')
+    await page.selectOption('#view', 'cook')
+    for (let i = 0; i < 20; i++) {
+      if (await page.locator('.cm-next').isDisabled()) break
+      await page.click('.cm-next')
+    }
+    // Next cannot complete a final step, because there is nowhere to advance to.
+    await page.click('.cm-done')
+
+    await expect(page.locator('.ending')).toHaveClass(/all/)
+    await expect(page.locator('.ending')).toContainText('All done')
+    await expect(page.locator('.ending .seal-all')).toBeVisible()
+    await expect(page.locator('.cm-progress-text')).toHaveText('100% of the time')
+  })
+
+  test('the chart uses the same two marks', async ({ page }) => {
+    await open(page, 'recipes/shepherds-pie')
+    await page.selectOption('#view', 'cook')
+    for (let i = 0; i < 2; i++) await page.click('.cm-next')
+    await page.click('.cm-done')
+    await page.selectOption('#view', 'chart')
+
+    // Exactly one component is finished, so exactly one title carries the part seal.
+    await expect(page.locator('.component-title .seal-part')).toHaveCount(1)
+    await expect(page.locator('.component.part-done .component-title')).toContainText(
+      'Mashed potatoes',
+    )
+    // "done" in words as well as in a mark — R5, colour is never the only channel.
+    await expect(page.locator('.component-done')).toHaveText('done')
+    await expect(page.locator('.card .ending.all')).toHaveCount(0)
+  })
+
+  /**
+   * Re-laying out is not starting over. `strategy` and `reuse` change the plan and so go through
+   * the loader, which used to reset the store on the way past — so switching to left-packed to
+   * see how it looked threw away every box you had ticked.
+   */
+  test('changing the layout keeps your progress', async ({ page }) => {
+    await open(page, 'recipes/espresso-brownies')
+    await page.locator('.tick[data-ing="brownies/flour"]').check()
+
+    await page.selectOption('#strategy', 'left-packed')
+    await expect(page.locator('.tick[data-ing="brownies/flour"]')).toBeChecked()
+
+    await page.selectOption('#reuse', 'connector')
+    await expect(page.locator('.tick[data-ing="brownies/flour"]')).toBeChecked()
+
+    // Picking a different recipe *is* a fresh start.
+    await page.selectOption('#recipe', 'recipes/shepherds-pie')
+    await page.waitForSelector('.chart')
+    await page.selectOption('#recipe', 'recipes/espresso-brownies')
+    await expect(page.locator('.tick[data-ing="brownies/flour"]')).toBeChecked()
   })
 
   /** PHASE-05's 48px rule, on the control that gets used most and with the wettest hands. */

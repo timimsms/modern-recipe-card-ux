@@ -52,6 +52,15 @@ describe.each([
     },
   )
 
+  // `ruleHeavy` stopped being border-only when the completion band started setting it as text:
+  // "All done. Shepherd's Pie is finished." So it is held to the body threshold now.
+  it.each(grounds.map((g) => [g.name, g.colour] as const))(
+    'heavy rule as text on %s meets WCAG AA',
+    (_ground, colour) => {
+      expect(contrastRatio(palette.ruleHeavy, colour)).toBeGreaterThanOrEqual(AA_BODY)
+    },
+  )
+
   it('the structural hue reads as a border against both grounds', () => {
     expect(contrastRatio(palette.rule, palette.surface)).toBeGreaterThanOrEqual(AA_LARGE)
     expect(contrastRatio(palette.rule, palette.paper)).toBeGreaterThanOrEqual(AA_LARGE)

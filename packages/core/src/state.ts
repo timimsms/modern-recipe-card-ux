@@ -17,6 +17,7 @@ import {
   subtreeSteps,
   type Component,
   type IngredientId,
+  type Recipe,
   type Step,
   type StepId,
 } from './model.js'
@@ -266,6 +267,57 @@ export function createStore(options: StoreOptions = {}): Store {
       emit()
     },
   }
+}
+
+// --- Completion ----------------------------------------------------------------------------------
+
+/**
+ * What kind of ending the cook is looking at.
+ *
+ * Components are sequential and the mini-map is per-component, so finishing the mashed potatoes
+ * fills the map completely — visually identical to finishing the dish. The cook then steps into
+ * the pie and the map empties, which reads as losing an hour of progress rather than starting
+ * part two.
+ *
+ * Neither the step count ("3 of 15") nor the time-weighted bar fixes this: both are correct and
+ * neither is what the eye reads. The map is the loud element, so the ending needs naming.
+ */
+export type Completion =
+  /** Nothing has ended; an ordinary step. */
+  | { kind: 'none' }
+  /** This component is finished and another follows. `next` is the one that follows. */
+  | { kind: 'part'; component: Component; next: Component; index: number; of: number }
+  /** Every step of every component is done. */
+  | { kind: 'all' }
+
+/** Every step of one component checked off. */
+export function isComponentComplete(component: Component, state: CookState): boolean {
+  const steps = stepsOf(component)
+  return (
+    steps.length > 0 && steps.every((step) => state.completedSteps.has(stepKey(component, step.id)))
+  )
+}
+
+export function isRecipeComplete(recipe: Recipe, state: CookState): boolean {
+  return (
+    recipe.components.length > 0 &&
+    recipe.components.every((component) => isComponentComplete(component, state))
+  )
+}
+
+/**
+ * Classifies the ending, if any, at the component the cook is currently in.
+ *
+ * `all` wins over `part`: on the final component both are true, and "you have finished the dish"
+ * is the more useful of the two things to say.
+ */
+export function completionAt(recipe: Recipe, index: number, state: CookState): Completion {
+  if (isRecipeComplete(recipe, state)) return { kind: 'all' }
+
+  const component = recipe.components[index]
+  const next = recipe.components[index + 1]
+  if (!component || !next || !isComponentComplete(component, state)) return { kind: 'none' }
+  return { kind: 'part', component, next, index, of: recipe.components.length }
 }
 
 // --- Derived selectors ---------------------------------------------------------------------------

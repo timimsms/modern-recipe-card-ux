@@ -2,10 +2,13 @@ import { describe, expect, it } from 'vitest'
 import {
   checkedIn,
   completedIn,
+  completionAt,
   createStore,
   ingredientKey,
   progress,
   progressByStepCount,
+  isComponentComplete,
+  isRecipeComplete,
   regionFill,
   stepKey,
 } from './state.js'
@@ -268,5 +271,80 @@ describe('ids are unique per component, not per recipe', () => {
     // translation at the boundary, so no track has to hand-roll it.
     expect(completedIn(pie, store.get())).toEqual(new Set(['season']))
     expect(completedIn(potatoes, store.get())).toEqual(new Set())
+  })
+})
+
+/**
+ * Components are sequential and the mini-map is per-component, so finishing the mashed potatoes
+ * fills the map completely — the same picture as finishing the dish — and the next step empties
+ * it, which reads as losing progress rather than starting part two. "3 of 15" is on screen and
+ * correct, and the eye does not read it.
+ */
+describe('telling the end of a part from the end of the dish', () => {
+  const potatoes: Component = {
+    id: 'mashed-potatoes',
+    title: 'Mashed potatoes',
+    prelude: [],
+    ingredients: [{ id: 'spuds', item: 'potatoes' }],
+    root: 'mash',
+    steps: {
+      boil: step('boil', [ing('spuds')], 'minutes', 20),
+      mash: step('mash', [from('boil')], 'quick', 3),
+    },
+  }
+  const pie: Component = {
+    id: 'shepherds-pie',
+    title: "Shepherd's pie",
+    prelude: [],
+    ingredients: [{ id: 'lamb', item: 'lamb' }],
+    root: 'bake',
+    steps: {
+      brown: step('brown', [ing('lamb')], 'minutes', 10),
+      bake: step('bake', [from('brown')], 'long-unattended', 30),
+    },
+  }
+  const recipe = { id: 'sp', title: "Shepherd's Pie", components: [potatoes, pie] }
+
+  const finish = (store: ReturnType<typeof createStore>, component: Component) => {
+    for (const id of Object.keys(component.steps)) store.toggleStep(stepKey(component, id))
+  }
+
+  it('says nothing mid-part', () => {
+    const store = createStore()
+    store.toggleStep(stepKey(potatoes, 'boil'))
+    expect(completionAt(recipe, 0, store.get()).kind).toBe('none')
+  })
+
+  it('names the part that ended and the one that follows', () => {
+    const store = createStore()
+    finish(store, potatoes)
+
+    const completion = completionAt(recipe, 0, store.get())
+    expect(completion.kind).toBe('part')
+    if (completion.kind !== 'part') return
+    expect(completion.component.title).toBe('Mashed potatoes')
+    expect(completion.next.title).toBe("Shepherd's pie")
+    expect([completion.index + 1, completion.of]).toEqual([1, 2])
+  })
+
+  it('does not call the whole dish done because one part is', () => {
+    const store = createStore()
+    finish(store, potatoes)
+    expect(isComponentComplete(potatoes, store.get())).toBe(true)
+    expect(isRecipeComplete(recipe, store.get())).toBe(false)
+  })
+
+  // On the final component both are true, and finishing the dish is the more useful thing to say.
+  it('prefers "all done" to "part done" at the end', () => {
+    const store = createStore()
+    finish(store, potatoes)
+    finish(store, pie)
+    expect(completionAt(recipe, 1, store.get()).kind).toBe('all')
+    expect(completionAt(recipe, 0, store.get()).kind).toBe('all')
+  })
+
+  it('treats a stepless component as incomplete rather than vacuously done', () => {
+    const empty: Component = { id: 'e', prelude: [], ingredients: [], root: '', steps: {} }
+    expect(isComponentComplete(empty, createStore().get())).toBe(false)
   })
 })

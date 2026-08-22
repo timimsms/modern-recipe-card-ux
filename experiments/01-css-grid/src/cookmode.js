@@ -17,6 +17,7 @@
 
 import {
   completedIn,
+  completionAt,
   cookSchedule,
   isUnattended,
   outstandingSteps,
@@ -147,6 +148,39 @@ function renderProgress(fraction) {
   )
 }
 
+/**
+ * Says which ending this is.
+ *
+ * The mini-map is per-component, so finishing the mashed potatoes fills it completely — the same
+ * picture as finishing the dish — and the next step empties it, which reads as losing progress
+ * rather than starting part two. "3 of 15" is right there and correct, and the eye does not read
+ * it; the map is the loud element, so the ending has to be named next to it.
+ *
+ * The two marks are the vocabulary: a half-filled square for a part, a full one for the whole.
+ * They are drawn in CSS rather than set as glyphs so they cannot depend on a font having ◧, and
+ * they differ in *shape* as well as fill, so greyscale and print keep the distinction.
+ */
+function renderCompletion(recipe, index, state) {
+  if (!state) return ''
+  const completion = completionAt(recipe, index, state)
+
+  if (completion.kind === 'all') {
+    return (
+      `<p class="ending all"><span class="seal seal-all" aria-hidden="true"></span>` +
+      `<span><b>All done.</b> ${esc(recipe.title)} is finished.</span></p>`
+    )
+  }
+  if (completion.kind === 'part') {
+    return (
+      `<p class="ending part"><span class="seal seal-part" aria-hidden="true"></span>` +
+      `<span><b>${esc(completion.component.title ?? 'This part')} done</b> — ` +
+      `part ${completion.index + 1} of ${completion.of}. ` +
+      `${esc(completion.next.title ?? 'The next part')} is next, and its map starts empty.</span></p>`
+    )
+  }
+  return ''
+}
+
 export function renderCookMode(recipe, cook) {
   const index = cook.componentIndex ?? 0
   const component = recipe.components[index]
@@ -204,7 +238,13 @@ export function renderCookMode(recipe, cook) {
     renderInputs(component, current, cook) +
     `</div>` +
     renderBanner(component, current, done) +
-    `<div class="cm-map">${renderMiniMap(plan, { current, done, scale, interactive: true })}</div>` +
+    renderCompletion(recipe, index, cook.state) +
+    `<div class="cm-map">${renderMiniMap(plan, { current, done, scale, interactive: true })}` +
+    (recipe.components.length > 1
+      ? `<span class="cm-part">part ${index + 1} of ${recipe.components.length}` +
+        `${component.title ? ` · ${esc(component.title)}` : ''}</span>`
+      : '') +
+    `</div>` +
     (jumps ? `<div class="cm-jumps"><span class="banner-lead">or start</span>${jumps}</div>` : '') +
     `<div class="cm-nav">` +
     `<button type="button" class="cm-prev"${position <= 1 ? ' disabled' : ''}>Back</button>` +

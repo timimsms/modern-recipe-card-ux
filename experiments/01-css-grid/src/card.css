@@ -735,6 +735,10 @@ body {
 .cm-map {
   padding: 0.9rem 1rem;
   display: flex;
+  /* Column, so the "part n of m" caption sits under the map rather than beside it — as a row
+     item it landed on top of the map's own grid. */
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
   border-top: 1px solid var(--hairline);
 }
@@ -1027,4 +1031,85 @@ body {
     inline-size: 22px;
     block-size: 22px;
   }
+}
+
+/* ---------- The completion marks ----------
+   Two marks, one vocabulary, used wherever an ending needs naming: a half-filled square for
+   "this part is finished", a filled one for "the dish is finished".
+
+   Drawn rather than set as ◧ and ■, for two reasons. A glyph depends on the font having it, and
+   the mono stack here spans four platforms. And drawing lets the two differ in *shape* as well
+   as fill, so the distinction survives greyscale, print, and any colour-vision deficiency — R5's
+   rule that colour is never the only channel. */
+/* `.mark` was already taken — it is the ◷ that means "you can walk away". Two meanings behind
+   one class name silently restyled every unattended mark on the chart, so these are `.seal`. */
+.seal {
+  inline-size: 0.72em;
+  block-size: 0.72em;
+  border: 1.5px solid currentColor;
+  border-radius: 1px;
+  display: inline-block;
+  flex: none;
+  /* Optically centred against lowercase text rather than sat on the baseline. */
+  vertical-align: -0.05em;
+}
+.seal-part {
+  background: linear-gradient(to right, currentColor 0 50%, transparent 50% 100%);
+}
+.seal-all {
+  background: currentColor;
+}
+
+/* The band that names an ending. Sits directly above the mini-map, because the map is the thing
+   it is explaining — a full map means "this part", and the next step empties it. */
+.ending {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.6rem 1rem;
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  line-height: 1.45;
+  border-block-start: 1px solid var(--hairline);
+}
+.ending.part {
+  color: var(--ink-soft);
+  background: var(--fill-depth-4);
+}
+.ending.all {
+  color: var(--rule-heavy);
+  background: var(--fill-depth-3);
+}
+.ending b {
+  color: var(--ink);
+}
+.ending.all b {
+  color: var(--rule-heavy);
+}
+
+/* Which part the map is showing. Without it, a map that empties at a component boundary reads as
+   lost progress rather than as part two. */
+.cm-part {
+  margin-block-start: 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+}
+
+/* The chart says the same thing against the component title. */
+.component-title .seal {
+  margin-inline-start: 0.55rem;
+  color: var(--rule);
+}
+.component-done {
+  margin-inline-start: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  font-weight: 400;
+  color: var(--ink-faint);
+}
+.card.done .ending.all {
+  border-block-start: 0;
+  border-block-end: 1px solid var(--hairline);
 }
