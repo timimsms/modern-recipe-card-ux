@@ -1,10 +1,10 @@
 # Project state — handoff
 
-> Read this first after a context clear. Current as of the close of the Phase 05 build session.
+> Read this first after a context clear. Current as of the close of the Phase 06 build session.
 
 ## Where things stand
 
-**Phases 00 through 05 are built.** 422 unit tests plus 48 browser tests, all green.
+**Phases 00 through 06 are built.** 465 unit tests plus 84 browser tests, all green.
 
 | Phase | State |
 | --- | --- |
@@ -14,15 +14,17 @@
 | 03 Design system & reference renderer | Tokens with contrast validated as a test; `experiments/01-css-grid` with no bundler and no framework; visual baselines; print verified as real PDFs. |
 | 04 Responsive ladder & cook mode | All four presentations from one plan, plus the transition between them. |
 | 05 Interaction & kitchen state | Headless store in core; serving-size scaling with a ladder that climbs and descends; concurrent timers that survive backgrounding; persistence, undo, wake lock, 48px check-off. |
+| 06 Accessibility & semantics | Structural narrative in core, exposed as a mode; 2D keyboard movement plus edge traversal; two live regions; axe clean on every presentation; 400% zoom; forced-colors; print keeps every step region whole. Q3 answered **provisionally** — see below. |
 
 ```sh
 pnpm install
-pnpm check                # typecheck, lint, boundaries, format, 422 tests
+pnpm check                # typecheck, lint, boundaries, format, 465 tests
 pnpm serve                # then open http://localhost:8731/experiments/01-css-grid/
-pnpm test:visual          # 48 browser tests + committed screenshot baselines
+pnpm test:visual          # 84 browser tests + committed screenshot baselines
 pnpm test:print           # renders the corpus to PDF and checks it survives paper
 node scripts/check-recipe.mjs <file.json>
 node scripts/progress-weighting.mjs      # why progress is time-weighted (R7)
+node scripts/narrate.mjs --full          # the structural narrative, to read rather than trust
 ```
 
 **R8 is answered.** Shepherd's pie is cookable end to end at 390px with **zero horizontal
@@ -105,32 +107,34 @@ that EDGE-CASES' "revisit if common" condition is met; Phase 03 should answer it
 
 ## Recommended next action
 
-**Phase 06 — accessibility.** Phase 05 deliberately built to the obvious standard and left
-verification here: the new controls (scale menu and number, unit toggle, timer start/stop, undo,
-start-over, check-off mode) have had no audit beyond "48px and reachable by keyboard".
+**Phase 07 — the experiment tracks.** Tracks 02–04 build against the standard track 01 now sets:
+the same `core`, the same store, the same `GridPlan`, and the accessibility floor Phase 06
+established. Track 01's adapter is ~20 lines, which is the budget PHASE-05 set for the others.
 
-Two things carried forward from Phase 05, both cheap and both able to move the design:
+**Read [Q3](../findings/Q3-substrate.md) before starting.** The substrate decision is *provisional
+and not made from screen-reader testing*, because none was possible here. On everything measurable
+the `<table>` substrate wins — CSS Grid exposes no relational role at all — but the recommendation
+is still to keep CSS Grid, because building the narrative first made the decision less
+load-bearing than the phase assumed. `table.js` is complete and renders every corpus recipe from
+the same plan, so the swap stays cheap. **Anyone with VoiceOver, NVDA or JAWS should settle this
+before Phase 07 hardens a standard around it.**
+
+Still carried forward, both cheap and both able to move the design:
 
 1. **Equipment contention (EDGE-CASES E4).** `Step.equipment` exists and nothing reads it. It is
    what turns the parallelism claim from "topologically possible" into "actually possible" — and
    given Q2 found the banner never fires, this is the more valuable half of that idea.
 2. **Session splitting (EDGE-CASES E2).** `passive` steps mean bread and cures span days. Cook
-   mode has no notion of putting a recipe down and coming back, which is exactly what those
-   recipes require. Persistence now survives a reload, so the state half exists; what is missing
-   is any way to *say* "this is where I stop today".
+   mode has no notion of putting a recipe down and coming back. Persistence survives a reload, so
+   the state half exists; what is missing is any way to *say* "this is where I stop today".
 
-Phase 05 is closed, including both of its open questions. Timers live in the shared store with
-the clock injected, which the tests exercise by advancing a fake one. Check-off stays two
-independent gestures — [Q7](../findings/Q7-two-check-gestures.md) built both and found that
-linking them ends with every box ticked, which is information-free at exactly the moment the
-column stops mattering.
-
-Three findings came out of it, all from looking rather than from tests passing:
-[R7](../findings/R7-progress-weighting.md) (a step-count bar overstates by up to 62 points),
-[Q6](../findings/Q6-scaling-ladders.md) (the unit ladder had to learn to descend),
-[I5](../findings/I5-component-scoped-identity.md) (recipe state cannot be keyed by bare ids), and
-[M1](../findings/M1-baselines-measured-the-harness.md) (the visual baselines were measuring the
-control bar).
+Phase 06's most useful outcome was not the accessibility work itself.
+[R10](../findings/R10-saying-the-tree-out-loud.md) records it: saying the tree out loud found four
+bugs the chart had been hiding by supplying spatial context — a summary that called four branching
+components "a single run", output names that collide when spoken (5 of 9 components, now warning
+W6), a no-knead bread whose shaping step was tagged `knead`, and a quantity parked in `note` where
+Phase 05's scaling could not see it. A second renderer with different affordances turns out to be
+a test of the *model*, not just of the renderer — worth remembering when tracks 02–04 land.
 
 Already done and not worth redoing: the leader rule is drawn from `PlacedCell.leader`; the
 at-a-glance bar handles `parallelSaving: 0` by dropping the field and saying "nothing overlaps in
