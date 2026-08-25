@@ -92,7 +92,8 @@
           "text": "3 min",
           "effort": "minutes",
           "duration": { "min": 3, "unit": "min" },
-          "technique": "saute"
+          "technique": "saute",
+          "outputName": "the artichokes and aromatics"
         },
         "wilt-spinach": {
           "id": "wilt-spinach",

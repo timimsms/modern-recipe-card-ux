@@ -94,7 +94,8 @@
           "effort": "quick",
           "duration": { "min": 2, "unit": "min" },
           "technique": "saute",
-          "equipment": ["dutch oven"]
+          "equipment": ["dutch oven"],
+          "outputName": "the darkened tomato paste"
         },
         "deglaze": {
           "id": "deglaze",

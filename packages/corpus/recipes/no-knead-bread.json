@@ -63,7 +63,8 @@
           "text": "cover and rest",
           "effort": "long-unattended",
           "duration": { "min": 30, "unit": "min" },
-          "technique": "rest"
+          "technique": "rest",
+          "outputName": "the rested dough"
         },
         "folds": {
           "id": "folds",
@@ -88,7 +89,7 @@
           "text": "shape into a tight round",
           "effort": "minutes",
           "duration": { "min": 5, "unit": "min" },
-          "technique": "knead"
+          "technique": "shape"
         },
         "proof": {
           "id": "proof",
@@ -96,7 +97,8 @@
           "text": "proof seam side down until puffy",
           "effort": "long-unattended",
           "duration": { "min": 60, "max": 120, "unit": "min" },
-          "technique": "rest"
+          "technique": "rest",
+          "outputName": "the proofed loaf"
         },
         "bake-covered": {
           "id": "bake-covered",
@@ -106,7 +108,8 @@
           "duration": { "min": 30, "unit": "min" },
           "temperature": { "f": 450, "c": 230 },
           "technique": "bake",
-          "equipment": ["oven", "dutch oven"]
+          "equipment": ["oven", "dutch oven"],
+          "outputName": "the part-baked loaf"
         },
         "bake-uncovered": {
           "id": "bake-uncovered",
@@ -116,7 +119,8 @@
           "duration": { "min": 15, "max": 20, "unit": "min" },
           "temperature": { "f": 450, "c": 230 },
           "technique": "bake",
-          "equipment": ["oven", "dutch oven"]
+          "equipment": ["oven", "dutch oven"],
+          "outputName": "the finished loaf"
         }
       }
     }

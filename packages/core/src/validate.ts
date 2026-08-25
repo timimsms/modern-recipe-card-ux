@@ -9,6 +9,7 @@
 
 import {
   childSteps,
+  describeOutput,
   durationToMinutes,
   isComponentRef,
   leafOrder,
@@ -48,6 +49,7 @@ export type DiagnosticCode =
   | 'W3' // unlabeled merge
   | 'W4' // metric rounding discrepancy
   | 'W5' // wide raw merge
+  | 'W6' // colliding output names
 
 export type Diagnostic = {
   code: DiagnosticCode
@@ -243,6 +245,40 @@ export function validateComponent(
         at: { ...at, ingredient: leaf.id },
       })
     }
+  }
+
+  // --- W6 colliding output names ---------------------------------------------------------
+
+  /**
+   * Two steps whose outputs are described identically.
+   *
+   * Invisible on the chart, where an input is the cell physically next to you and never has to
+   * be named. Read aloud it is a genuine ambiguity: the no-knead bread produced "the rested
+   * mixture" twice and "the baked mixture" twice, so a listener building a mental model hears
+   * one name for two different things. Measured before adding this, 5 of the 9 corpus components
+   * collided — systematic, not incidental, and only discoverable once Phase 06 tried to say the
+   * tree out loud.
+   *
+   * A warning rather than an error: it costs a listener, not a cook, and the fix is an
+   * `outputName` the author has to choose.
+   */
+  const named = new Map<string, StepId[]>()
+  for (const step of steps) {
+    if (!reachable.has(step.id)) continue
+    const output = describeOutput(component, step.id).trim().toLowerCase()
+    named.set(output, [...(named.get(output) ?? []), step.id])
+  }
+  for (const [output, ids] of named) {
+    if (ids.length < 2) continue
+    out.push({
+      code: 'W6',
+      severity: 'warning',
+      message:
+        `Steps ${ids.map((id) => `"${id}"`).join(' and ')} are both described as ` +
+        `${quote(output)}. On the chart position tells them apart; read aloud it does not. ` +
+        `Give at least one an explicit "outputName".`,
+      at: { ...at, step: ids[1] },
+    })
   }
 
   const declaredReuse = new Set((component.reuse ?? []).map((r) => r.leaf))

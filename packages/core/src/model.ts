@@ -384,6 +384,12 @@ export type Technique =
   | 'sift'
   | 'cream'
   | 'knead'
+  /**
+   * Distinct from `knead`, and the corpus needed it: the no-knead bread's shaping step was
+   * tagged `knead` for want of anything better, so `describeOutput` called its output "the
+   * kneaded mixture" — in a recipe whose name is No-Knead Bread.
+   */
+  | 'shape'
   | 'chop'
   | 'slice'
   | 'trim'
@@ -419,6 +425,7 @@ export const TECHNIQUES: readonly Technique[] = [
   'sift',
   'cream',
   'knead',
+  'shape',
   'chop',
   'slice',
   'trim',
@@ -523,6 +530,7 @@ const PARTICIPLES: Partial<Record<Technique, string>> = {
   whisk: 'whisked',
   cream: 'creamed',
   knead: 'kneaded',
+  shape: 'shaped',
   melt: 'melted',
   brown: 'browned',
   sear: 'seared',

@@ -82,7 +82,8 @@
           "duration": { "min": 10, "unit": "min" },
           "temperature": { "label": "medium" },
           "technique": "grill",
-          "equipment": ["grill"]
+          "equipment": ["grill"],
+          "outputName": "the artichokes grilled cut-side up"
         },
         "grill-down": {
           "id": "grill-down",
@@ -92,7 +93,8 @@
           "duration": { "min": 5, "unit": "min" },
           "temperature": { "label": "medium" },
           "technique": "grill",
-          "equipment": ["grill"]
+          "equipment": ["grill"],
+          "outputName": "the grilled artichokes"
         }
       }
     }
