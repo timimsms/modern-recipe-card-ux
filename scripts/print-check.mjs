@@ -53,7 +53,7 @@ for (const slug of SLUGS) {
   // What the print stylesheet is actually asked to preserve: the depth ramp is information, and
   // browsers drop backgrounds when printing unless told otherwise.
   await page.emulateMedia({ media: 'print' })
-  const printed = await page.evaluate(() => {
+  const printed = await page.evaluate((pageHeight) => {
     const step = document.querySelector('.step')
     const controls = document.querySelector('.controls')
     return {
@@ -66,8 +66,46 @@ for (const slug of SLUGS) {
         getComputedStyle(document.querySelector('.scroller')).overflowX === 'visible',
       widest: Math.max(...[...document.querySelectorAll('.chart')].map((c) => c.scrollWidth)),
       cardOverflows: document.querySelector('.card').scrollWidth > window.innerWidth + 1,
+
+      /**
+       * PHASE-06: "page-break rules that never split a step region across pages".
+       *
+       * Checked as the *precondition* rather than the outcome, deliberately.
+       *
+       * A root step spans every ingredient row, so its cell is exactly as tall as its chart —
+       * which makes "no region is split" equivalent to "every component fits on one page". With
+       * `break-inside: avoid` set, a component that fits is kept whole by the browser; one that
+       * does not is split silently, because the property is advisory.
+       *
+       * The first version of this check measured element positions against page arithmetic in a
+       * continuously scrolled viewport. That reads the layout *before* pagination moves anything,
+       * so it reported splits that the break rules had already prevented — an instrument
+       * measuring the wrong thing and reporting failures with total confidence. Verifying the
+       * paginated result properly would mean parsing page geometry out of the PDF; the
+       * precondition is the honest thing to check without that, and it is the part that silently
+       * breaks when a recipe gains an ingredient.
+       */
+      tall: [...document.querySelectorAll('.component')]
+        .map((c) => ({
+          title: (c.querySelector('.component-title')?.textContent ?? 'the chart').trim(),
+          height: Math.round(c.getBoundingClientRect().height),
+        }))
+        .filter((c) => c.height > pageHeight),
+
+      /**
+       * R5 in print: with the hue gone, adjacent depth steps must still be told apart. The ramp
+       * is luminance-only by construction, so this measures the thing that actually matters —
+       * the relative luminance gap between the shades that end up next to each other.
+       */
+      shades: [
+        ...new Set(
+          [...document.querySelectorAll('.cell.step')].map(
+            (c) => getComputedStyle(c).backgroundColor,
+          ),
+        ),
+      ],
     }
-  })
+  }, PRINTABLE.height)
   await page.emulateMedia({ media: null })
 
   const file = join(outDir, `${slug.replace(/\//g, '-')}.pdf`)
@@ -94,6 +132,43 @@ for (const slug of SLUGS) {
     )
   }
   if (printed.cardOverflows) problems.push('card is wider than the sheet')
+
+  for (const component of printed.tall) {
+    problems.push(
+      `"${component.title}" is ${component.height}px tall on a ${PRINTABLE.height}px sheet, ` +
+        `so break-inside cannot keep it whole and a step region will be split`,
+    )
+  }
+
+  // Greyscale legibility, measured rather than eyeballed: the depth ramp is a luminance ramp, so
+  // convert each shade the printer will see and check adjacent steps stay apart. Chrome reports
+  // `color(srgb …)` for `color-mix`, which an earlier digit-regex version of this check parsed as
+  // integers and scored a contrast ratio of ten million.
+  const luminances = printed.shades
+    .map((c) => {
+      const nums = c.match(/[\d.]+/g)?.map(Number) ?? []
+      if (nums.length < 3) return undefined
+      // srgb form is 0–1, rgb() form is 0–255.
+      const scale = c.startsWith('color(') ? 1 : 1 / 255
+      const [r, g, b] = nums.slice(0, 3).map((n) => {
+        const v = n * scale
+        return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4
+      })
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b
+    })
+    .filter((l) => l !== undefined)
+    .sort((a, b) => a - b)
+
+  for (let i = 1; i < luminances.length; i++) {
+    const gap = luminances[i] - luminances[i - 1]
+    // 0.02 in relative luminance is roughly where two greys stop being separable on paper.
+    if (gap < 0.02) {
+      problems.push(
+        `two depth shades are ${gap.toFixed(3)} apart in luminance — indistinguishable in greyscale`,
+      )
+      break
+    }
+  }
 
   // A blank leading page means something asked not to be broken and could not fit.
   const pages =

@@ -406,8 +406,41 @@ body {
     break-inside: avoid;
     break-after: avoid;
   }
+  /**
+   * A component is kept whole on one page — and it only *can* be because of the sizing below.
+   *
+   * `break-inside: avoid` is advisory: a box taller than the sheet is split anyway, and the
+   * browser gives no warning. Measured before this rule existed, step regions were splitting
+   * across page breaks in four of six corpus recipes, with three of shepherd's pie's regions
+   * taller than a whole sheet. That is the worst possible break for this format — half an
+   * instruction on one page and the ingredients feeding it on another.
+   *
+   * A root step spans *every* ingredient row, so its cell is exactly as tall as its chart. That
+   * makes "never split a step region" equivalent to "every component fits on one page", which is
+   * a sizing problem rather than a break-rule problem. Hence the tightening: shepherd's pie's pie
+   * component measured 900px on a 718px sheet and now measures 704px.
+   */
   .component {
-    break-inside: auto;
+    break-inside: avoid;
+    padding: 0;
+    margin: 0;
+  }
+  .component-title {
+    margin: 0 0 0.15rem;
+    font-size: 0.82rem;
+    line-height: 1.15;
+  }
+  .scroller {
+    padding: 0;
+    margin: 0;
+  }
+  .cell {
+    line-height: 1.2;
+  }
+  /* Preparation notes are the first thing to go when the page is the constraint: the quantity and
+     the item are what you cannot cook without. */
+  .ing .note {
+    display: none;
   }
   .scroller {
     overflow: visible;
@@ -420,11 +453,14 @@ body {
      without this the chart runs off the right edge of the paper — where, unlike a screen,
      there is nothing to scroll. */
   .chart {
-    --space-ingredient-column: 9rem;
-    --space-ingredient-column-max: 14rem;
+    --space-ingredient-column: 10rem;
+    --space-ingredient-column-max: 15rem;
     --space-step-column-min: 3.6rem;
     --space-step-column-max: 11rem;
-    font-size: 0.72rem;
+    --space-cell-padding-y: 0.18rem;
+    --space-cell-padding-x: 0.35rem;
+    font-size: 0.66rem;
+    line-height: 1.2;
   }
   /* Fill is a luminance ramp, so it survives a greyscale printer as-is — but browsers drop
      backgrounds by default, and the depth encoding is information, not decoration. */

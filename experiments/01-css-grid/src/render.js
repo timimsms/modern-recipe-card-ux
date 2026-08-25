@@ -350,7 +350,17 @@ function consumerOf(component, stepId) {
 function renderLeaf(leaf, options = {}) {
   if (!leaf) return ''
   if (leaf.component) {
-    return `<span class="ref">${esc(leaf.label ?? leaf.component)}</span>${leaf.note ? `<span class="note">${esc(leaf.note)}</span>` : ''}`
+    // A component reference carries a real quantity — shepherd's pie asks for 1¾ lb of mashed
+    // potatoes — and this used to drop it. Harmless while the corpus kept that number in `note`,
+    // and a silent loss the moment it became a proper scalable quantity: the row printed as just
+    // "mashed potatoes", with the one number a cook needs gone from the chart.
+    const refQty = leaf.quantity
+      ? `<span class="qty">${esc(formatQuantity(leaf.quantity, options))}</span>`
+      : ''
+    return (
+      `${refQty}<span class="ref">${esc(leaf.label ?? leaf.component)}</span>` +
+      `${leaf.note ? `<span class="note">${esc(leaf.note)}</span>` : ''}`
+    )
   }
   const q = leaf.quantity
     ? `<span class="qty">${esc(formatQuantity(leaf.quantity, options))}</span>`

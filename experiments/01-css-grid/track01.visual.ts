@@ -645,6 +645,27 @@ test.describe('kitchen state', () => {
     await expect(page.locator('.tick[data-ing="brownies/flour"]')).toBeChecked()
   })
 
+  /**
+   * A component reference is an ingredient with a quantity, and the chart used to drop it.
+   *
+   * Harmless while shepherd's pie kept "1-3/4 lb. (800 g)" in `note`; a silent loss the moment
+   * that became a real scalable quantity, since `renderLeaf` returned early for a reference. The
+   * row printed as just "mashed potatoes" — the one number a cook needs, gone — and the change
+   * went into a screenshot baseline before anyone read the diff closely enough.
+   */
+  test('a component reference shows its quantity, and scales with everything else', async ({
+    page,
+  }) => {
+    await open(page, 'recipes/shepherds-pie')
+    const row = page.locator('.ing-text').filter({ hasText: 'mashed potatoes' })
+    await expect(row).toContainText('1¾ lb')
+    await expect(row).toContainText('800 g')
+
+    await page.selectOption('#scale', '2')
+    await expect(row).toContainText('3½ lb')
+    await expect(row).toContainText('1.6 kg')
+  })
+
   /** PHASE-05's 48px rule, on the control that gets used most and with the wettest hands. */
   test('every check-off target clears 48px on a phone', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
