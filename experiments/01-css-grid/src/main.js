@@ -17,6 +17,7 @@ import {
   stepMinutes,
 } from '../../../packages/core/dist/index.js'
 import { SHORTCUTS, describeCell, installKeyboard } from './keyboard.js'
+import { renderTableChart } from './table.js'
 import { renderIngredientLed } from './ingredientled.js'
 import { renderCard } from './render.js'
 import { renderMiniMap, sharedScale } from './minimap.js'
@@ -222,24 +223,26 @@ function draw() {
   root.innerHTML =
     view.value === 'narrative'
       ? renderNarrative(recipe, state)
-      : view.value === 'filmstrip'
-        ? renderFilmstrip(recipe)
-        : view.value === 'cook'
-          ? renderCookMode(recipe, {
-              ...cook,
-              state,
-              progress: recipeProgress(recipe, state),
-              scale: state.scale,
-              unitSystem: state.unitSystem,
-              store,
-            })
-          : view.value === 'ingredients'
-            ? renderIngredientLed(recipe, options)
-            : view.value === 'condensed'
-              ? (({ recipe: r, microList }) => renderCard(r, { ...options, microList }))(
-                  condensedOf(recipe),
-                )
-              : renderCard(recipe, options)
+      : view.value === 'table'
+        ? renderTableSubstrate(recipe, options)
+        : view.value === 'filmstrip'
+          ? renderFilmstrip(recipe)
+          : view.value === 'cook'
+            ? renderCookMode(recipe, {
+                ...cook,
+                state,
+                progress: recipeProgress(recipe, state),
+                scale: state.scale,
+                unitSystem: state.unitSystem,
+                store,
+              })
+            : view.value === 'ingredients'
+              ? renderIngredientLed(recipe, options)
+              : view.value === 'condensed'
+                ? (({ recipe: r, microList }) => renderCard(r, { ...options, microList }))(
+                    condensedOf(recipe),
+                  )
+                : renderCard(recipe, options)
   document.title = `${recipe.title} — track 01`
   // Which recipe is actually on screen. The fetch is async, so "a .card exists" only means *a*
   // recipe is rendered — a harness that waits on that reads the previous one and races.
@@ -840,4 +843,14 @@ function renderNarrative(recipe, state) {
     `<div class="shortcuts"><b>On the chart:</b><dl>${keys}</dl></div>` +
     `</div></article>`
   )
+}
+
+/**
+ * Q3's other substrate, rendered from the same plan so the comparison is about the substrate.
+ */
+function renderTableSubstrate(recipe, options) {
+  const sections = recipe.components
+    .map((component, i) => renderTableChart(component, recipe.plans[i], options))
+    .join('')
+  return `<article class="card"><div class="t-wrap">${sections}</div></article>`
 }

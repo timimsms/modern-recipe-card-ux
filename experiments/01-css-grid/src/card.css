@@ -1229,3 +1229,69 @@ body {
     flex: 1 1 auto;
   }
 }
+
+/* ---------- Q3: the table substrate ---------- */
+
+/* Styled only enough to be legible and comparable. It is deliberately not a pixel match for the
+   CSS Grid chart — the question is what the substrate does for a reader, and dressing it to look
+   identical would invite comparing the wrong thing. */
+.t-wrap {
+  padding: 1rem;
+  overflow-x: auto;
+}
+.t-chart {
+  border-collapse: separate;
+  border-spacing: 2px;
+  table-layout: fixed;
+  inline-size: 100%;
+}
+.t-chart caption {
+  caption-side: top;
+  text-align: start;
+  padding-block-end: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  color: var(--ink-faint);
+}
+.t-chart th,
+.t-chart td {
+  padding: var(--space-cell-padding-y) var(--space-cell-padding-x);
+  border: 1px solid var(--rule);
+  border-radius: var(--space-radius);
+  vertical-align: top;
+  text-align: start;
+  font-weight: 400;
+  font-size: var(--type-ingredient-size);
+  background: var(--surface);
+}
+.t-ing {
+  inline-size: 13rem;
+}
+.t-ing label {
+  display: flex;
+  gap: 0.45rem;
+  align-items: start;
+  cursor: pointer;
+  /* Same 48px rule as the grid chart — this is a cooking control either way. */
+  min-block-size: 48px;
+}
+.t-step {
+  background: var(--fill-depth-3);
+  font-size: var(--type-step-size);
+}
+.t-unatt {
+  border-color: var(--clay);
+}
+.t-done {
+  opacity: 0.55;
+}
+.t-prelude {
+  background: var(--fill-depth-4);
+  font-weight: 600;
+}
+/* A hole in the chart is not a cell. Bordered, it would read as an empty box the eye has to
+   dismiss on every row. */
+.t-filler {
+  border: 0;
+  background: transparent;
+}
