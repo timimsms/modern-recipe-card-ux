@@ -45,12 +45,23 @@ const FIXTURES = [
  * "did the design change" instead of "did the harness".
  */
 const HIDE_CONTROLS = '.controls{display:none!important}'
+
+/**
+ * Waits for the *requested* recipe to be the one on screen.
+ *
+ * `waitForSelector('.card')` is not enough: espresso-brownies is loaded by default, so the card
+ * is already there and the wait resolves against the previous recipe while the fetch is still in
+ * flight. That made "walks every step of every component" report the brownies' first step for
+ * shepherd's pie, once every few runs.
+ */
+const rendered = (page: Page, slug: string) => page.waitForSelector(`#cards[data-recipe="${slug}"]`)
 async function show(page: Page, slug: string, options: Record<string, string> = {}) {
   await page.goto('/experiments/01-css-grid/')
   await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
   for (const [id, value] of Object.entries({ recipe: slug, ...options })) {
     await page.selectOption(`#${id}`, value)
   }
+  await rendered(page, slug)
   await page.addStyleTag({ content: HIDE_CONTROLS })
   const card = page.locator('.card')
   await expect(card).toBeVisible()
@@ -68,6 +79,7 @@ async function open(page: Page, slug: string) {
   await page.goto('/experiments/01-css-grid/')
   await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
   await page.selectOption('#recipe', slug)
+  await rendered(page, slug)
   await page.waitForSelector('.card')
   // Every geometry assertion below measures type. Without this the card is measured in the
   // fallback font under parallel load, and row heights come out short — which is how the 48px
@@ -157,6 +169,7 @@ test.describe('mini-map', () => {
     await page.goto('/experiments/01-css-grid/')
     await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
     await page.selectOption('#recipe', 'recipes/shepherds-pie')
+    await rendered(page, 'recipes/shepherds-pie')
     await page.selectOption('#view', 'filmstrip')
     await page.waitForSelector('.minimap')
 
@@ -182,6 +195,7 @@ test.describe('mini-map', () => {
     await page.goto('/experiments/01-css-grid/')
     await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
     await page.selectOption('#recipe', 'recipes/shepherds-pie')
+    await rendered(page, 'recipes/shepherds-pie')
     await page.selectOption('#view', 'filmstrip')
     await page.waitForSelector('.minimap')
 
@@ -202,6 +216,7 @@ test.describe('the ladder', () => {
     await page.goto('/experiments/01-css-grid/')
     await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
     await page.selectOption('#recipe', slug)
+    await rendered(page, slug)
     await page.selectOption('#view', view)
     await page.waitForSelector('.card')
     await page.evaluate(() => document.fonts.ready)
@@ -281,6 +296,7 @@ test.describe('cook mode', () => {
     await page.goto('/experiments/01-css-grid/')
     await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
     await page.selectOption('#recipe', slug)
+    await rendered(page, slug)
     await page.selectOption('#view', 'cook')
     await page.waitForSelector('.cookmode')
   }
@@ -357,6 +373,7 @@ test.describe('chart ↔ cook mode', () => {
     await page.goto('/experiments/01-css-grid/')
     await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
     await page.selectOption('#recipe', 'recipes/espresso-brownies')
+    await rendered(page, 'recipes/espresso-brownies')
     await page.waitForSelector('.chart')
   }
 
@@ -622,8 +639,9 @@ test.describe('kitchen state', () => {
 
     // Picking a different recipe *is* a fresh start.
     await page.selectOption('#recipe', 'recipes/shepherds-pie')
-    await page.waitForSelector('.chart')
+    await rendered(page, 'recipes/shepherds-pie')
     await page.selectOption('#recipe', 'recipes/espresso-brownies')
+    await rendered(page, 'recipes/espresso-brownies')
     await expect(page.locator('.tick[data-ing="brownies/flour"]')).toBeChecked()
   })
 
@@ -637,6 +655,112 @@ test.describe('kitchen state', () => {
     )
     expect(heights.length).toBeGreaterThan(10)
     expect(Math.min(...heights)).toBeGreaterThanOrEqual(48)
+  })
+})
+
+/**
+ * Phase 06. The chart's meaning lives in two structures at once — the grid you see and the tree
+ * the recipe is — and Tab order gives you neither.
+ */
+test.describe('keyboard and announcements', () => {
+  const focused = (page: Page) =>
+    page.evaluate(() => {
+      const a = document.activeElement as HTMLElement | null
+      return a?.dataset.step ?? a?.dataset.ing ?? a?.tagName ?? ''
+    })
+  const said = (page: Page) => page.locator('#say-polite').textContent()
+
+  test('arrow keys move between cells spatially', async ({ page }) => {
+    await open(page, 'recipes/espresso-brownies')
+    await page.locator('.tick[data-ing="brownies/butter"]').focus()
+
+    await page.keyboard.press('ArrowRight')
+    expect(await focused(page)).toBe('melt')
+    await page.keyboard.press('ArrowRight')
+    expect(await focused(page)).toBe('mix-wet')
+  })
+
+  /**
+   * The edge traversal, which is the half Tab order cannot give you: under right-packed a leaf
+   * can sit a long blank run from the step that eats it, and no amount of Tabbing tells you the
+   * two are related.
+   */
+  test('i walks a step’s inputs, cycling through them', async ({ page }) => {
+    await open(page, 'recipes/espresso-brownies')
+    await page.locator('.step[data-step="fold-in"]').focus()
+
+    await page.keyboard.press('i')
+    expect(await focused(page)).toBe('mix-eggs')
+    expect(await said(page)).toContain('Input 1 of 5')
+
+    await page.locator('.step[data-step="fold-in"]').focus()
+    await page.keyboard.press('i')
+    expect(await focused(page)).toBe('brownies/flour')
+    expect(await said(page)).toContain('Input 2 of 5')
+  })
+
+  test('o follows the output edge, and says so at the root', async ({ page }) => {
+    await open(page, 'recipes/espresso-brownies')
+    await page.locator('.step[data-step="fold-in"]').focus()
+    await page.keyboard.press('o')
+    expect(await focused(page)).toBe('bake')
+
+    await page.keyboard.press('o')
+    expect(await said(page)).toContain('nothing consumes it')
+  })
+
+  /** "mix" appears twice in this recipe; announced alone it is ambiguous. */
+  test('announces what a step produces, not just its text', async ({ page }) => {
+    await open(page, 'recipes/espresso-brownies')
+    await page.locator('.step[data-step="fold-in"]').focus()
+    await page.keyboard.press('i')
+    expect(await said(page)).toContain('producing the batter base')
+  })
+
+  // "Checked" says what you did. A cook who has just mis-tapped needs to know what is now true.
+  test('check-off announces the resulting state', async ({ page }) => {
+    await open(page, 'recipes/espresso-brownies')
+    await page.locator('.tick[data-ing="brownies/flour"]').check()
+    expect(await said(page)).toBe('all-purpose flour, ½ cup / 80 g: gathered.')
+
+    await page.locator('.tick[data-ing="brownies/flour"]').uncheck()
+    expect(await said(page)).toBe('all-purpose flour, ½ cup / 80 g: not gathered.')
+  })
+
+  // The ladder swaps the whole document; doing it silently strands a screen-reader user.
+  test('a presentation change is announced', async ({ page }) => {
+    await open(page, 'recipes/espresso-brownies')
+    await page.selectOption('#view', 'ingredients')
+    expect(await said(page)).toContain('Now showing')
+  })
+
+  test('a timer reaching its low end interrupts, and nothing else does', async ({ page }) => {
+    await open(page, 'recipes/espresso-brownies')
+    await page.selectOption('#view', 'cook')
+    for (let i = 0; i < 4; i++) await page.click('.cm-next')
+    await page.click('.cm-timer-start')
+
+    // Jump the clock rather than wait thirty minutes. The store reads Date.now() on every read,
+    // which is exactly why it survives a backgrounded tab.
+    await page.evaluate(() => {
+      const real = Date.now
+      Date.now = () => real() + 31 * 60_000
+    })
+    await expect(page.locator('#say-urgent')).toContainText('Check it', { timeout: 4000 })
+    // Assertive is reserved for this. Using it for anything else trains people to ignore it.
+    expect(await said(page)).not.toContain('Check it')
+  })
+
+  test('the narrative is a real mode, not hidden text', async ({ page }) => {
+    await open(page, 'recipes/shepherds-pie')
+    await page.selectOption('#view', 'narrative')
+
+    await expect(page.locator('.narrative .summary')).toContainText('2 parts, made in order')
+    // Every step of every component, numbered across the recipe.
+    await expect(page.locator('.narrative li')).toHaveCount(15)
+    await expect(page.locator('.narrative li').first()).toContainText('Step 1 of 15')
+    // The inputs named explicitly — the thing the chart conveys by adjacency.
+    await expect(page.locator('.narrative li').first()).toContainText('Takes 1½ pounds')
   })
 })
 

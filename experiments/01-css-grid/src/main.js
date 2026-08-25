@@ -11,10 +11,12 @@ import {
   createStore,
   ingredientKey,
   layout,
+  narrate,
   normalizeRecipe,
   stepKey,
   stepMinutes,
 } from '../../../packages/core/dist/index.js'
+import { SHORTCUTS, describeCell, installKeyboard } from './keyboard.js'
 import { renderIngredientLed } from './ingredientled.js'
 import { renderCard } from './render.js'
 import { renderMiniMap, sharedScale } from './minimap.js'
@@ -41,6 +43,8 @@ const FIXTURES = [
 ]
 
 const root = document.getElementById('cards')
+const polite = document.getElementById('say-polite')
+const urgent = document.getElementById('say-urgent')
 const picker = document.getElementById('recipe')
 const scaleControl = document.getElementById('scale')
 const scaleAny = document.getElementById('scale-any')
@@ -216,25 +220,30 @@ function draw() {
     state,
   }
   root.innerHTML =
-    view.value === 'filmstrip'
-      ? renderFilmstrip(recipe)
-      : view.value === 'cook'
-        ? renderCookMode(recipe, {
-            ...cook,
-            state,
-            progress: recipeProgress(recipe, state),
-            scale: state.scale,
-            unitSystem: state.unitSystem,
-            store,
-          })
-        : view.value === 'ingredients'
-          ? renderIngredientLed(recipe, options)
-          : view.value === 'condensed'
-            ? (({ recipe: r, microList }) => renderCard(r, { ...options, microList }))(
-                condensedOf(recipe),
-              )
-            : renderCard(recipe, options)
+    view.value === 'narrative'
+      ? renderNarrative(recipe, state)
+      : view.value === 'filmstrip'
+        ? renderFilmstrip(recipe)
+        : view.value === 'cook'
+          ? renderCookMode(recipe, {
+              ...cook,
+              state,
+              progress: recipeProgress(recipe, state),
+              scale: state.scale,
+              unitSystem: state.unitSystem,
+              store,
+            })
+          : view.value === 'ingredients'
+            ? renderIngredientLed(recipe, options)
+            : view.value === 'condensed'
+              ? (({ recipe: r, microList }) => renderCard(r, { ...options, microList }))(
+                  condensedOf(recipe),
+                )
+              : renderCard(recipe, options)
   document.title = `${recipe.title} — track 01`
+  // Which recipe is actually on screen. The fetch is async, so "a .card exists" only means *a*
+  // recipe is rendered — a harness that waits on that reads the previous one and races.
+  root.dataset.recipe = currentSlug ?? ''
   persist()
   tick()
 }
@@ -307,6 +316,9 @@ root.addEventListener('change', (event) => {
   // stack, which is the whole point of routing every mutation through the store.
   // `data-ing` already carries the component-qualified key, so this passes it straight on.
   store.toggleIngredient(box.dataset.ing)
+  // The resulting state, not the action. "Checked" tells you what you did; a cook who has just
+  // mis-tapped needs to know what is now true.
+  say(`${describeCell(box)}: ${box.checked ? 'gathered' : 'not gathered'}.`)
 })
 
 /**
@@ -497,7 +509,17 @@ async function refresh() {
  * moment a cook most wants their state kept.
  */
 for (const control of [picker, strategy, reuse]) control.addEventListener('change', refresh)
-for (const control of [markRule, ramp, view, checkoff]) control.addEventListener('change', draw)
+for (const control of [markRule, ramp, checkoff]) control.addEventListener('change', draw)
+
+/**
+ * The Phase 04 ladder swaps the whole presentation. Doing that silently leaves a screen-reader
+ * user in a document that has been replaced underneath them with no indication anything happened.
+ */
+view.addEventListener('change', () => {
+  draw()
+  const named = view.options[view.selectedIndex]?.textContent ?? view.value
+  say(`Now showing: ${named}.`)
+})
 
 // R5 claims colour is never the only channel. Checking that should not require devtools, and
 // greyscale is also the closest thing to a print preview without a printer — so it desaturates
@@ -600,6 +622,9 @@ function alertOnce(key) {
   // granted, which is the common case. The notification is the improvement on top.
   beep()
   notify(`${label} — check it`)
+  // The one thing on this page that earns an interruption: the cook is across the room and the
+  // oven is not going to wait for a polite pause.
+  say(`Timer finished for ${label}. Check it.`, { assertive: true })
 }
 
 /**
@@ -747,3 +772,72 @@ view.addEventListener('change', updateWakeLock)
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) updateWakeLock()
 })
+
+// --- Announcements ------------------------------------------------------------------------------
+
+/**
+ * Two regions, two urgencies.
+ *
+ * `polite` waits for a pause — focus moves, check-off, a view change. `urgent` interrupts, which
+ * is right for exactly one thing: a timer reaching the end of its range while the cook is across
+ * the room. Using `alert` for anything else trains people to ignore it.
+ *
+ * The same text twice in a row is not re-announced by most screen readers, so a repeated message
+ * gets a zero-width suffix to force it. Two timers finishing on the same wording would otherwise
+ * announce once.
+ */
+let lastSaid = ''
+function say(text, { assertive = false } = {}) {
+  if (!text) return
+  const region = assertive ? urgent : polite
+  const message = text === lastSaid ? `${text}\u200b` : text
+  lastSaid = text
+  // Cleared first: a live region whose text is *replaced* in one tick sometimes coalesces with
+  // the previous value and says neither.
+  region.textContent = ''
+  queueMicrotask(() => {
+    region.textContent = message
+  })
+}
+
+installKeyboard(root, (text) => say(text))
+
+/**
+ * The structural narrative, on screen.
+ *
+ * PHASE-06 asks whether this should be a mode or always-present visually-hidden text, and warns
+ * that always-present risks double-announcing content already in the DOM. It is a mode, and
+ * visible: the chart already carries every one of these words in some form, so hiding a second
+ * copy inside it would make every step read twice for the people who most need it read once.
+ * Visible also means it is available to everyone, which is the stronger claim the phase makes
+ * for it — this is arguably the better presentation of the format's central insight.
+ */
+function renderNarrative(recipe, state) {
+  const narration = narrate(recipe, { units: state.unitSystem })
+  const items = narration.steps
+    .map((step) => {
+      const detail = [step.takes, step.produces, step.effort, step.alongside]
+        .filter(Boolean)
+        .join(' ')
+      const walkAway = step.alongside ? ' class="walk-away"' : ''
+      return (
+        `<li${walkAway}><span class="n-pos">Step ${step.position} of ${step.of}</span>` +
+        `<span class="n-action">${escapeText(step.action)}</span> ` +
+        `<span class="n-detail">${escapeText(detail)}</span></li>`
+      )
+    })
+    .join('')
+
+  const keys = SHORTCUTS.map(
+    ([key, what]) => `<dt>${escapeText(key)}</dt><dd>${escapeText(what)}</dd>`,
+  ).join('')
+
+  return (
+    `<article class="card"><div class="narrative">` +
+    `<h3>${escapeText(recipe.title)}</h3>` +
+    `<p class="summary">${escapeText(narration.summary)}</p>` +
+    `<ol>${items}</ol>` +
+    `<div class="shortcuts"><b>On the chart:</b><dl>${keys}</dl></div>` +
+    `</div></article>`
+  )
+}

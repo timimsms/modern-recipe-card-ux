@@ -55,6 +55,7 @@ export default tseslint.config(
         localStorage: 'readonly',
         navigator: 'readonly',
         Notification: 'readonly',
+        CSS: 'readonly',
       },
     },
   },

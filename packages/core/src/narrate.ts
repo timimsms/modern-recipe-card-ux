@@ -157,16 +157,15 @@ function spokenQuantity(leaf: Leaf, units: SpokenUnits): string {
 
   const imperial = { amount: quantity.amount, unit: quantity.unit }
   const metric = quantity.metric
-  const chosen =
-    units === 'metric' && metric
-      ? spokenMeasure(metric)
-      : units === 'both' && metric
-        ? `${spokenMeasure(imperial)}, or ${spokenMeasure(metric)},`
-        : spokenMeasure(imperial)
 
-  return quantity.unit === 'count' && units !== 'metric'
-    ? `${chosen} ${name}`
-    : `${chosen} of ${name}`
+  if (units === 'metric' && metric) return `${spokenMeasure(metric)} of ${name}`
+
+  const primary = spokenMeasure(imperial)
+  // A parenthetical, not ", or 110 grams," — the comma form buried the ingredient between two
+  // numbers and produced "1, or 110 grams, medium onion", which has to be read twice.
+  const pair = units === 'both' && metric ? ` (${spokenMeasure(metric)})` : ''
+
+  return quantity.unit === 'count' ? `${primary} ${name}${pair}` : `${primary}${pair} of ${name}`
 }
 
 /** A sentence, whatever the fragment handed in looked like. */

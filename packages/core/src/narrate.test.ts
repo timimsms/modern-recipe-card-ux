@@ -223,6 +223,35 @@ describe('quantities that would read as a bug', () => {
     const spoken = narrateComponent(brownies, { units: 'metric' }).steps[0]!
     expect(spoken.takes).toBe('Takes 115 grams of unsalted butter.')
   })
+
+  /**
+   * ", or 110 grams," buried the ingredient between two numbers — "1, or 110 grams, medium
+   * onion" has to be read twice to find the noun.
+   */
+  it('puts the second system in parentheses rather than mid-sentence', () => {
+    const spoken = narrateComponent(brownies, { units: 'both' }).steps[0]!
+    expect(spoken.takes).toBe('Takes 4 ounces (115 grams) of unsalted butter.')
+  })
+
+  it('keeps a countable ingredient readable in both systems', () => {
+    const eggs: Component = {
+      id: 'e',
+      prelude: [],
+      ingredients: [
+        {
+          id: 'eggs',
+          item: 'large eggs',
+          quantity: { amount: 2, unit: 'count', metric: { amount: 100, unit: 'g' } },
+        },
+      ],
+      root: 'beat',
+      steps: { beat: step('beat', [ing('eggs')], { text: 'beat' }) },
+    }
+    // Not "2, or 100 grams, large eggs".
+    expect(narrateComponent(eggs, { units: 'both' }).steps[0]!.takes).toBe(
+      'Takes 2 large eggs (100 grams).',
+    )
+  })
 })
 
 describe('how long it takes', () => {

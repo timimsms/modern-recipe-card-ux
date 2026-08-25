@@ -22,6 +22,7 @@
             <option value="ingredients">ingredient-led</option>
             <option value="cook">cook mode</option>
             <option value="filmstrip">mini-map filmstrip</option>
+            <option value="narrative">read it out</option>
           </select>
         </label>
         <label>
@@ -104,6 +105,24 @@
         </span>
       </div>
       <div id="cards"></div>
+      <!-- Two regions, because the two urgencies are different. A timer reaching its low end
+           interrupts whatever is being read; a focus move or a check-off waits its turn. Both
+           live outside #cards so a redraw cannot destroy the node mid-announcement — replacing
+           a live region is the classic way to lose the announcement you just queued. -->
+      <div
+        id="say-polite"
+        class="visually-hidden"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      ></div>
+      <div
+        id="say-urgent"
+        class="visually-hidden"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      ></div>
     </main>
     <!-- Serve with `pnpm serve`, which sends no-store. A plain static server will hand you a
          cached module or stylesheet after an edit, because this track has no build step and

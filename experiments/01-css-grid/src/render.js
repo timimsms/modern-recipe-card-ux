@@ -10,6 +10,7 @@
  */
 
 import {
+  describeOutput,
   formatTemperature,
   ingredientKey,
   isComponentComplete,
@@ -240,9 +241,10 @@ export function renderChart(component, plan, options = {}) {
       // below, which is a wrong answer with no JavaScript involved at all.
       const key = ingredientKey(component, cell.ref)
       const checked = options.checkedIngredients?.has(key) ? ' checked' : ''
+      const at = `${r1},${c1},${cell.rowSpan},${cell.colSpan}`
       parts.push(
         `<label class="cell ing${cell.duplicate ? ' dup' : ''}" style="${area};${edgeStyle(cell.edges)}" data-row="${esc(key)}">` +
-          `<input type="checkbox" class="tick" data-ing="${esc(key)}"${checked}>` +
+          `<input type="checkbox" class="tick" data-ing="${esc(key)}" data-at="${at}"${checked}>` +
           `<span class="ing-text">${renderLeaf(leaf, options)}</span></label>`,
       )
       continue
@@ -291,6 +293,20 @@ export function renderChart(component, plan, options = {}) {
     parts.push(
       `<div class="cell step d${shadeFor(cell.depth, plan.maxDepth, options.ramp)}${isUnattended(step.effort) ? ' unatt' : ''}${micro ? ' collapsed' : ''}${complete}" ` +
         `role="button" tabindex="0" data-step="${esc(cell.ref)}" ` +
+        `data-at="${r1},${c1},${cell.rowSpan},${cell.colSpan}" ` +
+        // The tree edges, so the keyboard can walk the *graph* and not only the grid. This is
+        // the relationship the chart draws with adjacency and a reader cannot otherwise follow.
+        `data-inputs="${esc(
+          step.inputs
+            .map((i) =>
+              i.kind === 'step' ? `step:${i.id}` : `ing:${ingredientKey(component, i.id)}`,
+            )
+            .join(' '),
+        )}" ` +
+        `data-feeds="${esc(consumerOf(component, cell.ref) ?? '')}" ` +
+        // Brownies has two steps whose text is "mix". On the chart their position tells them
+        // apart; announced, "mix" alone does not — the same ambiguity W6 catches for outputs.
+        `data-produces="${esc(describeOutput(component, cell.ref))}" ` +
         `aria-label="${esc(step.text)}${complete ? ', done' : ''}. Open in cook mode." ` +
         `style="${area};${edgeStyle(cell.edges)}" data-fed-by="${esc(
           feedsOf(component, plan, cell.ref)
@@ -321,6 +337,14 @@ function feedsOf(component, plan, stepId) {
   }
   walk(stepId)
   return [...out]
+}
+
+/** The single step that consumes this one's output, if any. The tree has one consumer per node. */
+function consumerOf(component, stepId) {
+  for (const step of Object.values(component.steps)) {
+    if (step.inputs.some((i) => i.kind === 'step' && i.id === stepId)) return step.id
+  }
+  return undefined
 }
 
 function renderLeaf(leaf, options = {}) {
