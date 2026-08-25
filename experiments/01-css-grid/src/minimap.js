@@ -81,8 +81,18 @@ export function renderMiniMap(plan, options = {}) {
   }
 
   const width = plan.columnCount * colW + (plan.columnCount - 1) * gap
+  /**
+   * `img` when it is a picture, `group` when it is a set of buttons.
+   *
+   * The interactive map was `role="img"` with focusable children, which axe flags as
+   * `nested-interactive` and which is genuinely contradictory: `img` makes the element a leaf in
+   * the accessibility tree, so the buttons inside it are announced as part of an image that also
+   * claims to have no children. Screen-reader users would have found jump targets they could
+   * reach by Tab and never hear described.
+   */
+  const role = interactive ? 'group' : 'img'
   return (
-    `<div class="minimap" role="img" aria-label="${describe(plan, current, done)}" ` +
+    `<div class="minimap" role="${role}" aria-label="${describe(plan, current, done)}" ` +
     `style="width:${width}px;grid-template-columns:repeat(${plan.columnCount},${colW}px);` +
     `grid-auto-rows:${rowH}px;gap:${gap}px">${parts.join('')}</div>`
   )

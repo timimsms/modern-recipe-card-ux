@@ -48,7 +48,7 @@ export const light: Palette = {
   surface: '#ffffff',
   ink: '#16211b',
   inkSoft: '#4a5a51',
-  inkFaint: '#6b7a71',
+  inkFaint: '#68776e',
   rule: '#2f6b45',
   ruleHeavy: '#1c4a2e',
   ruleFaint: '#cfdbd2',
@@ -224,6 +224,25 @@ export function mix(a: string, b: string, percentA: number): Hex {
 }
 
 /** Every ground a reader has to read body text against, per theme. */
+/**
+ * The grounds a *card-level* label sits on: paper and surface, never inside a shaded cell.
+ *
+ * Faint ink carries the at-a-glance labels, the mini-map caption and the timer badge, and every
+ * one of them sits on the card or the page rather than in a step region — verified in the
+ * browser rather than assumed, by a test that walks the rendered chart and checks no faint text
+ * has a depth fill behind it.
+ *
+ * Holding faint ink to AA against fills it never touches is not free strictness: it forced the
+ * dark palette's faint and soft to within two points of each other, which deletes a level of
+ * hierarchy to fix a combination that does not occur.
+ */
+export function cardGrounds(palette: Palette): Array<{ name: string; colour: Hex }> {
+  return [
+    { name: 'paper', colour: palette.paper },
+    { name: 'surface', colour: palette.surface },
+  ]
+}
+
 export function textGrounds(palette: Palette): Array<{ name: string; colour: Hex }> {
   return [
     { name: 'paper', colour: palette.paper },

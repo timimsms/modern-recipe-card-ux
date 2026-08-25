@@ -10,6 +10,7 @@ import {
   luminance,
   mix,
   parseHex,
+  cardGrounds,
   textGrounds,
   toCss,
   type Palette,
@@ -43,10 +44,30 @@ describe.each([
     },
   )
 
-  // Faint ink is used only for labels and marks, which are small but never body copy. Held to
-  // the large-text threshold and no lower — if it fails this it is illegible, not merely quiet.
+  /**
+   * Faint ink is held to the *body* threshold, on the grounds it is actually painted on.
+   *
+   * Two corrections, both of which the palette had wrong in opposite directions. It was held to
+   * the large-text threshold on the reasoning that these are labels rather than prose — a
+   * misreading, since WCAG's large-text allowance is about size (18pt, or 14pt bold) and the
+   * labels it excused render at 10.88px. axe found four of them on the glance bar at 4.34:1
+   * while this test passed.
+   *
+   * But raising it against *every* ground, including cell fills faint ink never touches, pushed
+   * the dark palette's faint to within two points of its soft — deleting a level of hierarchy to
+   * fix a combination that does not occur. `cardGrounds` is the honest set, and a browser test
+   * checks the assumption behind it holds in the rendered chart.
+   */
+  it.each(cardGrounds(palette).map((g) => [g.name, g.colour] as const))(
+    'faint ink on %s meets WCAG AA for small text',
+    (_ground, colour) => {
+      expect(contrastRatio(palette.inkFaint, colour)).toBeGreaterThanOrEqual(AA_BODY)
+    },
+  )
+
+  // Still readable where it does appear over a fill, even though it should not.
   it.each(grounds.map((g) => [g.name, g.colour] as const))(
-    'faint ink on %s meets the large-text threshold',
+    'faint ink on %s clears the large-text floor even so',
     (_ground, colour) => {
       expect(contrastRatio(palette.inkFaint, colour)).toBeGreaterThanOrEqual(AA_LARGE)
     },

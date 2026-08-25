@@ -1208,3 +1208,24 @@ body {
 .shortcuts dd {
   margin: 0;
 }
+
+/* WCAG 1.4.10: at 400% zoom a 1280px viewport is 320px wide, and nothing may force the *page*
+   to scroll sideways. The control bar did — one `<select>` measured 281px because of its longest
+   option text, and a bar that overflows is a bar whose controls you cannot reach. Selects have a
+   min-content width by default, so they need to be told they may shrink. */
+@media (max-width: 30rem) {
+  .controls {
+    gap: 0.45rem 0.7rem;
+  }
+  .controls label {
+    min-inline-size: 0;
+    max-inline-size: 100%;
+    flex: 1 1 100%;
+  }
+  .controls select,
+  .controls input[type='number'] {
+    min-inline-size: 0;
+    max-inline-size: 100%;
+    flex: 1 1 auto;
+  }
+}
