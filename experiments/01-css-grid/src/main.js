@@ -32,6 +32,7 @@ const RECIPES = [
   'spinach-artichoke-skillet',
   'braised-short-ribs',
   'fennel-citrus-salad',
+  'bbq-pulled-chicken',
 ]
 
 const FIXTURES = [

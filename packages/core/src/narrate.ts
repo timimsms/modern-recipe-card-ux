@@ -136,7 +136,12 @@ function spokenMeasure(measure: { amount: number | Range; unit: Unit }): string 
   const amount = formatAmount(measure.amount)
   if (measure.unit === 'count') return amount
   const spoken = SPOKEN_UNITS[measure.unit]
-  if (!spoken) return `${amount} ${measure.unit}`
+  // An unrecognised unit still needs a plural: "2 pack of chicken thighs" was the first thing
+  // the corpus's tenth recipe said out loud. Naive -s, because the alternative is a dictionary,
+  // and the known units — the ones with irregular spoken forms — are already in the table.
+  if (!spoken) {
+    return `${amount} ${measure.unit}${isPlural(measure.amount) ? 's' : ''}`
+  }
   return `${amount} ${isPlural(measure.amount) ? spoken[1] : spoken[0]}`
 }
 
@@ -257,12 +262,25 @@ function narrateStep(
       return { spoken: name, bare: name }
     }
     const leaf = findLeaf(component, input.id)
-    // The bare name is kept alongside the spoken one so the no-op check below compares like with
-    // like: "3 tablespoons of vegetable oil" never matches "the vegetable oil", so comparing the
-    // spoken form let the no-op through.
-    return leaf
-      ? { spoken: spokenQuantity(leaf, units), bare: leafName(leaf) }
-      : { spoken: input.id, bare: input.id }
+    if (!leaf) return { spoken: input.id, bare: input.id }
+
+    /**
+     * A leaf that two steps share has one quantity and two portions, and the model records only
+     * the total. Naming the total at each consumer is wrong at both ends: the pulled chicken's
+     * 1½ cups of barbecue sauce is 1 cup into the mixture and ½ cup stirred through at the end,
+     * and the narration claimed 1½ cups twice.
+     *
+     * The chart never had to face this — the quantity sits in the ingredient column once, beside
+     * the ingredient rather than beside a step — which is why the gap survived the reuse fixture
+     * that exists to test exactly this shape. "Part of" is vague and true; a share this file
+     * could only guess at would be neither.
+     */
+    const shared = (component.reuse ?? []).some((r) => r.leaf === input.id)
+    const spoken = spokenQuantity(leaf, units)
+    return {
+      spoken: shared && !isComponentRef(leaf) && leaf.quantity ? `part of the ${spoken}` : spoken,
+      bare: leafName(leaf),
+    }
   })
   const takes = taken.length === 0 ? '' : `Takes ${list(taken.map((t) => t.spoken))}.`
 

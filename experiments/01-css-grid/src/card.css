@@ -358,15 +358,23 @@ body {
   color: var(--ink-soft);
 }
 
+/* `nowrap` was fine while every reuse chip said "butter". The BBQ pulled chicken reuses
+   "tomato-based barbecue sauce", which measured 204px in a 138px cell and painted 76px of itself
+   over the neighbouring step — a label from one cell sitting on top of an unrelated one. Wrapping
+   rather than truncating, for the same reason R9 caps grid tracks instead of clamping text: the
+   ingredient name is the whole content of the chip, and half of it identifies nothing. */
 .chip {
   align-self: flex-end;
+  max-inline-size: 100%;
   font-family: var(--font-mono);
   font-size: var(--type-label-size);
+  line-height: 1.25;
+  text-align: end;
   color: var(--clay);
   border: 1px solid var(--clay);
-  border-radius: 99px;
+  border-radius: 0.7em;
   padding: 0.02rem 0.38rem;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 /* The Q1 repair: right-packed leaves a long blank run between an ingredient and the step that

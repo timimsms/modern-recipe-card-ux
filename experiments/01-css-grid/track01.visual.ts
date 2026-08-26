@@ -17,6 +17,7 @@ const RECIPES = [
   'recipes/spinach-artichoke-skillet',
   'recipes/braised-short-ribs',
   'recipes/fennel-citrus-salad',
+  'recipes/bbq-pulled-chicken',
 ]
 
 /** The fixtures that exist to break layout, which is exactly why they need baselines. */

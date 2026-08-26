@@ -1,0 +1,141 @@
+{
+  "id": "bbq-pulled-chicken",
+  "title": "BBQ Pulled Chicken",
+  "yield": "8 servings",
+  "servings": 8,
+  "source": {
+    "name": "Ali Slagle, The New York Times — cooked here in a Dutch oven, not a slow cooker"
+  },
+  "components": [
+    {
+      "id": "pulled-chicken",
+      "prelude": [
+        {
+          "id": "preheat",
+          "text": "Preheat the oven to 325°F — empty. The Dutch oven goes in after it is up to temperature.",
+          "temperature": { "f": 325 },
+          "equipment": ["oven"]
+        }
+      ],
+      "ingredients": [
+        {
+          "id": "bbq-sauce",
+          "quantity": { "amount": "1-1/2", "unit": "cup" },
+          "item": "tomato-based barbecue sauce",
+          "note": "homemade or store-bought; 1 cup into the mixture, 1/2 cup stirred in after shredding"
+        },
+        {
+          "id": "chipotle",
+          "quantity": { "amount": { "from": 1, "to": 2 }, "unit": "count" },
+          "item": "chipotle chiles in adobo",
+          "note": "depending on heat tolerance"
+        },
+        {
+          "id": "adobo-sauce",
+          "quantity": { "amount": 2, "unit": "Tbs" },
+          "item": "adobo sauce"
+        },
+        {
+          "id": "worcestershire",
+          "quantity": { "amount": 2, "unit": "Tbs" },
+          "item": "Worcestershire sauce",
+          "note": "or soy sauce"
+        },
+        {
+          "id": "onion-powder",
+          "quantity": { "amount": "1-1/2", "unit": "tsp" },
+          "item": "onion powder"
+        },
+        {
+          "id": "pineapple",
+          "quantity": { "amount": 1, "unit": "can" },
+          "item": "pineapple",
+          "note": "not in the printed recipe; can size unrecorded"
+        },
+        {
+          "id": "cider-vinegar",
+          "item": "apple cider vinegar",
+          "note": "not in the printed recipe; added to taste"
+        },
+        {
+          "id": "mustard",
+          "item": "yellow mustard",
+          "note": "not in the printed recipe; added to taste"
+        },
+        {
+          "id": "thighs",
+          "quantity": { "amount": 2, "unit": "pack" },
+          "item": "boneless, skinless chicken thighs",
+          "note": "the printed recipe calls for 1-1/2 to 2 lb, and adds the same again in breasts"
+        },
+        { "id": "salt-pepper", "item": "salt and black pepper" }
+      ],
+      "reuse": [
+        {
+          "leaf": "bbq-sauce",
+          "note": "1 cup goes into the sauce mixture, 1/2 cup is stirred through after shredding. One row on the shopping list, two consumers in the tree."
+        },
+        {
+          "leaf": "salt-pepper",
+          "note": "seasoned once before the braise and again to taste at the end — the second is the one that matters, since three hours of reduction moves the target."
+        }
+      ],
+      "root": "finish",
+      "steps": {
+        "mix-sauce": {
+          "id": "mix-sauce",
+          "inputs": [
+            "bbq-sauce",
+            "chipotle",
+            "adobo-sauce",
+            "worcestershire",
+            "onion-powder",
+            "pineapple",
+            "cider-vinegar",
+            "mustard"
+          ],
+          "text": "stir together in a 4-cup glass measuring cup",
+          "outputName": "the sauce mixture",
+          "effort": "minutes",
+          "technique": "mix",
+          "equipment": ["4-cup glass measuring cup"]
+        },
+        "coat": {
+          "id": "coat",
+          "inputs": ["mix-sauce", "thighs", "salt-pepper"],
+          "text": "put the thighs in the Dutch oven, season, and pour the sauce over to cover",
+          "outputName": "the coated chicken",
+          "effort": "quick",
+          "technique": "assemble",
+          "equipment": ["Dutch oven"]
+        },
+        "braise": {
+          "id": "braise",
+          "inputs": ["coat"],
+          "text": "cover and braise until the chicken shreds easily when pulled with a fork",
+          "outputName": "the braised chicken",
+          "effort": "long-unattended",
+          "duration": { "min": 3, "unit": "hour" },
+          "temperature": { "f": 325 },
+          "technique": "roast",
+          "equipment": ["Dutch oven", "oven"]
+        },
+        "shred": {
+          "id": "shred",
+          "inputs": ["braise"],
+          "text": "shred the meat into large, bite-size pieces with two forks",
+          "outputName": "the shredded chicken",
+          "effort": "minutes",
+          "technique": "shred"
+        },
+        "finish": {
+          "id": "finish",
+          "inputs": ["shred", "bbq-sauce", "salt-pepper"],
+          "text": "stir in the reserved barbecue sauce and season to taste",
+          "effort": "quick",
+          "technique": "season"
+        }
+      }
+    }
+  ]
+}

@@ -13,6 +13,14 @@ recipes/    transcribed from the source material — must all validate clean
 fixtures/   synthetic; see fixtures/README.md
 ```
 
+Source material that is not a web page lives in `docs/sources/`.
+
+Nine of the ten recipes are transcribed from a printed source alone. `bbq-pulled-chicken` is not:
+it is a printed recipe plus a cook's notes that change the method substantially, and the notes
+win where they disagree. See [Q8](../../docs/findings/Q8-ingesting-a-cooks-version.md) for what
+that first non-pristine ingestion found — including a reuse split whose per-consumer portions the
+model still cannot record.
+
 ## The authoring form
 
 Files are stored in a slightly looser form than the runtime model and normalised on load by
@@ -56,3 +64,6 @@ mixture with no combining step (W5 — the implicit join jenelope1st fixed by ha
    pairs are copied as printed, even where the conversion is wrong.
 4. `effort` is required and is a judgement call; `duration` is optional and only goes in when the
    source printed one.
+5. Where a cook's notes disagree with the printed recipe, the notes are the source. Record what
+   the printed version said in a `note` on the ingredient or in the step text — it is provenance,
+   not a correction to make silently.

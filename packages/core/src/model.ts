@@ -413,6 +413,8 @@ export type Technique =
   | 'ferment'
   | 'marinate'
   | 'drain'
+  /** Pulling cooked meat apart with forks. The corpus gained a recipe named after it. */
+  | 'shred'
   | 'season'
   | 'brush'
   | 'assemble'
@@ -449,6 +451,7 @@ export const TECHNIQUES: readonly Technique[] = [
   'ferment',
   'marinate',
   'drain',
+  'shred',
   'season',
   'brush',
   'assemble',
@@ -549,6 +552,7 @@ const PARTICIPLES: Partial<Record<Technique, string>> = {
   ferment: 'fermented',
   marinate: 'marinated',
   drain: 'drained',
+  shred: 'shredded',
   season: 'seasoned',
   brush: 'brushed',
   fold: 'folded',

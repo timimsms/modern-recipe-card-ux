@@ -272,3 +272,61 @@ describe('how long it takes', () => {
     expect(spokenTotal(hour)).toBe('1 hour 1 minute')
   })
 })
+
+/**
+ * The tenth corpus recipe was the first to say any of these out loud, which is the R10 pattern
+ * again: a new recipe is a test of the model, not only of the renderer.
+ */
+describe('what the BBQ pulled chicken said first', () => {
+  const shared: Component = {
+    id: 'pulled',
+    prelude: [],
+    ingredients: [
+      { id: 'sauce', item: 'barbecue sauce', quantity: { amount: 1.5, unit: 'cup' } },
+      { id: 'thighs', item: 'chicken thighs', quantity: { amount: 2, unit: 'pack' } },
+    ],
+    reuse: [{ leaf: 'sauce', note: '1 cup in, 1/2 cup after' }],
+    root: 'finish',
+    steps: {
+      mix: step('mix', [ing('sauce')], { text: 'stir together', outputName: 'the sauce mixture' }),
+      coat: step('coat', [from('mix'), ing('thighs')], {
+        text: 'coat',
+        outputName: 'the coated chicken',
+      }),
+      finish: step('finish', [from('coat'), ing('sauce')], { text: 'stir in the reserve' }),
+    },
+  }
+  const narration = narrateComponent(shared)
+
+  /**
+   * A leaf two steps share has one quantity and two portions, and the model records only the
+   * total — so naming the total at each consumer is wrong at both ends. The chart never had to
+   * face this, because the quantity sits in the ingredient column beside the ingredient rather
+   * than beside a step.
+   */
+  it('does not claim the whole quantity at each end of a reuse split', () => {
+    const mix = narration.steps.find((s) => s.id === 'mix')!
+    const finish = narration.steps.find((s) => s.id === 'finish')!
+    expect(mix.takes).toBe('Takes part of the 1½ cups of barbecue sauce.')
+    expect(finish.takes).toContain('part of the 1½ cups of barbecue sauce')
+  })
+
+  it('still names the whole quantity when only one step takes it', () => {
+    expect(narration.steps.find((s) => s.id === 'coat')!.takes).toContain(
+      '2 packs of chicken thighs',
+    )
+  })
+
+  // "2 pack of chicken thighs" — a unit outside the spoken table got no plural at all.
+  it('pluralises a unit it has never heard of', () => {
+    expect(narration.steps.find((s) => s.id === 'coat')!.takes).toContain('2 packs')
+    const one: Component = {
+      ...shared,
+      ingredients: [
+        { id: 'sauce', item: 'barbecue sauce', quantity: { amount: 1.5, unit: 'cup' } },
+        { id: 'thighs', item: 'chicken thighs', quantity: { amount: 1, unit: 'pack' } },
+      ],
+    }
+    expect(narrateComponent(one).steps.find((s) => s.id === 'coat')!.takes).toContain('1 pack of')
+  })
+})

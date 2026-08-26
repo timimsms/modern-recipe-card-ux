@@ -1,5 +1,27 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`golden layouts — left-packed > bbq-pulled-chicken 1`] = `
+"── bbq-pulled-chicken / pulled-chicken ──
+10 rows × 6 cols · left-packed · reuse=chip
+prelude[0] spans 6
+bbq-sauce             mix-sauce             coat                  braise                shred                 finish
+chipotle              │                     │                     │                     │                     │
+adobo-sauce           │                     │                     │                     │                     │
+worcestershire        │                     │                     │                     │                     │
+onion-powder          │                     │                     │                     │                     │
+pineapple             │                     │                     │                     │                     │
+cider-vinegar         │                     │                     │                     │                     │
+mustard               │                     │                     │                     │                     │
+thighs                ···· 1                │                     │                     │                     │
+salt-pepper           ···· 1                │                     │                     │                     │
+
+linearization: mix-sauce → coat → braise → shred → finish
+criticalPath:  mix-sauce → coat → braise → shred → finish
+timing[approx]: one cook 196m (idle 180m) · critical path 196m · serial 196m · saved 0m · hands-on 16m · longest walk-away 180m
+connection[chip]: bbq-sauce (row 0) → finish (row 0, col 5)
+connection[chip]: salt-pepper (row 9) → finish (row 0, col 5)"
+`;
+
 exports[`golden layouts — left-packed > beef-stroganoff 1`] = `
 "── beef-stroganoff / stroganoff ──
 10 rows × 9 cols · left-packed · reuse=chip
@@ -266,6 +288,28 @@ criticalPath:  combine-1 → assemble
 timing[approx]: one cook 16m (idle 0m) · critical path 8m · serial 16m · saved 8m · hands-on 16m · longest walk-away 0m"
 `;
 
+exports[`golden layouts — right-packed > bbq-pulled-chicken 1`] = `
+"── bbq-pulled-chicken / pulled-chicken ──
+10 rows × 6 cols · right-packed · reuse=chip
+prelude[0] spans 6
+bbq-sauce             mix-sauce             coat                  braise                shred                 finish
+chipotle              │                     │                     │                     │                     │
+adobo-sauce           │                     │                     │                     │                     │
+worcestershire        │                     │                     │                     │                     │
+onion-powder          │                     │                     │                     │                     │
+pineapple             │                     │                     │                     │                     │
+cider-vinegar         │                     │                     │                     │                     │
+mustard               │                     │                     │                     │                     │
+thighs                ···· 1                │                     │                     │                     │
+salt-pepper           ···· 1                │                     │                     │                     │
+
+linearization: mix-sauce → coat → braise → shred → finish
+criticalPath:  mix-sauce → coat → braise → shred → finish
+timing[approx]: one cook 196m (idle 180m) · critical path 196m · serial 196m · saved 0m · hands-on 16m · longest walk-away 180m
+connection[chip]: bbq-sauce (row 0) → finish (row 0, col 5)
+connection[chip]: salt-pepper (row 9) → finish (row 0, col 5)"
+`;
+
 exports[`golden layouts — right-packed > beef-stroganoff 1`] = `
 "── beef-stroganoff / stroganoff ──
 10 rows × 9 cols · right-packed · reuse=chip
@@ -530,6 +574,28 @@ ing-5-5               │                     │
 linearization: combine-1 → combine-2 → combine-3 → combine-4 → combine-5 → assemble
 criticalPath:  combine-1 → assemble
 timing[approx]: one cook 16m (idle 0m) · critical path 8m · serial 16m · saved 8m · hands-on 16m · longest walk-away 0m"
+`;
+
+exports[`golden layouts — stretch-to-merge > bbq-pulled-chicken 1`] = `
+"── bbq-pulled-chicken / pulled-chicken ──
+10 rows × 6 cols · stretch-to-merge · reuse=chip
+prelude[0] spans 6
+bbq-sauce             mix-sauce             coat                  braise                shred                 finish
+chipotle              │                     │                     │                     │                     │
+adobo-sauce           │                     │                     │                     │                     │
+worcestershire        │                     │                     │                     │                     │
+onion-powder          │                     │                     │                     │                     │
+pineapple             │                     │                     │                     │                     │
+cider-vinegar         │                     │                     │                     │                     │
+mustard               │                     │                     │                     │                     │
+thighs                ···· 1                │                     │                     │                     │
+salt-pepper           ···· 1                │                     │                     │                     │
+
+linearization: mix-sauce → coat → braise → shred → finish
+criticalPath:  mix-sauce → coat → braise → shred → finish
+timing[approx]: one cook 196m (idle 180m) · critical path 196m · serial 196m · saved 0m · hands-on 16m · longest walk-away 180m
+connection[chip]: bbq-sauce (row 0) → finish (row 0, col 5)
+connection[chip]: salt-pepper (row 9) → finish (row 0, col 5)"
 `;
 
 exports[`golden layouts — stretch-to-merge > beef-stroganoff 1`] = `
@@ -799,7 +865,8 @@ timing[approx]: one cook 16m (idle 0m) · critical path 8m · serial 16m · save
 `;
 
 exports[`parallel saving across the corpus > is compared against what a single cook can reach 1`] = `
-"beef-stroganoff/stroganoff: critical path 49m · one cook 61m — unreachable alone by 12m
+"bbq-pulled-chicken/pulled-chicken: critical path 196m · one cook 196m — reachable alone
+beef-stroganoff/stroganoff: critical path 49m · one cook 61m — unreachable alone by 12m
 braised-short-ribs/ribs: critical path 269m · one cook 274m — unreachable alone by 5m
 espresso-brownies/brownies: critical path 52m · one cook 52m — reachable alone
 fennel-citrus-salad/salad: critical path 17m · one cook 24m — unreachable alone by 7m
@@ -811,7 +878,8 @@ spinach-artichoke-skillet/skillet: critical path 27m · one cook 27m — reachab
 `;
 
 exports[`parallel saving across the corpus > is recorded for every recipe 1`] = `
-"beef-stroganoff/stroganoff: saves 12m of 61m (20%)
+"bbq-pulled-chicken/pulled-chicken: saves 0m of 196m (0%)
+beef-stroganoff/stroganoff: saves 12m of 61m (20%)
 braised-short-ribs/ribs: saves 5m of 274m (2%)
 espresso-brownies/brownies: saves 0m of 52m (0%)
 fennel-citrus-salad/salad: saves 7m of 24m (29%)

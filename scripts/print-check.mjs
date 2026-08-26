@@ -28,6 +28,7 @@ const SLUGS = [
   'recipes/shepherds-pie',
   'recipes/beef-stroganoff',
   'recipes/spinach-artichoke-skillet',
+  'recipes/bbq-pulled-chicken',
   'fixtures/valid/long-text',
 ]
 
