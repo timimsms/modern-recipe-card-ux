@@ -27,6 +27,9 @@ export default tseslint.config(
         URL: 'readonly',
         module: 'writable',
         require: 'readonly',
+        // Node has had both since 18; the engines field requires 22.
+        fetch: 'readonly',
+        AbortSignal: 'readonly',
         // Scripts that drive a browser pass callbacks to `page.evaluate`, whose bodies run in
         // the page rather than in Node. They are browser code that merely lives in a Node file.
         document: 'readonly',
