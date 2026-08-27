@@ -12,7 +12,7 @@
           "id": "butter",
           "quantity": { "amount": 4, "unit": "Tbs", "metric": { "amount": 57, "unit": "g" } },
           "item": "unsalted butter",
-          "note": "half creamed into the batter, half reserved for the topping"
+          "note": "creamed into the batter and rubbed into the topping"
         },
         {
           "id": "sugar",
@@ -40,7 +40,10 @@
       "steps": {
         "cream": {
           "id": "cream",
-          "inputs": ["butter", "sugar"],
+          "inputs": [
+            { "kind": "ingredient", "id": "butter", "portion": { "amount": 2, "unit": "Tbs" } },
+            "sugar"
+          ],
           "text": "cream half the butter with the sugar",
           "effort": "minutes",
           "technique": "cream"
@@ -54,7 +57,11 @@
         },
         "topping": {
           "id": "topping",
-          "inputs": ["batter", "oats", "butter"],
+          "inputs": [
+            "batter",
+            "oats",
+            { "kind": "ingredient", "id": "butter", "portion": { "amount": 2, "unit": "Tbs" } }
+          ],
           "text": "rub the reserved butter into the oats and scatter over",
           "effort": "minutes",
           "technique": "assemble"

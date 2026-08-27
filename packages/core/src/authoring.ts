@@ -54,7 +54,10 @@ export type AuthoredQuantity = Omit<Quantity, 'amount' | 'metric' | 'of'> & {
  * A bare id is resolved by looking it up — steps and leaves live in separate namespaces, so
  * the only way it is ambiguous is if one id appears in both, which throws rather than guesses.
  */
-export type AuthoredInput = InputRef | string
+export type AuthoredInput =
+  | string
+  | { kind: 'step'; id: string }
+  | { kind: 'ingredient'; id: string; portion?: AuthoredQuantity }
 
 export type AuthoredIngredient = Omit<Ingredient, 'quantity'> & { quantity?: AuthoredQuantity }
 
@@ -123,7 +126,21 @@ function resolveInput(
   stepIds: ReadonlySet<string>,
   leafIds: ReadonlySet<string>,
 ): InputRef {
-  if (typeof input !== 'string') return input
+  if (typeof input !== 'string') {
+    // A portion is a quantity like any other, so it gets the same authoring conveniences —
+    // `"1/2"` rather than 0.5. Missing this meant a portion written the way every other quantity
+    // in the corpus is written arrived as a string and formatted as `NaN`.
+    if (input.kind === 'ingredient' && input.portion) {
+      return {
+        ...input,
+        portion: normalizeQuantity(
+          input.portion as AuthoredQuantity,
+          `${componentId}/${stepId} portion of "${input.id}"`,
+        ),
+      }
+    }
+    return input as InputRef
+  }
 
   const explicit = input.match(/^(step|ingredient):(.+)$/)
   if (explicit) {

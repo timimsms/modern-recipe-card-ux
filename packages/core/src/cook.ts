@@ -18,6 +18,7 @@ import {
   type Component,
   type IngredientId,
   type Leaf,
+  type Quantity,
   type StepId,
 } from './model.js'
 
@@ -124,7 +125,18 @@ export function cookSchedule(component: Component): CookSchedule {
 }
 
 export type ResolvedInput =
-  { kind: 'ingredient'; id: IngredientId; leaf: Leaf } | { kind: 'step'; id: StepId; name: string }
+  | {
+      kind: 'ingredient'
+      id: IngredientId
+      leaf: Leaf
+      /**
+       * What this step takes, which is the leaf's total unless the leaf is split. Renderers
+       * should show this rather than `leaf.quantity`: the total is what you shop for, this is
+       * what you measure.
+       */
+      quantity?: Quantity
+    }
+  | { kind: 'step'; id: StepId; name: string }
 
 /**
  * A step's inputs as things a cook can go and fetch.
@@ -141,7 +153,9 @@ export function resolveInputs(component: Component, id: StepId): ResolvedInput[]
       return [{ kind: 'step', id: input.id, name: describeOutput(component, input.id) }]
     }
     const leaf = findLeaf(component, input.id)
-    return leaf ? [{ kind: 'ingredient', id: input.id, leaf }] : []
+    if (!leaf) return []
+    const quantity = input.portion ?? leaf.quantity
+    return [{ kind: 'ingredient', id: input.id, leaf, ...(quantity ? { quantity } : {}) }]
   })
 }
 

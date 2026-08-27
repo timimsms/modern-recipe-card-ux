@@ -73,6 +73,28 @@ function ladderFor(unit: Unit): { ladder: Rung[]; index: number } | undefined {
 }
 
 /**
+ * A measure expressed in its ladder's smallest unit, so two can be compared.
+ *
+ * Derived from `LADDERS` rather than from a second table of factors: one source of truth, and the
+ * `stepMinutes` episode is a good reminder of what a duplicated constant costs. Returns
+ * `undefined` for anything off the ladders — a `pinch`, a `can`, `count` — and across them, since
+ * volume and weight do not convert without knowing what the ingredient is.
+ */
+export function inSmallestUnit(
+  amount: number,
+  unit: Unit,
+): { unit: Unit; value: number } | undefined {
+  for (const ladder of LADDERS) {
+    const index = ladder.findIndex((rung) => rung.unit === unit)
+    if (index === -1) continue
+    let factor = 1
+    for (let step = 0; step < index; step++) factor *= ladder[step]!.perNext ?? 1
+    return { unit: ladder[0]!.unit, value: amount * factor }
+  }
+  return undefined
+}
+
+/**
  * Fractions a kitchen can actually measure. A ⅓-cup scoop exists; a 0.42-cup scoop does not.
  * Ordered so the search prefers the simplest fraction that is close enough.
  */

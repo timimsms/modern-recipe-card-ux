@@ -18,8 +18,8 @@ Source material that is not a web page lives in `docs/sources/`.
 Nine of the ten recipes are transcribed from a printed source alone. `bbq-pulled-chicken` is not:
 it is a printed recipe plus a cook's notes that change the method substantially, and the notes
 win where they disagree. See [Q8](../../docs/findings/Q8-ingesting-a-cooks-version.md) for what
-that first non-pristine ingestion found — including a reuse split whose per-consumer portions the
-model still cannot record.
+that first non-pristine ingestion found — including the reuse split that gave `InputRef.portion`
+its reason to exist.
 
 ## The authoring form
 
@@ -67,3 +67,12 @@ mixture with no combining step (W5 — the implicit join jenelope1st fixed by ha
 5. Where a cook's notes disagree with the printed recipe, the notes are the source. Record what
    the printed version said in a `note` on the ingredient or in the step text — it is provenance,
    not a correction to make silently.
+6. A leaf that several steps share keeps the *total* on the ingredient, and gives each step its
+   share as a `portion` on the input:
+
+   ```jsonc
+   "inputs": [{ "kind": "ingredient", "id": "bbq-sauce", "portion": { "amount": 1, "unit": "cup" } }]
+   ```
+
+   W7 asks for it whenever the leaf has a quantity; E9 fails the build if the shares add up to
+   more than the recipe bought.

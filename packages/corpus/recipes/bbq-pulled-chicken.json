@@ -22,7 +22,7 @@
           "id": "bbq-sauce",
           "quantity": { "amount": "1-1/2", "unit": "cup" },
           "item": "tomato-based barbecue sauce",
-          "note": "homemade or store-bought; 1 cup into the mixture, 1/2 cup stirred in after shredding"
+          "note": "homemade or store-bought"
         },
         {
           "id": "chipotle",
@@ -73,7 +73,7 @@
       "reuse": [
         {
           "leaf": "bbq-sauce",
-          "note": "1 cup goes into the sauce mixture, 1/2 cup is stirred through after shredding. One row on the shopping list, two consumers in the tree."
+          "note": "one row on the shopping list, two consumers in the tree — the shares are on the inputs"
         },
         {
           "leaf": "salt-pepper",
@@ -85,7 +85,7 @@
         "mix-sauce": {
           "id": "mix-sauce",
           "inputs": [
-            "bbq-sauce",
+            { "kind": "ingredient", "id": "bbq-sauce", "portion": { "amount": 1, "unit": "cup" } },
             "chipotle",
             "adobo-sauce",
             "worcestershire",
@@ -130,7 +130,15 @@
         },
         "finish": {
           "id": "finish",
-          "inputs": ["shred", "bbq-sauce", "salt-pepper"],
+          "inputs": [
+            "shred",
+            {
+              "kind": "ingredient",
+              "id": "bbq-sauce",
+              "portion": { "amount": "1/2", "unit": "cup" }
+            },
+            "salt-pepper"
+          ],
           "text": "stir in the reserved barbecue sauce and season to taste",
           "effort": "quick",
           "technique": "season"

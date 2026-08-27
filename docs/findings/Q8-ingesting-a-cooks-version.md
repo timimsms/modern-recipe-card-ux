@@ -5,7 +5,8 @@ slow-cooker recipe plus a set of kitchen notes that change it substantially: ove
 cooker, the sauce mixed separately in a measuring cup, thighs only, three additions that are not
 in the printed recipe at all, and a correction to the preheat instruction.
 
-That is a more realistic ingestion than the first nine, and it found five things.
+That is a more realistic ingestion than the first nine, and it found five things. Four were
+fixed on the spot; the fifth — the reuse-split gap below — took a model change.
 
 ## What the transcription had to decide
 
@@ -19,7 +20,7 @@ The result validates clean with one warning: **W2, temperature in one scale only
 325°F and nothing else, and the model's rule is that metric pairs are authored, never computed.
 Converting to silence the warning would be inventing a number the cook did not give.
 
-## 1. A reuse split has one quantity and two portions, and the model records only the total
+## 1. A reuse split has one quantity and several portions, and the model recorded only the total
 
 The barbecue sauce is 1½ cups: 1 cup into the mixture, ½ cup stirred through after shredding. One
 row on the shopping list, two consumers in the tree — which is exactly what `reuse` exists for,
@@ -33,10 +34,24 @@ beside the ingredient rather than beside a step — so the gap survived the very
 exercise this shape. Same pattern as [R10](R10-saying-the-tree-out-loud.md): the chart is a
 self-supplying context, and the gap only appears when something has to *name* a per-step amount.
 
-Worked around in the narrator, which now says "part of the 1½ cups of barbecue sauce" at each
-consumer — vague and true, where a guessed share would be neither. **Not fixed in the model.** The
-real fix is a portion on the input reference or on the declaration, and it should be done before
-any track renders a per-step quantity.
+**Fixed.** `InputRef` for an ingredient now carries an optional `portion`: the leaf keeps the
+total, because that is what you shop for, and each consuming step carries its share, because that
+is what you measure. The share belongs to the *consumption*, not to the declaration — putting it
+on `ReuseDeclaration` would mean restating step ids that `inputs` already lists and keeping the two
+in step.
+
+Two checks came with it, both derived from `LADDERS` so the unit arithmetic has one source of
+truth:
+
+- **E9** — portions totalling more than the recipe calls for. An error rather than a warning: a
+  cook following it runs out. Converts across a ladder, so `¼ cup + 7 Tbs` out of `½ cup` is
+  caught while `¼ cup + 2 Tbs` passes.
+- **W7** — a split leaf that has a quantity but whose consumers do not say how much they take.
+  Silent for a leaf with no quantity, because salt seasoned twice has nothing to divide.
+
+Where a share genuinely is not recorded, the narrator still says "part of the 1½ cups" — vague and
+true beats a share it would be guessing at. Cook mode shows the portion, and portions scale with
+everything else: at 2× the reserved ½ cup becomes 1 cup.
 
 ## 2. Nowhere to record that a recipe is an adaptation
 

@@ -57,8 +57,13 @@ function renderInputs(component, stepId, options = {}) {
       }
       const leaf = input.leaf
       const label = leaf.component ? (leaf.label ?? leaf.component) : leaf.item
-      const q = formatQuantity(leaf.quantity, options)
-      const warning = unscalableNote(leaf.quantity, options.scale)
+      // `input.quantity` is this step's share, which is the leaf total unless the leaf is split
+      // between steps. Cook mode is where the difference bites: this is the number someone
+      // measures out, and the pulled chicken's barbecue sauce would otherwise say 1½ cups at
+      // both ends of a 1 cup / ½ cup split.
+      const measured = input.quantity ?? leaf.quantity
+      const q = formatQuantity(measured, options)
+      const warning = unscalableNote(measured, options.scale)
       const note = leaf.note ? `<span class="note">${esc(leaf.note)}</span>` : ''
       const flag = warning ? `<span class="note unscalable">${esc(warning)}</span>` : ''
       return `<li><span class="qty">${esc(q)}</span> <span class="item">${esc(label)}</span>${note}${flag}</li>`

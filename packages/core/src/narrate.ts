@@ -28,6 +28,7 @@ import {
   subtreeSteps,
   type Component,
   type Leaf,
+  type Quantity,
   type Range,
   type Recipe,
   type Step,
@@ -157,7 +158,11 @@ function spokenMeasure(measure: { amount: number | Range; unit: Unit }): string 
 function spokenQuantity(leaf: Leaf, units: SpokenUnits): string {
   const quantity = leaf.quantity
   const name = leafName(leaf)
-  if (!quantity) return name
+  return quantity ? spokenMeasured(quantity, name, units) : name
+}
+
+/** A quantity and the thing it measures. Shared by leaf totals and per-step portions. */
+function spokenMeasured(quantity: Quantity, name: string, units: SpokenUnits): string {
   if (quantity.amount === undefined) return `${quantity.unit} of ${name}`
 
   const imperial = { amount: quantity.amount, unit: quantity.unit }
@@ -265,17 +270,21 @@ function narrateStep(
     if (!leaf) return { spoken: input.id, bare: input.id }
 
     /**
-     * A leaf that two steps share has one quantity and two portions, and the model records only
-     * the total. Naming the total at each consumer is wrong at both ends: the pulled chicken's
-     * 1½ cups of barbecue sauce is 1 cup into the mixture and ½ cup stirred through at the end,
-     * and the narration claimed 1½ cups twice.
+     * A shared leaf is spoken as *this step's* share.
      *
-     * The chart never had to face this — the quantity sits in the ingredient column once, beside
-     * the ingredient rather than beside a step — which is why the gap survived the reuse fixture
-     * that exists to test exactly this shape. "Part of" is vague and true; a share this file
-     * could only guess at would be neither.
+     * `input.portion` is the model's answer to the gap Q8 found: the leaf carries the total,
+     * because that is what you shop for, and the input carries the share, because that is what
+     * you measure. Without it the pulled chicken announced its full 1½ cups of barbecue sauce at
+     * both consumers, when the split is 1 cup and ½ cup.
+     *
+     * Where a split leaf has *no* portion — W7 says so, and salt seasoned twice never will —
+     * "part of" is the honest fallback. Vague and true beats a share this file would be guessing
+     * at.
      */
     const shared = (component.reuse ?? []).some((r) => r.leaf === input.id)
+    if (input.portion) {
+      return { spoken: spokenMeasured(input.portion, leafName(leaf), units), bare: leafName(leaf) }
+    }
     const spoken = spokenQuantity(leaf, units)
     return {
       spoken: shared && !isComponentRef(leaf) && leaf.quantity ? `part of the ${spoken}` : spoken,

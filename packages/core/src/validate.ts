@@ -27,6 +27,7 @@ import {
   type Unit,
 } from './model.js'
 import { formatAmount, isRange } from './quantity.js'
+import { inSmallestUnit } from './scale.js'
 
 export type Severity = 'error' | 'warning'
 
@@ -44,12 +45,14 @@ export type DiagnosticCode =
   | 'E6' // dangling component reference
   | 'E7' // dangling id reference
   | 'E8' // duplicate id
+  | 'E9' // a split leaf over-allocated
   | 'W1' // long step text
   | 'W2' // single-scale temperature
   | 'W3' // unlabeled merge
   | 'W4' // metric rounding discrepancy
   | 'W5' // wide raw merge
   | 'W6' // colliding output names
+  | 'W7' // a split leaf with no portions
 
 export type Diagnostic = {
   code: DiagnosticCode
@@ -291,6 +294,68 @@ export function validateComponent(
           `Ingredient "${leafId}" is consumed by ${consumedBy.length} steps ` +
           `(${consumedBy.join(', ')}) but is not declared in this component's "reuse" list. ` +
           `Sharing a leaf turns the tree into a DAG; it has to be deliberate.`,
+        at: { ...at, ingredient: leafId },
+      })
+    }
+  }
+
+  // --- E9 / W7 how a split leaf is divided --------------------------------------------------
+
+  /**
+   * A leaf shared by several steps has one quantity and several portions, and until Q8 the model
+   * recorded only the total — so anything naming a per-step amount named the whole thing at every
+   * consumer. `InputRef.portion` fixes that; these two check the arithmetic.
+   */
+  for (const [leafId, consumedBy] of consumers) {
+    if (consumedBy.length < 2) continue
+    const leaf = component.ingredients.find((l) => l.id === leafId)
+    const total = leaf?.quantity
+    if (!total || total.amount === undefined) continue
+
+    const portions = consumedBy.map((stepId) => {
+      const input = component.steps[stepId]?.inputs.find(
+        (i) => i.kind === 'ingredient' && i.id === leafId,
+      )
+      return { stepId, portion: input?.kind === 'ingredient' ? input.portion : undefined }
+    })
+
+    const missing = portions.filter((p) => p.portion?.amount === undefined)
+    if (missing.length > 0) {
+      out.push({
+        code: 'W7',
+        severity: 'warning',
+        message:
+          `Ingredient "${leafId}" is split between ${consumedBy.length} steps and has a ` +
+          `quantity, but ${missing.map((m) => `"${m.stepId}"`).join(' and ')} ` +
+          `${missing.length === 1 ? 'does' : 'do'} not say how much of it ${missing.length === 1 ? 'it takes' : 'they take'}. ` +
+          `Anything showing a quantity beside that step will show the whole amount.`,
+        at: { ...at, ingredient: leafId },
+      })
+      continue
+    }
+
+    // Smallest portions against the largest total, so a range never raises a false alarm.
+    const asSmallest = (amount: number | Range, unit: Unit) =>
+      inSmallestUnit(isRange(amount) ? amount.from : amount, unit)
+    const capacity = inSmallestUnit(
+      isRange(total.amount) ? total.amount.to : total.amount,
+      total.unit,
+    )
+    const shares = portions.map((p) => asSmallest(p.portion!.amount!, p.portion!.unit))
+    // Anything off the ladders — a pinch, a can, a bare count — cannot be compared, and
+    // guessing at a conversion would be worse than not checking.
+    if (!capacity || shares.some((sh) => sh === undefined || sh.unit !== capacity.unit)) continue
+
+    const allocated = shares.reduce((sum, sh) => sum + sh!.value, 0)
+    if (allocated > capacity.value * 1.001) {
+      out.push({
+        code: 'E9',
+        severity: 'error',
+        message:
+          `Ingredient "${leafId}" is split into portions totalling more than the recipe calls ` +
+          `for: ${formatAmount(allocated)} ${capacity.unit} allocated across ` +
+          `${consumedBy.map((c) => `"${c}"`).join(', ')}, out of ${formatAmount(capacity.value)} ` +
+          `${capacity.unit}. A cook following this runs out.`,
         at: { ...at, ingredient: leafId },
       })
     }

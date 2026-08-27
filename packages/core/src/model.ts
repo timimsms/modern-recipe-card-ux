@@ -247,7 +247,31 @@ export function isMetricUnit(unit: Unit): boolean {
  * a *leaf* (`ComponentRefLeaf`) occupying a row in the ingredient column, so it arrives here
  * as `{ kind: 'ingredient' }` like any other row. One mechanism, not two.
  */
-export type InputRef = { kind: 'ingredient'; id: IngredientId } | { kind: 'step'; id: StepId }
+export type InputRef =
+  | {
+      kind: 'ingredient'
+      id: IngredientId
+      /**
+       * How much of the leaf *this* step takes, when the leaf is split between several.
+       *
+       * The share belongs to the consumption, not to the ingredient: the leaf carries the total,
+       * because that is what you shop for, and each step carries its portion, because that is
+       * what you measure out. Putting it on `ReuseDeclaration` instead would mean restating step
+       * ids that `inputs` already lists, and keeping the two in step.
+       *
+       * Absent for the overwhelmingly common case of a leaf with one consumer, where the portion
+       * *is* the total. Also absent where there is nothing to divide — salt and pepper are
+       * seasoned twice and measured neither time.
+       *
+       * Discovered by narrating the BBQ pulled chicken, whose 1½ cups
+       * of barbecue sauce is 1 cup into the sauce and ½ cup stirred through at the end. Both
+       * consumers announced the full 1½ cups, which is wrong at both ends. The chart never had
+       * to face it: a quantity sits in the ingredient column beside the ingredient, never beside
+       * a step. See Q8.
+       */
+      portion?: Quantity
+    }
+  | { kind: 'step'; id: StepId }
 
 export type Step = {
   id: StepId

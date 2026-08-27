@@ -330,3 +330,72 @@ describe('what the BBQ pulled chicken said first', () => {
     expect(narrateComponent(one).steps.find((s) => s.id === 'coat')!.takes).toContain('1 pack of')
   })
 })
+
+/**
+ * The gap Q8 found, and the model's answer to it: the leaf carries the total, because that is
+ * what you shop for, and the input carries the share, because that is what you measure.
+ */
+describe('a leaf split between steps', () => {
+  const split: Component = {
+    id: 'pulled',
+    prelude: [],
+    ingredients: [{ id: 'sauce', item: 'barbecue sauce', quantity: { amount: 1.5, unit: 'cup' } }],
+    reuse: [{ leaf: 'sauce', note: 'one row, two consumers' }],
+    root: 'finish',
+    steps: {
+      mix: step('mix', [{ kind: 'ingredient', id: 'sauce', portion: { amount: 1, unit: 'cup' } }], {
+        text: 'stir together',
+        outputName: 'the sauce mixture',
+      }),
+      finish: step(
+        'finish',
+        [from('mix'), { kind: 'ingredient', id: 'sauce', portion: { amount: 0.5, unit: 'cup' } }],
+        { text: 'stir in the reserve' },
+      ),
+    },
+  }
+
+  it('speaks each step’s share, not the total', () => {
+    const narration = narrateComponent(split)
+    expect(narration.steps.find((s) => s.id === 'mix')!.takes).toBe(
+      'Takes 1 cup of barbecue sauce.',
+    )
+    expect(narration.steps.find((s) => s.id === 'finish')!.takes).toContain(
+      '½ cup of barbecue sauce',
+    )
+  })
+
+  /**
+   * Where a split leaf has no portion, "part of" is the honest fallback — vague and true beats a
+   * share the narrator would be guessing at. Salt seasoned twice and measured neither time never
+   * gets one.
+   */
+  it('falls back to "part of" when the share is not recorded', () => {
+    const vague: Component = {
+      ...split,
+      steps: {
+        mix: step('mix', [ing('sauce')], {
+          text: 'stir together',
+          outputName: 'the sauce mixture',
+        }),
+        finish: step('finish', [from('mix'), ing('sauce')], { text: 'stir in the reserve' }),
+      },
+    }
+    expect(narrateComponent(vague).steps[0]!.takes).toBe(
+      'Takes part of the 1½ cups of barbecue sauce.',
+    )
+  })
+
+  it('does not say "part of" for a leaf only one step uses', () => {
+    const single: Component = {
+      id: 's',
+      prelude: [],
+      ingredients: [
+        { id: 'sauce', item: 'barbecue sauce', quantity: { amount: 1.5, unit: 'cup' } },
+      ],
+      root: 'mix',
+      steps: { mix: step('mix', [ing('sauce')], { text: 'stir' }) },
+    }
+    expect(narrateComponent(single).steps[0]!.takes).toBe('Takes 1½ cups of barbecue sauce.')
+  })
+})
