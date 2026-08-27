@@ -1,0 +1,138 @@
+/**
+ * Track 03's styling.
+ *
+ * Reads the same `@recipe/tokens` variables track 01 does, so a colour difference between the two
+ * tracks would be a real difference rather than two people picking greens. The page chrome is
+ * deliberately close to track 01's for the same reason — what Phase 08 should be comparing is the
+ * *chart*, not whether someone chose a different card border.
+ */
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.1rem;
+  align-items: center;
+  padding: 0.7rem 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+.controls select {
+  font: inherit;
+  padding: 0.2rem 0.3rem;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.cardhead {
+  padding: 1rem 1.1rem 0.8rem;
+  border-bottom: 1px solid var(--hairline);
+}
+.card-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--type-card-title-size);
+  font-weight: var(--type-card-title-weight);
+}
+.src {
+  margin: 0.2rem 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  color: var(--ink-faint);
+}
+.component-title {
+  margin: 0.9rem 1.1rem 0;
+  font-family: var(--font-display);
+  font-size: var(--type-component-title-size);
+}
+
+/* The chart is a fixed-size drawing, so it scrolls rather than reflows — which is the trade this
+   substrate makes and the thing R8 will test hardest. */
+.component {
+  overflow-x: auto;
+  padding: 0.4rem 1.1rem 1rem;
+}
+
+/* ---------- the drawing ---------- */
+
+.dendrogram {
+  display: block;
+}
+
+/* An edge from an ingredient is quieter than an edge between steps: the first is "this goes in",
+   the second is the spine of the recipe, and R4's heavier grouping lines are the same idea drawn
+   a different way. */
+.edge {
+  fill: none;
+  stroke: var(--rule-faint);
+  stroke-width: 1.5;
+}
+.edge-step {
+  stroke: var(--rule);
+  stroke-width: 2;
+}
+
+.leaf rect {
+  fill: var(--surface);
+  stroke: var(--hairline);
+}
+.leaf-text {
+  fill: var(--ink);
+  font-size: var(--type-ingredient-size);
+}
+
+.step rect {
+  fill: var(--fill-depth-3);
+  stroke: var(--rule);
+}
+/* R5: never colour alone. A dashed border says "you can walk away" without relying on the hue. */
+.step.unattended rect {
+  stroke: var(--clay);
+  stroke-dasharray: 5 3;
+}
+.step-text {
+  fill: var(--ink);
+  font-size: var(--type-step-size);
+  font-weight: var(--type-step-weight);
+}
+
+.failure {
+  margin: 0;
+  padding: 1rem;
+  background: var(--clay-soft);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  white-space: pre-wrap;
+}

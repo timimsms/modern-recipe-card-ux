@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en" data-track="03-svg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Track 03 — SVG dendrogram</title>
+    <link rel="stylesheet" href="../../packages/tokens/tokens.css" />
+    <link rel="stylesheet" href="src/card.css" />
+  </head>
+  <body>
+    <main class="page">
+      <div class="controls">
+        <label>
+          recipe
+          <select id="recipe"></select>
+        </label>
+        <label>
+          theme
+          <select id="theme">
+            <option value="light">light</option>
+            <option value="dark">dark</option>
+          </select>
+        </label>
+      </div>
+      <div id="cards"></div>
+    </main>
+    <!-- Serve with `pnpm serve`. Same reason as track 01: no build step, so a cached module is
+         a debugging session spent on code you already fixed. -->
+    <script type="module">
+      import('./src/main.js').catch((error) => {
+        document.getElementById('cards').innerHTML =
+          `<pre class="failure">${error.stack ?? error.message}</pre>`
+      })
+    </script>
+  </body>
+</html>

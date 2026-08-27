@@ -58,6 +58,8 @@ export default tseslint.config(
         requestAnimationFrame: 'readonly',
         localStorage: 'readonly',
         navigator: 'readonly',
+        // Tracks emit harness marks by convention rather than by import; see harness/protocol.ts.
+        performance: 'readonly',
         Notification: 'readonly',
         CSS: 'readonly',
       },

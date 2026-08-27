@@ -16,6 +16,13 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['packages/*/src/**/*.test.ts', 'packages/*/test/**/*.test.ts'],
+    include: [
+      'packages/*/src/**/*.test.ts',
+      'packages/*/test/**/*.test.ts',
+      // Track 03 computes its own geometry, so it has something unit-testable that track 01
+      // does not: CSS Grid's layout happens in the browser and can only be tested in one.
+      // That asymmetry is itself a Phase 08 datum.
+      'experiments/*/src/**/*.test.js',
+    ],
   },
 })
