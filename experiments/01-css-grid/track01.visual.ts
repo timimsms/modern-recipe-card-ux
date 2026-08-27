@@ -787,6 +787,87 @@ test.describe('keyboard and announcements', () => {
 })
 
 /**
+ * The URL is the state of the controls, so a view can be linked to rather than described.
+ */
+test.describe('deep links', () => {
+  const open = async (page: Page, query: string) => {
+    await page.goto(`/experiments/01-css-grid/${query}`)
+    await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
+    await page.waitForSelector('.card, .cookmode')
+  }
+
+  test('opens the recipe and the presentation named in the link', async ({ page }) => {
+    await open(page, '?recipe=bbq-pulled-chicken&view=cook')
+    await expect(page.locator('#recipe')).toHaveValue('recipes/bbq-pulled-chicken')
+    await expect(page.locator('.cookmode')).toBeVisible()
+  })
+
+  // The picker's values carry a directory because fixtures share the namespace; a link is
+  // something a person reads.
+  test('takes the bare slug or the full path', async ({ page }) => {
+    await open(page, '?recipe=recipes/bbq-pulled-chicken')
+    await expect(page.locator('#recipe')).toHaveValue('recipes/bbq-pulled-chicken')
+
+    await open(page, '?recipe=degenerate')
+    await expect(page.locator('#recipe')).toHaveValue('fixtures/valid/degenerate')
+  })
+
+  /**
+   * A link that quietly opens the wrong recipe is worse than one that says it could not find it.
+   *
+   * The first version of this reported the problem through `say()`, which closes over a `let`
+   * declared further down the module — so the one path that only runs on a mistyped URL threw a
+   * temporal-dead-zone error and took the whole page down with it.
+   */
+  test('says so when the link names something that does not exist', async ({ page }) => {
+    await open(page, '?recipe=beef-wellington&view=cook')
+
+    await expect(page.locator('#say-polite')).toContainText('beef-wellington')
+    await expect(page.locator('.failure')).toHaveCount(0)
+    // Falls back for the part it could not resolve, and honours the part it could.
+    await expect(page.locator('#recipe')).toHaveValue('recipes/espresso-brownies')
+    await expect(page.locator('#view')).toHaveValue('cook')
+  })
+
+  test('writes the controls back to the URL, defaults omitted', async ({ page }) => {
+    await open(page, '')
+    // A pristine page has a clean URL.
+    expect(new URL(page.url()).search).toBe('')
+
+    await page.selectOption('#recipe', 'recipes/bbq-pulled-chicken')
+    await page.selectOption('#view', 'narrative')
+    const params = new URL(page.url()).searchParams
+    expect(params.get('recipe')).toBe('bbq-pulled-chicken')
+    expect(params.get('view')).toBe('narrative')
+    // Untouched controls stay out of it.
+    expect(params.get('columns')).toBeNull()
+
+    await page.selectOption('#view', 'chart')
+    expect(new URL(page.url()).searchParams.get('view')).toBeNull()
+  })
+
+  /**
+   * Theme is seeded from the viewer's OS preference, so linking it would make every shared URL
+   * impose the sender's setting on the recipient.
+   */
+  test('does not carry the theme', async ({ page }) => {
+    await open(page, '')
+    await page.selectOption('#theme', 'dark')
+    expect(new URL(page.url()).searchParams.get('theme')).toBeNull()
+  })
+
+  // Changing a dropdown is not a navigation; Back should still leave the page.
+  test('does not fill the back button with control changes', async ({ page }) => {
+    await page.goto('/experiments/01-css-grid/')
+    await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
+    const before = await page.evaluate(() => history.length)
+    await page.selectOption('#view', 'ingredients')
+    await page.selectOption('#view', 'narrative')
+    expect(await page.evaluate(() => history.length)).toBe(before)
+  })
+})
+
+/**
  * Not a screenshot: R7 is behaviour, and a picture of a checked box proves nothing about whether
  * the fill propagated to the right regions.
  */

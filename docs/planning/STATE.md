@@ -20,6 +20,7 @@
 pnpm install
 pnpm check                # typecheck, lint, boundaries, format, 465 tests
 pnpm serve                # then open http://localhost:8731/experiments/01-css-grid/
+                          # running it twice is fine — it prints the URL and exits
 pnpm test:visual          # 84 browser tests + committed screenshot baselines
 pnpm test:print           # renders the corpus to PDF and checks it survives paper
 node scripts/check-recipe.mjs <file.json>
@@ -157,6 +158,12 @@ because screenshot baselines are font-rendering dependent and a macOS baseline f
 runner for reasons unrelated to the code. Playwright suffixes them by platform, so a Linux CI job
 would generate its own set rather than fight over these. Regenerate with `--update-snapshots`
 only when a change is *meant* to alter the rendering, and review the diff.
+
+**The controls are in the URL.** `?recipe=bbq-pulled-chicken&view=cook` opens straight into cook
+mode on that recipe, and the address bar tracks whatever you change, so a view can be linked to
+rather than described. Only non-default values are written, the recipe takes a bare slug, and
+`theme` is deliberately excluded — it is seeded from the viewer's OS preference, and a shared link
+should not impose the sender's.
 
 **Serve with `pnpm serve`,** not `python -m http.server`. The tracks have no build step and
 nothing fingerprints filenames, so a plain server hands the browser a cached module or stylesheet

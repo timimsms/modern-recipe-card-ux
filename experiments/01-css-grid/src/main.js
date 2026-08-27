@@ -541,8 +541,81 @@ theme.addEventListener('change', (e) => {
 theme.value = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 document.documentElement.setAttribute('data-theme', theme.value)
 
-picker.value = 'recipes/espresso-brownies'
-await refresh()
+// --- Deep links ---------------------------------------------------------------------------------
+
+/**
+ * The URL is the state of the controls, so a view can be linked to rather than described.
+ *
+ * `?recipe=bbq-pulled-chicken&view=cook` is the useful case: "look at this" in a message, or a
+ * bug report that opens on the thing that was wrong. Before this the only way to share a view was
+ * a sentence telling someone which six dropdowns to set.
+ *
+ * Only *non-default* values are written, so the common link stays short and a pristine page has a
+ * clean URL. `theme` is excluded deliberately: it is seeded from the viewer's OS preference, so
+ * putting it in the link would make every shared URL override the recipient's setting with the
+ * sender's.
+ */
+const LINKED = [
+  ['recipe', picker],
+  ['view', view],
+  ['columns', strategy],
+  ['reuse', reuse],
+  ['scale', scaleControl],
+  ['units', units],
+  ['marks', markRule],
+  ['shading', ramp],
+]
+
+const defaults = new Map(LINKED.map(([name, control]) => [name, control.value]))
+
+/**
+ * Accepts `bbq-pulled-chicken` as well as `recipes/bbq-pulled-chicken`.
+ *
+ * The picker's values carry a directory because fixtures and recipes share the namespace, but
+ * nobody wants to type that, and a link is something a person reads.
+ */
+function resolveRecipe(value) {
+  const options = [...picker.options].map((o) => o.value)
+  return options.find((o) => o === value || o.endsWith(`/${value}`))
+}
+
+function applyLink() {
+  const params = new URLSearchParams(window.location.search)
+  for (const [name, control] of LINKED) {
+    const given = params.get(name)
+    if (given === null) continue
+
+    const value = name === 'recipe' ? resolveRecipe(given) : given
+    const known = value !== undefined && [...control.options].some((o) => o.value === value)
+    if (known) {
+      control.value = value
+      continue
+    }
+    // Never silently ignore what someone asked for. A link that quietly opens the wrong recipe is
+    // worse than one that says it could not find it.
+    console.warn(`[deep link] ${name}="${given}" is not one of the options; using the default.`)
+    say(`Link asked for ${name} "${given}", which does not exist. Showing the default instead.`)
+  }
+  // The number box mirrors the preset menu, and the link only carries the menu.
+  if (params.has('scale')) syncScaleControls()
+}
+
+/**
+ * `replaceState`, not `pushState`: changing a dropdown is not a navigation, and filling the back
+ * button with every control fiddle would make Back useless for leaving the page.
+ */
+function updateLink() {
+  const params = new URLSearchParams()
+  for (const [name, control] of LINKED) {
+    if (control.value === defaults.get(name)) continue
+    params.set(name, name === 'recipe' ? control.value.split('/').pop() : control.value)
+  }
+  const query = params.toString()
+  window.history.replaceState(null, '', query ? `?${query}` : window.location.pathname)
+}
+
+for (const [, control] of LINKED) control.addEventListener('change', updateLink)
+scaleAny.addEventListener('change', updateLink)
 
 /**
  * PHASE-05 asks whether finishing a step should tick the ingredients it consumed, and says to
@@ -855,3 +928,19 @@ function renderTableSubstrate(recipe, options) {
     .join('')
   return `<article class="card"><div class="t-wrap">${sections}</div></article>`
 }
+
+// --- Bootstrap ----------------------------------------------------------------------------------
+
+/**
+ * Last, and that matters.
+ *
+ * This block sat in the middle of the module, which worked until `applyLink` needed to *report* a
+ * bad link: `say` is a hoisted function but the `lastSaid` it closes over is a `let` declared
+ * further down, so calling it early threw a temporal-dead-zone ReferenceError and took the whole
+ * page with it. The path that only runs when someone mistypes a URL is the path least likely to
+ * be exercised before it ships.
+ */
+picker.value = 'recipes/espresso-brownies'
+applyLink()
+await refresh()
+updateLink()
