@@ -6,9 +6,20 @@
  * the page.
  */
 
-import { layout, normalizeRecipe } from '../../../packages/core/dist/index.js'
+import { createStore, layout, normalizeRecipe } from '../../../packages/core/dist/index.js'
 import { layoutDendrogram } from './geometry.js'
 import { renderDendrogram } from './render.js'
+import { cookPath, renderCookMode } from './cookmode.js'
+
+/**
+ * The store adapter, in full: one subscription that redraws.
+ *
+ * With no framework there is no reactivity to adapt *to* — the whole binding is "when it changes,
+ * draw again". That is the shortest adapter of the four and the least clever, and it is worth
+ * recording as such: the framework tracks each spend four to six lines teaching their reactivity
+ * system about an external store, and this one spends one.
+ */
+const store = createStore()
 
 const RECIPES = [
   'espresso-brownies',
@@ -33,6 +44,7 @@ const FIXTURES = [
 
 const root = document.getElementById('cards')
 const picker = document.getElementById('recipe')
+const view = document.getElementById('view')
 
 for (const group of [
   { label: 'recipes', items: RECIPES, dir: 'recipes' },
@@ -72,6 +84,8 @@ function measure(text, font) {
 
 let current = null
 let firstRenderDone = false
+let at = 0
+let slug = 'recipes/espresso-brownies'
 
 const escapeText = (s) =>
   String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c])
@@ -85,16 +99,27 @@ async function show() {
   const recipe = normalizeRecipe(await response.json())
   recipe.plans = recipe.components.map((c) => layout(c))
   current = recipe
+  at = 0
+  store.reset()
   draw(path)
 }
 
-function draw(slug) {
+function draw(which = slug) {
+  slug = which
   const recipe = current
   if (!recipe) return
 
   // The harness reads these back by name — see packages/harness/src/protocol.ts. Plain marks
   // rather than an import, because a track that imports the harness is measuring itself.
   performance.mark('recipe:render:start')
+
+  if (view.value === 'cook') {
+    root.innerHTML = renderCookMode(recipe, { at, scale: 1, state: store.get(), measure })
+    root.dataset.recipe = slug
+    document.title = `${recipe.title} — track 03`
+    finishRender()
+    return
+  }
 
   const sections = recipe.components
     .map((component, i) => {
@@ -117,7 +142,10 @@ function draw(slug) {
 
   root.dataset.recipe = slug
   document.title = `${recipe.title} — track 03`
+  finishRender()
+}
 
+function finishRender() {
   performance.mark('recipe:render:end')
   performance.measure(
     firstRenderDone ? 'recipe:render' : 'recipe:first-render',
@@ -126,6 +154,36 @@ function draw(slug) {
   )
   firstRenderDone = true
 }
+
+// The whole store binding.
+store.subscribe(() => draw())
+
+root.addEventListener('click', (event) => {
+  const target = event.target
+  if (!(target instanceof Element) || !current) return
+
+  const done = target.closest('[data-done]')
+  if (done) {
+    store.toggleStep(done.dataset.key)
+    return
+  }
+  if (target.closest('[data-back]')) {
+    at = Math.max(0, at - 1)
+    draw()
+    return
+  }
+  if (target.closest('[data-next]')) {
+    const steps = cookPath(current)
+    const here = steps[Math.min(at, steps.length - 1)]
+    const key = `${current.components[here.componentIndex].id}/${here.stepId}`
+    // Moving on *is* finishing: otherwise the map never fills as you cook.
+    if (!store.get().completedSteps.has(key)) store.toggleStep(key)
+    at = Math.min(steps.length - 1, at + 1)
+    draw()
+  }
+})
+
+view.addEventListener('change', () => draw())
 
 // A blank page with a silent console is the worst failure mode for something meant to be looked
 // at, so say what broke, on the page.

@@ -81,14 +81,14 @@ export const TRACKS: readonly TrackManifest[] = [
     stack: 'React, Tailwind, shadcn/ui, Radix, Vite',
     entry: '/experiments/02-react-shadcn/dist/',
     build: 'vite build',
-    features: ['chart', 'check-off', 'scaling'],
+    features: ['chart', 'cook', 'check-off', 'scaling'],
   },
   {
     id: '03-svg',
     name: 'SVG dendrogram',
     stack: 'no framework, no bundler',
     entry: '/experiments/03-svg/',
-    features: ['chart'],
+    features: ['chart', 'cook'],
   },
   /**
    * Two entries from one directory. Phase 08 compares the frameworks, not the folder, and the
@@ -101,7 +101,7 @@ export const TRACKS: readonly TrackManifest[] = [
     stack: 'Svelte 5 runes, Vite',
     entry: '/experiments/04-alt-frameworks/dist/svelte.html',
     build: 'vite build',
-    features: ['chart', 'check-off', 'scaling'],
+    features: ['chart', 'cook', 'check-off', 'scaling'],
   },
   {
     id: '04-solid',
@@ -109,7 +109,7 @@ export const TRACKS: readonly TrackManifest[] = [
     stack: 'Solid 1.9 signals, Vite',
     entry: '/experiments/04-alt-frameworks/dist/solid.html',
     build: 'vite build',
-    features: ['chart', 'check-off', 'scaling'],
+    features: ['chart', 'cook', 'check-off', 'scaling'],
   },
 ]
 

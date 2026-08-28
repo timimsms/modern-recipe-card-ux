@@ -136,3 +136,144 @@ body {
   font-size: var(--type-label-size);
   white-space: pre-wrap;
 }
+
+/* ---------- cook mode ---------- */
+
+.cm-head {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--hairline);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  color: var(--ink-faint);
+}
+.cm-progress {
+  margin-inline-start: auto;
+}
+.cm-body {
+  padding: 1.1rem 1rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.cm-text {
+  margin: 0;
+  font-size: 1.35rem;
+}
+.cm-mark {
+  width: fit-content;
+  border: 1px solid var(--clay);
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  color: var(--clay);
+}
+.inputs {
+  margin: 0;
+  padding: 0.8rem 0 0;
+  list-style: none;
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.qty {
+  font-family: var(--font-mono);
+  margin-inline-end: 0.35em;
+}
+.from-step {
+  color: var(--rule);
+  font-style: italic;
+  text-decoration: underline;
+}
+.ending {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.6rem 1rem;
+  border-top: 1px solid var(--hairline);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+}
+.ending.part {
+  background: var(--fill-depth-4);
+  color: var(--ink-soft);
+}
+.ending.all {
+  background: var(--fill-depth-3);
+  color: var(--rule-heavy);
+}
+.seal {
+  display: inline-block;
+  inline-size: 0.72em;
+  block-size: 0.72em;
+  border: 1.5px solid currentColor;
+  border-radius: 1px;
+}
+.seal-part {
+  background: linear-gradient(to right, currentColor 0 50%, transparent 50%);
+}
+.seal-all {
+  background: currentColor;
+}
+.cm-map {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1rem;
+  border-top: 1px solid var(--hairline);
+}
+.cm-part {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+}
+
+/* The map is the chart, smaller. At this size type is grey mush, so it is hidden rather than
+   skipped — skipping it would change the layout and the map would stop matching the chart. */
+.minimap text {
+  display: none;
+}
+.minimap .mm-done rect {
+  fill: var(--rule);
+}
+.minimap .mm-now rect {
+  fill: var(--clay);
+  stroke: var(--clay);
+}
+.minimap .mm-todo rect {
+  fill: var(--fill-depth-3);
+}
+.minimap .leaf rect {
+  fill: var(--hairline);
+  stroke: none;
+}
+
+.cm-nav {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--hairline);
+}
+.cm-nav button {
+  min-block-size: 48px;
+  font: inherit;
+  background: var(--surface);
+  border: 0;
+  border-inline-end: 1px solid var(--hairline);
+  cursor: pointer;
+}
+.cm-nav button:last-child {
+  border-inline-end: 0;
+}
+.cm-nav button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.cm-nav .cm-done {
+  background: var(--fill-depth-4);
+}

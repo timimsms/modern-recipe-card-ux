@@ -6,8 +6,8 @@
 
 ## Where it is
 
-Wall chart only. Renders all nine corpus recipes and all six valid stress fixtures. No cook mode,
-no check-off, scaling, timers, or export yet.
+Wall chart and cook mode, over all nine corpus recipes and all six valid stress fixtures. No
+check-off, scaling, timers, or export yet.
 
 **Core changes requested so far: none.** The `GridPlan` turned out to carry everything this track
 needs for placement — `rowOrder`, per-cell `col` and `depth`, and the inputs on each step. That
@@ -66,6 +66,33 @@ label in every recipe and compares `getBBox()` against its rectangle.
   wide. Track 01 answers this with the Phase 04 ladder; this track has nothing yet, and "zoom out"
   is not the same answer as "make it readable at 390px".
 - **Print.** Untested.
+
+## Cook mode: the mini-map is free here
+
+The other three tracks each build a *second* renderer for the thumbnail — a grid of coloured
+blocks, separate code, separate bugs. This track re-runs `layoutDendrogram` and hands the result
+to the same `renderDendrogram`, with a `viewBox` doing the scaling and CSS hiding the text. The
+map costs a width attribute and one class per node.
+
+That is the one place so far where this substrate *removes* work rather than adding it, and the
+phase doc called it: "Canvas variant for the mini-map specifically… likely SVG's clearest win."
+It did not need canvas to get there.
+
+Text is hidden rather than skipped, deliberately. Laying out again without it would move the
+nodes, and a map whose shape disagreed with the chart it is a map *of* would be worse than no map.
+
+The honest limitation: a dendrogram spreads horizontally, so the thumbnail is wide and short where
+the grid tracks' maps are compact. Position is still legible, but it uses more width to say the
+same thing.
+
+## The store adapter
+
+One line: `store.subscribe(() => draw())`.
+
+With no framework there is no reactivity to adapt *to*. Worth putting beside the others rather
+than treating as a non-result — React, Svelte and Solid each spend four to six lines teaching
+their reactivity system about an external store, and the gap is the price of having one at all,
+paid on the smallest possible surface.
 
 ## The thing it owns
 

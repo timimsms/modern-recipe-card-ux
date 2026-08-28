@@ -4,16 +4,27 @@
 
 ## Where it is
 
-Wall chart, check-off and serving-size scaling, over all nine recipes and all six valid fixtures.
-No cook mode, condensed chart, timers, units toggle, or keyboard navigation yet.
+Wall chart, cook mode, check-off and serving-size scaling, over all nine recipes and all six valid
+fixtures. No condensed chart, timers, units toggle, or keyboard navigation yet.
 
-**No shadcn/ui or Radix component is used yet, and that is a finding rather than an omission.** A
-wall chart is a grid of divs and labels. Nothing in it is a dialog, a sheet, a toggle group, a
-slider or a toast — which are exactly the primitives the phase doc lists shadcn for. The component
-library has had no opportunity to help, because the hardest thing this track has rendered so far
-is a `<label>` wrapping a checkbox. That answers the doc's "where does the component library stop
-helping?" from an unexpected direction: it has not started yet, and the chart is most of the
-design.
+The store adapter is `useSyncExternalStore(store.subscribe, store.get)` — two lines, against
+PHASE-05's "handful". It works only because the core store hands out a fresh object on every
+change and the same one otherwise; a getter that allocated would loop forever here. Three
+adapters now rest on that guarantee.
+
+**One Radix primitive is now used, and where it stops helping is the finding.**
+
+The view switcher is a `ToggleGroup` — roving tabindex, roles and keyboard behaviour for free, and
+exactly the sort of thing the library exists for. The chart and the mini-map use nothing, because
+there is no dependency-graph primitive and never will be. So the answer to the doc's question is
+shaped like this: **Radix covers the shell, not the content.** In an ordinary CRUD screen the
+shell is most of the app; here it is the controls, and the part carrying the format's meaning is
+hand-built either way.
+
+Written before cook mode existed, and still true of the wall chart on its own: a wall chart is a
+grid of divs and labels, and nothing in it is a dialog, a sheet, a toggle group, a slider or a
+toast — which are exactly the primitives the phase doc lists shadcn for. Cook mode added a
+switcher and therefore a use; it did not add a use for the parts that matter.
 
 ## The number
 
@@ -87,9 +98,9 @@ and a real cost of the no-sharing constraint rather than an argument against it.
 
 ## Still unknown
 
-- Cook mode, and with it the first genuine use for Radix. The doc's real question — do Radix
-  primitives cover a 2D dependency grid — cannot be answered until something needs a dialog.
 - Accessibility: unaudited. The chart is plain semantic HTML, so it should start from roughly
-  where track 01 does, but nothing has been checked.
+  where track 01 does, but nothing has been checked. The Radix switcher is the one part that
+  arrives with its keyboard behaviour already correct.
+- Condensed chart, timers, units toggle, keyboard navigation of the chart: not built.
 - Update cost on a scale change is instrumented (`recipe:render` around `setScale`) but not yet
   measured against anything.

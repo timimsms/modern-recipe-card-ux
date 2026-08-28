@@ -111,3 +111,62 @@ test('emits the harness marks by name', async ({ page }) => {
   )
   expect(measures).toContain('recipe:first-render')
 })
+
+/**
+ * Cook mode, and this track's one clear win.
+ *
+ * The mini-map is the *same drawing* at a tenth of the size — `viewBox` does the scaling, so it
+ * costs a width attribute and a class per node. Every other track builds a second thumbnail
+ * renderer. PHASE-07 guessed the mini-map would be where SVG pays off and that looks right.
+ */
+test.describe('cook mode', () => {
+  const enter = async (page: Page, slug: string) => {
+    await page.goto('/experiments/03-svg/')
+    await page.waitForFunction(() => document.querySelectorAll('#recipe option').length > 0)
+    await page.selectOption('#recipe', slug)
+    await page.waitForSelector(`#cards[data-recipe="${slug}"]`)
+    await page.selectOption('#view', 'cook')
+    await page.waitForSelector('[data-step-text]')
+    await page.evaluate(() => document.fonts.ready)
+  }
+
+  test('walks the recipe and counts across components', async ({ page }) => {
+    await enter(page, 'recipes/shepherds-pie')
+    await expect(page.locator('[data-count]')).toHaveText('1 of 15')
+    for (let i = 0; i < 10; i++) await page.click('[data-next]')
+    await expect(page.locator('[data-count]')).toHaveText('11 of 15')
+    await expect(page.locator('.from-step').first()).toContainText('the seasoned filling')
+    await expect(page.locator('[data-progress]')).toHaveText('58% of the time')
+  })
+
+  test('the mini-map is the chart, scaled', async ({ page }) => {
+    await enter(page, 'recipes/shepherds-pie')
+    const map = page.locator('svg.minimap')
+    await expect(map).toBeVisible()
+
+    // The map draws the component the cook is *in*, so it starts on the mashed potatoes' three
+    // steps and becomes the pie's twelve on crossing over — which is the reset PHASE-06's part
+    // seal exists to explain.
+    await expect(map.locator('.step')).toHaveCount(3)
+    await expect(map.locator('.mm-now')).toHaveCount(1)
+
+    for (let i = 0; i < 10; i++) await page.click('[data-next]')
+    await expect(map.locator('.step')).toHaveCount(12)
+    await expect(map.locator('.mm-now')).toHaveCount(1)
+    expect(await map.locator('.mm-done').count()).toBeGreaterThan(5)
+  })
+
+  test('names the end of a part', async ({ page }) => {
+    await enter(page, 'recipes/shepherds-pie')
+    for (let i = 0; i < 2; i++) await page.click('[data-next]')
+    await page.click('[data-done]')
+    await expect(page.locator('[data-ending="part"]')).toContainText('Mashed potatoes done')
+  })
+
+  test('screenshot', async ({ page }) => {
+    await enter(page, 'recipes/shepherds-pie')
+    for (let i = 0; i < 10; i++) await page.click('[data-next]')
+    await page.addStyleTag({ content: HIDE_CONTROLS })
+    await expect(page.locator('[data-card]')).toHaveScreenshot('cookmode-shepherds-pie.png')
+  })
+})

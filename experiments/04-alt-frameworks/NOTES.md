@@ -4,8 +4,23 @@
 
 ## Where it is
 
-Two apps, one design: wall chart, check-off and serving-size scaling, over all nine recipes and
-all six valid fixtures. Same shared stylesheet, same `shared.js`, same Vite config — so what
+Two apps, one design: wall chart, cook mode, check-off and serving-size scaling, over all nine
+recipes and all six valid fixtures.
+
+The adapters, in full:
+
+```js
+// Svelte
+let snapshot = $state(store.get())
+$effect.root(() => store.subscribe(() => (snapshot = store.get())))
+
+// Solid
+const [snapshot, setSnapshot] = createSignal(store.get(), { equals: false })
+store.subscribe(() => setSnapshot(store.get()))
+```
+
+Four lines each. Solid needs `equals: false` because the store already hands out a new object on
+every change, so the default identity check would be redoing work core has done. Same shared stylesheet, same `shared.js`, same Vite config — so what
 differs between them is the reactivity model and nothing else. That equivalence is tested, not
 assumed (see below).
 
@@ -90,7 +105,7 @@ independent renderers and asked for exactly one change (track 02's `PlacedCell` 
 
 ## Still unknown
 
-- Cook mode, timers, units, keyboard, accessibility: none built.
+- Timers, units, keyboard, accessibility: none built.
 - The update-cost measurement is instrumented (`recipe:render` around a scale change) but not yet
   measured against anything. That comparison is the reason this track exists and it belongs in
   Phase 08 with a throttled profile, not in a single desktop sample here.

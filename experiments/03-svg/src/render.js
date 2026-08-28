@@ -61,6 +61,7 @@ const lines = (box, anchor = 'start') => {
  */
 export function renderDendrogram(component, geometry, options = {}) {
   const { rows, steps, edges, width, height } = geometry
+  const mini = options.minimap
 
   // Edges first so nodes paint over them: an edge arriving at a box should stop at its border,
   // and letting the box cover the last pixel is cheaper than trimming the path.
@@ -84,7 +85,15 @@ export function renderDendrogram(component, geometry, options = {}) {
   const drawnSteps = steps
     .map(
       (node) =>
-        `<g class="step${node.unattended ? ' unattended' : ''}" data-step="${esc(node.id)}" ` +
+        `<g class="step${node.unattended ? ' unattended' : ''}` +
+        (mini
+          ? node.id === mini.current
+            ? ' mm-now'
+            : mini.done.has(node.id)
+              ? ' mm-done'
+              : ' mm-todo'
+          : '') +
+        `" data-step="${esc(node.id)}" ` +
         `data-depth="${node.depth}" role="listitem" ` +
         `aria-label="${esc(component.steps[node.id]?.text ?? node.id)}">` +
         `<rect x="${node.x}" y="${node.y}" width="${node.width}" height="${node.height}" rx="3"/>` +
@@ -105,9 +114,21 @@ export function renderDendrogram(component, geometry, options = {}) {
     `<g class="leaves">${drawnRows}</g>` +
     `<g class="steps" role="list">${drawnSteps}</g>`
 
+  /**
+   * As a mini-map this is the *same drawing*, scaled by `viewBox` alone.
+   *
+   * Every other track builds a second thumbnail renderer that draws coloured blocks. An SVG
+   * already knows how to be any size, so here the map costs a width attribute and a class per
+   * node — which is the one place in this track where the substrate removes work rather than
+   * adding it. Text is hidden by CSS rather than skipped, because re-laying out without it would
+   * move the nodes and the map would stop matching the chart.
+   */
+  const drawnWidth = mini ? mini.width : width
+  const drawnHeight = mini ? Math.round((height / width) * mini.width) : height
   const openTag =
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" ` +
-    `width="${width}" height="${height}" class="dendrogram" role="img" ` +
+    `width="${drawnWidth}" height="${drawnHeight}" ` +
+    `class="dendrogram${mini ? ' minimap' : ''}" role="img" ` +
     `aria-label="${esc(title)}">`
 
   // A standalone file carries its own styles, because an exported SVG that depends on the page's
