@@ -32,7 +32,10 @@ export type TrackFeature =
   | 'export'
 
 export type TrackManifest = {
-  /** Directory name under `experiments/`, and the value of `<html data-track>`. */
+  /**
+   * The value of `<html data-track>`. Usually the directory under `experiments/`, but track 04
+   * ships two variants from one directory and they are compared separately.
+   */
   id: string
   name: string
   /** How it is built, in a phrase. Part of what Phase 08 reports. */
@@ -87,13 +90,26 @@ export const TRACKS: readonly TrackManifest[] = [
     entry: '/experiments/03-svg/',
     features: ['chart'],
   },
+  /**
+   * Two entries from one directory. Phase 08 compares the frameworks, not the folder, and the
+   * whole point of the track is that everything except the reactivity model is shared — so they
+   * are listed separately and `id` is the variant rather than the directory.
+   */
   {
-    id: '04-alt-frameworks',
-    name: 'Svelte / Solid',
-    stack: 'Svelte, Solid, Vite',
-    entry: '/experiments/04-alt-frameworks/dist/',
+    id: '04-svelte',
+    name: 'Svelte 5',
+    stack: 'Svelte 5 runes, Vite',
+    entry: '/experiments/04-alt-frameworks/dist/svelte.html',
     build: 'vite build',
-    features: [],
+    features: ['chart', 'check-off', 'scaling'],
+  },
+  {
+    id: '04-solid',
+    name: 'Solid',
+    stack: 'Solid 1.9 signals, Vite',
+    entry: '/experiments/04-alt-frameworks/dist/solid.html',
+    build: 'vite build',
+    features: ['chart', 'check-off', 'scaling'],
   },
 ]
 

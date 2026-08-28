@@ -20,7 +20,7 @@
     "test:print": "node scripts/print-check.mjs",
     "boundaries": "depcruise packages experiments --config .dependency-cruiser.cjs",
     "check": "pnpm typecheck && pnpm lint && pnpm boundaries && pnpm format:check && pnpm test",
-    "build:tracks": "pnpm --filter @experiment/react-shadcn build"
+    "build:tracks": "pnpm --filter @experiment/react-shadcn build && pnpm --filter @experiment/alt-frameworks build"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

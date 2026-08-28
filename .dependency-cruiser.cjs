@@ -65,6 +65,9 @@ module.exports = {
           '^packages/[^/]+/src/index\\.ts$',
           '^experiments/[^/]+/src/main\\.(js|tsx)$',
           '\\.d\\.ts$',
+          // Tooling config is read by the tool, not imported by the app. `svelte.config.js` is
+          // the first of these in the repo; flagging it teaches nothing.
+          '\\.config\\.(js|ts|cjs|mjs)$',
         ],
       },
       to: {},
