@@ -78,7 +78,7 @@ export const TRACKS: readonly TrackManifest[] = [
     stack: 'React, Tailwind, shadcn/ui, Radix, Vite',
     entry: '/experiments/02-react-shadcn/dist/',
     build: 'vite build',
-    features: [],
+    features: ['chart', 'check-off', 'scaling'],
   },
   {
     id: '03-svg',

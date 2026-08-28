@@ -5,11 +5,23 @@
   "type": "module",
   "description": "React + Tailwind + shadcn/ui + Radix primitives, over the identical GridPlan.",
   "scripts": {
-    "build": "node -e \"process.stdout.write('02-react-shadcn: not scaffolded until Phase 07\\n')\""
+    "build": "vite build",
+    "dev": "vite",
+    "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@recipe/core": "workspace:*",
     "@recipe/corpus": "workspace:*",
-    "@recipe/tokens": "workspace:*"
+    "@recipe/tokens": "workspace:*",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "@vitejs/plugin-react": "^6.1.0",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.2.2"
   }
 }

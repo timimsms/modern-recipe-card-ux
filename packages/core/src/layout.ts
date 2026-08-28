@@ -59,9 +59,17 @@ export type Edges = { top: Edge; right: Edge; bottom: Edge; left: Edge }
 /** Where step text sits in its region. `bottom-right` implements jenelope1st's fix (R2). */
 export type Anchor = 'center' | 'bottom-right' | 'top-left'
 
-export type PlacedCell = {
-  kind: 'ingredient' | 'step' | 'filler'
-  ref?: IngredientId | StepId
+/**
+ * Where one thing sits on the grid. Split by `kind` so `ref` is present exactly when it means
+ * something.
+ *
+ * It used to be one shape with an optional `ref`, which every JavaScript track quietly relied on
+ * and TypeScript would not accept: track 02 could not index `component.steps[cell.ref]` without a
+ * cast, because a filler cell genuinely has no ref. Making it a discriminated union states what
+ * was already true — filler has no reference, ingredient and step always do — and is the first
+ * core change Phase 07 asked for. Requested by track 02; every track gets it.
+ */
+type Placed = {
   /** 0-based. Column 0 is always the ingredient column. */
   col: number
   row: number
@@ -74,18 +82,29 @@ export type PlacedCell = {
   depth: number
   edges: Edges
   anchor?: Anchor
-  /**
-   * Filler only. True when the run is wide enough that the eye needs something to follow across
-   * it — the Q1 repair. The plan says *where*; the renderer decides what a leader looks like.
-   */
-  leader?: boolean
-  /**
-   * Ingredient rows only, and only under `duplicate-leaf`: this row repeats a leaf already shown
-   * above. The renderer **must** tie such rows together and make the division explicit — two rows
-   * that both read "4 oz butter" is the safety hazard that stops this being the default strategy.
-   */
-  duplicate?: boolean
 }
+
+export type PlacedCell =
+  | (Placed & {
+      kind: 'ingredient'
+      ref: IngredientId
+      /**
+       * Only under `duplicate-leaf`: this row repeats a leaf already shown above. The renderer
+       * **must** tie such rows together and make the division explicit — two rows that merely
+       * look alike are a lie about the shopping list.
+       */
+      duplicate?: boolean
+    })
+  | (Placed & { kind: 'step'; ref: StepId })
+  | (Placed & {
+      kind: 'filler'
+      ref?: undefined
+      /**
+       * True when the run is wide enough that the eye needs something to follow across it — the
+       * Q1 repair. The plan says *where*; the renderer decides what a leader looks like.
+       */
+      leader?: boolean
+    })
 
 export type PlacedPrelude = {
   ref: PreludeId

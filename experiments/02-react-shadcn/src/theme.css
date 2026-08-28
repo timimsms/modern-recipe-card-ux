@@ -1,0 +1,49 @@
+@import 'tailwindcss';
+
+/**
+ * The tokens bridge — the thing PHASE-07 says is "itself part of what's being evaluated".
+ *
+ * `packages/tokens/tokens.css` is the source of truth for every track. It declares `--ink`,
+ * `--rule` and the rest under `:root`, `[data-theme]` and a `prefers-color-scheme` block, so the
+ * values already change with the theme.
+ *
+ * Tailwind v4's `@theme` turns a variable into a utility class, so mapping is one line per token
+ * and the values stay *references* rather than copies. `text-ink` compiles to
+ * `color: var(--color-ink)`, which resolves to `var(--ink)`, which the theme switches. Nothing is
+ * duplicated, and a token change in `packages/tokens` reaches this track without anyone editing
+ * it.
+ *
+ * On Tailwind v3 this would have been a `tailwind.config.js` mapping to `var(--ink)` — the same
+ * idea with more ceremony. The v4 version is genuinely clean, which is the finding.
+ */
+@import '../../../packages/tokens/tokens.css';
+
+@theme {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-rule: var(--rule);
+  --color-rule-heavy: var(--rule-heavy);
+  --color-rule-faint: var(--rule-faint);
+  --color-clay: var(--clay);
+  --color-clay-soft: var(--clay-soft);
+  --color-hairline: var(--hairline);
+
+  --color-depth-0: var(--fill-depth-0);
+  --color-depth-1: var(--fill-depth-1);
+  --color-depth-2: var(--fill-depth-2);
+  --color-depth-3: var(--fill-depth-3);
+  --color-depth-4: var(--fill-depth-4);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+
+  --text-card-title: var(--type-card-title-size);
+  --text-component-title: var(--type-component-title-size);
+  --text-step: var(--type-step-size);
+  --text-ingredient: var(--type-ingredient-size);
+  --text-label: var(--type-label-size);
+}

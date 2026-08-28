@@ -386,7 +386,7 @@ describe('leaf reuse', () => {
     expect(plan.connections).toHaveLength(1)
     expect(plan.connections[0]).toMatchObject({ kind: reuse, leaf: 'butter', to: 'topping' })
     expect(plan.connections[0]?.note).toContain('half now')
-    expect(plan.cells.some((c) => c.duplicate)).toBe(false)
+    expect(plan.cells.some((c) => c.kind === 'ingredient' && c.duplicate)).toBe(false)
   })
 
   it('duplicate-leaf adds a row and flags it, rather than colliding with the first', () => {
@@ -400,7 +400,7 @@ describe('leaf reuse', () => {
     const cream = plan.cells.find((c) => c.ref === 'cream')!
     expect({ row: cream.row, rowSpan: cream.rowSpan }).toEqual({ row: 0, rowSpan: 2 })
 
-    const duplicates = plan.cells.filter((c) => c.duplicate)
+    const duplicates = plan.cells.filter((c) => c.kind === 'ingredient' && c.duplicate)
     expect(duplicates).toHaveLength(1)
     expect(duplicates[0]).toMatchObject({ ref: 'butter', row: 3 })
   })

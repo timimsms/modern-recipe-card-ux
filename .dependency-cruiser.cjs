@@ -63,7 +63,7 @@ module.exports = {
         orphan: true,
         pathNot: [
           '^packages/[^/]+/src/index\\.ts$',
-          '^experiments/[^/]+/src/main\\.js$',
+          '^experiments/[^/]+/src/main\\.(js|tsx)$',
           '\\.d\\.ts$',
         ],
       },
@@ -79,7 +79,10 @@ module.exports = {
     enhancedResolveOptions: {
       exportsFields: ['exports'],
       conditionNames: ['import', 'require', 'node', 'default', 'types'],
-      extensions: ['.js', '.mjs', '.ts', '.mts'],
+      // `.tsx` since track 02. Without it an extensionless `./Chart` import resolves to nothing
+      // and the component is reported as an orphan — a warning that would have been easy to
+      // dismiss as noise while actually meaning "the boundary rules cannot see this file".
+      extensions: ['.js', '.mjs', '.ts', '.mts', '.tsx', '.jsx'],
     },
     reporterOptions: {
       text: { highlightFocused: true },
