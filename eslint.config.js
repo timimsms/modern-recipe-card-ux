@@ -60,6 +60,12 @@ export default tseslint.config(
         navigator: 'readonly',
         // Tracks emit harness marks by convention rather than by import; see harness/protocol.ts.
         performance: 'readonly',
+        // Svelte 5 runes are compiler intrinsics, not imports. They only appear in `.svelte`
+        // files and `.svelte.js` modules, which is where the compiler looks for them.
+        $state: 'readonly',
+        $derived: 'readonly',
+        $effect: 'readonly',
+        $props: 'readonly',
         Notification: 'readonly',
         CSS: 'readonly',
       },

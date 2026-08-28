@@ -10,13 +10,27 @@
  */
 
 import {
+  cookSchedule,
+  createStore,
   formatScaled,
   ingredientKey,
   isUnattended,
   layout,
   normalizeRecipe,
   scaleQuantity,
+  stepKey,
+  stepMinutes,
+  stepsOf,
 } from '@recipe/core'
+
+/**
+ * One store, shared by both variants — and it is the *same* store every other track binds.
+ *
+ * PHASE-05 put it in core precisely so the bake-off measures rendering rather than someone's
+ * taste in state management. What differs between Svelte and Solid is only the adapter that makes
+ * it reactive: a handful of lines each, and the thing PHASE-08 counts.
+ */
+export const store = createStore()
 
 export const RECIPES = [
   'espresso-brownies',
@@ -120,3 +134,62 @@ export function markEnd() {
     // A render with no start mark is not one Phase 08 is asking about.
   }
 }
+
+// --- Cook mode -----------------------------------------------------------------------------------
+// Shared by both variants for the same reason everything else here is: the logic must be identical
+// so that any difference between them is the reactivity model.
+
+/** Every step of every component, flattened. Components are sequential; the pie eats the potatoes. */
+export function cookPath(recipe) {
+  return recipe.components.flatMap((component, componentIndex) =>
+    cookSchedule(component).order.map((stepId) => ({ componentIndex, stepId })),
+  )
+}
+
+/**
+ * Completion weighted by time rather than step count — R7. Four of five steps done reads as
+ * "nearly there" and is wrong when the fifth is a three-hour braise.
+ */
+export function progressByTime(recipe, done) {
+  let total = 0
+  let complete = 0
+  for (const component of recipe.components) {
+    for (const step of stepsOf(component)) {
+      const minutes = stepMinutes(step)
+      total += minutes
+      if (done.has(stepKey(component, step.id))) complete += minutes
+    }
+  }
+  return total === 0 ? 0 : complete / total
+}
+
+export function inputParts(input, scale) {
+  if (input.kind === 'step') return { kind: 'step', name: input.name }
+  const leaf = input.leaf
+  return {
+    kind: 'ingredient',
+    quantity: input.quantity ? formatScaled(scaleQuantity(input.quantity, scale)) : '',
+    label: leaf.component ? (leaf.label ?? leaf.component) : leaf.item,
+  }
+}
+
+/** Mini-map cell placement and state, so both variants draw the identical thumbnail. */
+export function miniCells(plan, current, done) {
+  return plan.cells
+    .filter((c) => c.kind !== 'filler')
+    .map((c) => ({
+      key: `${c.kind}-${c.row}-${c.col}`,
+      ref: c.kind === 'step' ? c.ref : undefined,
+      state:
+        c.kind === 'ingredient'
+          ? 'mm-leaf'
+          : c.ref === current
+            ? 'mm-now'
+            : done.has(c.ref)
+              ? 'mm-done'
+              : 'mm-todo',
+      style: `grid-area:${c.row + 1}/${c.col + 1}/${c.row + 1 + c.rowSpan}/${c.col + 1 + c.colSpan}`,
+    }))
+}
+
+export { stepKey }

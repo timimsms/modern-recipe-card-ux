@@ -160,3 +160,139 @@ body {
   font-size: var(--type-label-size);
   white-space: pre-wrap;
 }
+
+/* ---------- cook mode ---------- */
+
+.cm-head {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--hairline);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  color: var(--ink-faint);
+}
+.cm-progress {
+  margin-inline-start: auto;
+}
+.cm-body {
+  padding: 1.1rem 1rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.cm-text {
+  margin: 0;
+  font-size: 1.35rem;
+}
+.cm-mark {
+  width: fit-content;
+  border: 1px solid var(--clay);
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+  color: var(--clay);
+}
+.inputs {
+  margin: 0;
+  padding: 0.8rem 0 0;
+  list-style: none;
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.from-step {
+  color: var(--rule);
+  font-style: italic;
+  text-decoration: underline;
+}
+.ending {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.6rem 1rem;
+  border-top: 1px solid var(--hairline);
+  font-family: var(--font-mono);
+  font-size: var(--type-label-size);
+}
+.ending.part {
+  background: var(--fill-depth-4);
+  color: var(--ink-soft);
+}
+.ending.all {
+  background: var(--fill-depth-3);
+  color: var(--rule-heavy);
+}
+/* Shape as well as fill, so the distinction survives greyscale. */
+.seal {
+  display: inline-block;
+  inline-size: 0.72em;
+  block-size: 0.72em;
+  border: 1.5px solid currentColor;
+  border-radius: 1px;
+}
+.seal-part {
+  background: linear-gradient(to right, currentColor 0 50%, transparent 50%);
+}
+.seal-all {
+  background: currentColor;
+}
+.cm-map {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1rem;
+  border-top: 1px solid var(--hairline);
+}
+.minimap {
+  display: grid;
+  gap: 1px;
+}
+.minimap i {
+  border-radius: 1px;
+}
+.mm-leaf {
+  background: var(--hairline);
+}
+.mm-todo {
+  background: var(--fill-depth-3);
+}
+.mm-done {
+  background: var(--rule);
+}
+.mm-now {
+  background: var(--clay);
+}
+.cm-part {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+}
+.cm-nav {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--hairline);
+}
+.cm-nav button {
+  min-block-size: 48px;
+  font: inherit;
+  background: var(--surface);
+  border: 0;
+  border-inline-end: 1px solid var(--hairline);
+  cursor: pointer;
+}
+.cm-nav button:last-child {
+  border-inline-end: 0;
+}
+.cm-nav button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.cm-nav .cm-done {
+  background: var(--fill-depth-4);
+}

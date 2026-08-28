@@ -108,3 +108,81 @@ test('the two variants render identical geometry', async ({ page }) => {
   const solid = await measure(VARIANTS[1].page)
   expect(solid).toEqual(svelte)
 })
+
+/**
+ * Cook mode, and the point of the whole track: the *same* core store, bound two ways.
+ *
+ * Svelte's adapter is `$state` plus `$effect.root`; Solid's is a signal with `equals: false`.
+ * Both are about four lines, which is what PHASE-05 budgeted and what PHASE-08 counts.
+ */
+for (const variant of VARIANTS) {
+  test.describe(`cook mode — ${variant.id}`, () => {
+    const enter = async (page: Page, slug: string) => {
+      await open(page, variant.page, slug)
+      await page.selectOption('#view', 'cook')
+      await page.waitForSelector('[data-step-text]')
+    }
+
+    test('walks the recipe and counts across components', async ({ page }) => {
+      await enter(page, 'recipes/shepherds-pie')
+      await expect(page.locator('[data-count]')).toHaveText('1 of 15')
+      for (let i = 0; i < 10; i++) await page.click('[data-next]')
+      await expect(page.locator('[data-count]')).toHaveText('11 of 15')
+      // Named prior result, not "the previous step".
+      await expect(page.locator('.from-step').first()).toContainText('the seasoned filling')
+    })
+
+    /** R7 again: 5 of 5 steps and 23% of the time, disagreeing on purpose. */
+    test('progress is time-weighted', async ({ page }) => {
+      await enter(page, 'recipes/espresso-brownies')
+      for (let i = 0; i < 4; i++) await page.click('[data-next]')
+      await expect(page.locator('[data-count]')).toHaveText('5 of 5')
+      await expect(page.locator('[data-progress]')).toHaveText('23% of the time')
+    })
+
+    test('names the end of a part', async ({ page }) => {
+      await enter(page, 'recipes/shepherds-pie')
+      for (let i = 0; i < 2; i++) await page.click('[data-next]')
+      await page.click('[data-done]')
+      await expect(page.locator('[data-ending="part"]')).toContainText('Mashed potatoes done')
+    })
+
+    /** One model, every view — the store is shared, so the chart sees cook mode's work. */
+    test('shares its state with the chart', async ({ page }) => {
+      await open(page, variant.page, 'recipes/espresso-brownies')
+      await page.locator('input[data-ing$="/flour"]').check()
+
+      await page.selectOption('#view', 'cook')
+      await page.click('[data-next]')
+      await expect(page.locator('[data-count]')).toHaveText('2 of 5')
+
+      await page.selectOption('#view', 'chart')
+      await expect(page.locator('input[data-ing$="/flour"]')).toBeChecked()
+
+      await page.selectOption('#view', 'cook')
+      await expect(page.locator('[data-count]')).toHaveText('2 of 5')
+    })
+  })
+}
+
+/** The equivalence premise, extended to cook mode. */
+test('both variants agree in cook mode too', async ({ page }) => {
+  const read = async (entry: string) => {
+    await open(page, entry, 'recipes/shepherds-pie')
+    await page.selectOption('#view', 'cook')
+    await page.waitForSelector('[data-step-text]')
+    for (let i = 0; i < 10; i++) await page.click('[data-next]')
+    return page.evaluate(() => ({
+      count: document.querySelector('[data-count]')?.textContent,
+      step: document.querySelector('[data-step-text]')?.textContent,
+      progress: document.querySelector('[data-progress]')?.textContent,
+      inputs: Array.from(document.querySelectorAll('.inputs li')).map((li) =>
+        (li.textContent ?? '').replace(/\s+/g, ' ').trim(),
+      ),
+      mapCells: document.querySelectorAll('.minimap i').length,
+    }))
+  }
+  const svelte = await read(VARIANTS[0].page)
+  const solid = await read(VARIANTS[1].page)
+  expect(solid).toEqual(svelte)
+})

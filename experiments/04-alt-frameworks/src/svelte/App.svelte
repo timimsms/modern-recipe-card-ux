@@ -1,6 +1,8 @@
 <script>
   import { FIXTURES, RECIPES, SCALES, load, markEnd, markStart } from '../shared.js'
   import Chart from './Chart.svelte'
+  import CookMode from './CookMode.svelte'
+  import { cookState, store } from './store.svelte.js'
 
   /**
    * Svelte 5 runes. `$state` for what changes, `$derived` for what follows from it, `$effect` for
@@ -14,10 +16,11 @@
   let loaded = $state(null)
   let error = $state(null)
   let scale = $state(1)
-  // A new Set on every toggle rather than mutation. Runes track reassignment, and this keeps the
-  // update shape identical to the Solid and React variants so the comparison is about the
-  // framework rather than about who mutated in place.
-  let checked = $state(new Set())
+  let view = $state('chart')
+  let at = $state(0)
+  // Check-off lives in the shared store now — one model, every view, so a step finished in cook
+  // mode is filled in the chart.
+  const checked = $derived(cookState().checkedIngredients)
   let theme = $state(document.documentElement.getAttribute('data-theme') ?? 'light')
 
   $effect(() => {
@@ -29,7 +32,8 @@
         // newer one.
         if (!live) return
         loaded = next
-        checked = new Set()
+        at = 0
+        store.reset()
         error = null
       })
       .catch((cause) => live && (error = cause))
@@ -48,12 +52,7 @@
     markEnd()
   })
 
-  function toggle(key) {
-    const next = new Set(checked)
-    if (next.has(key)) next.delete(key)
-    else next.add(key)
-    checked = next
-  }
+  const toggle = (key) => store.toggleIngredient(key)
 </script>
 
 <main class="page">
@@ -87,6 +86,14 @@
     </label>
 
     <label>
+      view
+      <select id="view" bind:value={view}>
+        <option value="chart">wall chart</option>
+        <option value="cook">cook mode</option>
+      </select>
+    </label>
+
+    <label>
       theme
       <select id="theme" bind:value={theme}>
         <option value="light">light</option>
@@ -98,21 +105,33 @@
   {#if error}
     <pre class="failure">{error.stack ?? error.message}</pre>
   {:else if loaded}
-    <article class="card" data-card>
-      <header class="cardhead">
-        <h2 class="card-title">{loaded.recipe.title}</h2>
-        {#if loaded.recipe.source}<p class="src">{loaded.recipe.source.name}</p>{/if}
-      </header>
+    {#if view === 'cook'}
       <div data-recipe={loaded.slug}>
-        {#each loaded.recipe.components as component, i (component.id)}
-          <section>
-            {#if loaded.recipe.components.length > 1 && component.title}
-              <h3 class="component-title">{component.title}</h3>
-            {/if}
-            <Chart {component} plan={loaded.plans[i]} {scale} {checked} onToggle={toggle} />
-          </section>
-        {/each}
+        <CookMode
+          recipe={loaded.recipe}
+          plans={loaded.plans}
+          {scale}
+          {at}
+          onMove={(i) => (at = i)}
+        />
       </div>
-    </article>
+    {:else}
+      <article class="card" data-card>
+        <header class="cardhead">
+          <h2 class="card-title">{loaded.recipe.title}</h2>
+          {#if loaded.recipe.source}<p class="src">{loaded.recipe.source.name}</p>{/if}
+        </header>
+        <div data-recipe={loaded.slug}>
+          {#each loaded.recipe.components as component, i (component.id)}
+            <section>
+              {#if loaded.recipe.components.length > 1 && component.title}
+                <h3 class="component-title">{component.title}</h3>
+              {/if}
+              <Chart {component} plan={loaded.plans[i]} {scale} {checked} onToggle={toggle} />
+            </section>
+          {/each}
+        </div>
+      </article>
+    {/if}
   {/if}
 </main>

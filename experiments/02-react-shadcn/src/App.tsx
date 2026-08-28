@@ -1,6 +1,9 @@
 import { useEffect, useLayoutEffect, useState } from 'react'
+import * as ToggleGroup from '@radix-ui/react-toggle-group'
 import { layout, normalizeRecipe, type GridPlan, type Recipe } from '@recipe/core'
 import { Chart } from './Chart'
+import { CookMode } from './CookMode'
+import { store, useCookState } from './useStore'
 
 const RECIPES = [
   'espresso-brownies',
@@ -50,7 +53,11 @@ export function App() {
   const [loaded, setLoaded] = useState<Loaded | null>(null)
   const [error, setError] = useState<Error | null>(null)
   const [scale, setScale] = useState(1)
-  const [checked, setChecked] = useState<ReadonlySet<string>>(new Set())
+  const [view, setView] = useState<'chart' | 'cook'>('chart')
+  const [at, setAt] = useState(0)
+  // Check-off lives in the shared store now, not in component state — one model, every view, so a
+  // step finished in cook mode is filled in the chart.
+  const cook = useCookState()
   // Seeded in `main.tsx` from the OS preference, so a control that read "light" on a dark page
   // would be worse than no control.
   const [theme, setTheme] = useState(
@@ -65,24 +72,22 @@ export function App() {
     let live = true
     // The same stale-response guard track 01 needed: a slow fetch must not overwrite a newer one.
     load(slug)
-      .then((next) => live && (setLoaded(next), setChecked(new Set()), setError(null)))
+      .then((next) => {
+        if (!live) return
+        setLoaded(next)
+        setAt(0)
+        store.reset()
+        setError(null)
+      })
       .catch((cause) => live && setError(cause as Error))
     return () => {
       live = false
     }
   }, [slug])
 
-  const toggle = (key: string) =>
-    setChecked((current) => {
-      const next = new Set(current)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
-      return next
-    })
-
   const toggleMeasured = (key: string) => {
     performance.mark('recipe:check-off:start')
-    toggle(key)
+    store.toggleIngredient(key)
   }
 
   if (error) {
@@ -145,6 +150,35 @@ export function App() {
           </select>
         </label>
 
+        {/*
+          The first genuine job for a Radix primitive in this track: a roving-tabindex toggle
+          group with the right roles and keyboard behaviour, for free.
+
+          It is also where the answer to the doc's question starts to show. Radix covers the
+          *shell* — this switcher, and later a sheet for cook mode on a phone. It has nothing for
+          the chart or the mini-map, which are the parts carrying the format's meaning, because
+          there is no "dependency graph" primitive and never will be. The component library helps
+          exactly as much as the app is made of ordinary widgets.
+        */}
+        <ToggleGroup.Root
+          type="single"
+          value={view}
+          onValueChange={(next) => next && setView(next as 'chart' | 'cook')}
+          aria-label="presentation"
+          className="flex overflow-hidden rounded border border-hairline"
+        >
+          {(['chart', 'cook'] as const).map((option) => (
+            <ToggleGroup.Item
+              key={option}
+              value={option}
+              id={`view-${option}`}
+              className="px-2.5 py-1 data-[state=on]:bg-depth-3"
+            >
+              {option === 'chart' ? 'wall chart' : 'cook mode'}
+            </ToggleGroup.Item>
+          ))}
+        </ToggleGroup.Root>
+
         <label className="flex cursor-pointer items-center gap-1.5">
           theme
           <select
@@ -159,18 +193,34 @@ export function App() {
         </label>
       </div>
 
-      {loaded && <Card loaded={loaded} scale={scale} checked={checked} onToggle={toggleMeasured} />}
+      {loaded && (
+        <Card
+          loaded={loaded}
+          view={view}
+          at={at}
+          onMove={setAt}
+          scale={scale}
+          checked={cook.checkedIngredients}
+          onToggle={toggleMeasured}
+        />
+      )}
     </main>
   )
 }
 
 function Card({
   loaded,
+  view,
+  at,
+  onMove,
   scale,
   checked,
   onToggle,
 }: {
   loaded: Loaded
+  view: 'chart' | 'cook'
+  at: number
+  onMove: (index: number) => void
   scale: number
   checked: ReadonlySet<string>
   onToggle: (key: string) => void
@@ -203,6 +253,14 @@ function Card({
     }
     document.title = `${recipe.title} — track 02`
   })
+
+  if (view === 'cook') {
+    return (
+      <div data-recipe={slug}>
+        <CookMode recipe={recipe} plans={plans} scale={scale} at={at} onMove={onMove} />
+      </div>
+    )
+  }
 
   return (
     <article className="overflow-hidden rounded border border-hairline bg-surface" data-card>

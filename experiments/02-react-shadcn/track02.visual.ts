@@ -123,3 +123,74 @@ test('emits the harness marks by name', async ({ page }) => {
   )
   expect(measures).toContain('recipe:first-render')
 })
+
+/**
+ * Cook mode, and with it the first real test of PHASE-05's claim that every track binds the *same*
+ * store. The adapter is `useSyncExternalStore` over `createStore()` — two lines, well inside the
+ * "handful" the phase budgeted.
+ */
+test.describe('cook mode', () => {
+  const enter = async (page: Page, slug: string) => {
+    await open(page, slug)
+    await page.click('#view-cook')
+    await page.waitForSelector('[data-step-text]')
+  }
+
+  test('walks the recipe, naming inputs and counting across components', async ({ page }) => {
+    await enter(page, 'recipes/shepherds-pie')
+    await expect(page.locator('[data-count]')).toHaveText('1 of 15')
+
+    // Position is counted across the whole recipe: "1 of 12" after three steps of mashed
+    // potatoes would be a lie.
+    for (let i = 0; i < 10; i++) await page.click('[data-next]')
+    await expect(page.locator('[data-count]')).toHaveText('11 of 15')
+    // An input resolved to a named prior result, not "the previous step".
+    await expect(page.locator('li').first()).toContainText('the seasoned filling')
+  })
+
+  /** R7: four of five steps done is not 80% when the fifth is a forty-minute bake. */
+  test('progress is time-weighted and disagrees with the step count on purpose', async ({
+    page,
+  }) => {
+    await enter(page, 'recipes/espresso-brownies')
+    for (let i = 0; i < 4; i++) await page.click('[data-next]')
+    await expect(page.locator('[data-count]')).toHaveText('5 of 5')
+    await expect(page.locator('[data-progress]')).toHaveText('23% of the time')
+  })
+
+  /** The seal vocabulary: a part finished is not the dish finished. */
+  test('names the end of a part, and the end of the dish', async ({ page }) => {
+    await enter(page, 'recipes/shepherds-pie')
+    for (let i = 0; i < 2; i++) await page.click('[data-next]')
+    await page.click('[data-done]')
+    await expect(page.locator('[data-ending="part"]')).toContainText('Mashed potatoes done')
+  })
+
+  /**
+   * One model, every view — PHASE-04's rule. The store is the shared one from core, so a step
+   * finished in cook mode is filled in the chart and an ingredient ticked in the chart survives
+   * the detour.
+   */
+  test('shares its state with the chart', async ({ page }) => {
+    await open(page, 'recipes/espresso-brownies')
+    await page.locator('input[data-ing$="/flour"]').check()
+
+    await page.click('#view-cook')
+    await page.click('[data-next]')
+    await expect(page.locator('[data-count]')).toHaveText('2 of 5')
+
+    await page.click('#view-chart')
+    await expect(page.locator('input[data-ing$="/flour"]')).toBeChecked()
+
+    await page.click('#view-cook')
+    // The place in the recipe survived the round trip too.
+    await expect(page.locator('[data-count]')).toHaveText('2 of 5')
+  })
+
+  test('screenshot', async ({ page }) => {
+    await enter(page, 'recipes/shepherds-pie')
+    for (let i = 0; i < 10; i++) await page.click('[data-next]')
+    await page.addStyleTag({ content: HIDE_CONTROLS })
+    await expect(page.locator('[data-card]')).toHaveScreenshot('cookmode-shepherds-pie.png')
+  })
+})
