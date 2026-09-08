@@ -1,10 +1,10 @@
 # Project state — handoff
 
-> Read this first after a context clear. Current as of the Phase 07 scaffolding session.
+> Read this first after a context clear. Current as of the close of the Phase 07 cook-mode session.
 
 ## Where things stand
 
-**Phases 00 through 06 are built; Phase 07 is under way.** 501 unit tests plus 139 browser tests, all green.
+**Phases 00 through 06 are built; Phase 07 is under way.** 501 unit tests plus 157 browser tests, all green.
 
 | Phase | State |
 | --- | --- |
@@ -14,7 +14,7 @@
 | 03 Design system & reference renderer | Tokens with contrast validated as a test; `experiments/01-css-grid` with no bundler and no framework; visual baselines; print verified as real PDFs. |
 | 04 Responsive ladder & cook mode | All four presentations from one plan, plus the transition between them. |
 | 05 Interaction & kitchen state | Headless store in core; serving-size scaling with a ladder that climbs and descends; concurrent timers that survive backgrounding; persistence, undo, wake lock, 48px check-off. |
-| 07 Experiment tracks | **In progress.** All four tracks render the wall chart from the same plan. Tracks 02 and 04 also do check-off and scaling. No cook mode, timers, units or keyboard outside track 01. |
+| 07 Experiment tracks | **In progress.** All four tracks render the wall chart *and cook mode* from the same plan and the same store. Tracks 02 and 04 also do check-off and scaling. No condensed chart, timers, units or keyboard outside track 01, and no track but 01 has been audited for accessibility. |
 | 06 Accessibility & semantics | Structural narrative in core, exposed as a mode; 2D keyboard movement plus edge traversal; two live regions; axe clean on every presentation; 400% zoom; forced-colors; print keeps every step region whole. Q3 answered **provisionally** — see below. |
 
 ```sh
@@ -22,8 +22,8 @@ pnpm install
 pnpm check                # typecheck, lint, boundaries, format, 501 tests
 pnpm serve                # then open http://localhost:8731/experiments/01-css-grid/
                           # running it twice is fine — it prints the URL and exits
-pnpm test:visual          # builds tracks 02/04, then 139 browser tests + baselines
-pnpm test:print           # renders the corpus to PDF and checks it survives paper
+pnpm test:visual          # builds tracks 02/04, then 157 browser tests + baselines
+pnpm test:print           # renders the corpus to PDF and checks it survives paper (needs `pnpm serve`)
 node scripts/check-recipe.mjs <file.json>
 node scripts/progress-weighting.mjs      # why progress is time-weighted (R7)
 node scripts/narrate.mjs --full          # the structural narrative, to read rather than trust
@@ -109,44 +109,79 @@ that EDGE-CASES' "revisit if common" condition is met; Phase 03 should answer it
 
 ## Recommended next action
 
-**Finish Phase 07's feature surface.** Rule 3 is explicit that a track skipping cook mode is not
-comparable, and three of the four skip it. The order that surfaces the most is probably cook mode
-next — it is the first thing that needs the *store*, and so the first real test of "every track
-binds the same one" and of the ~20-line adapter budget PHASE-05 set.
+Phase 07's own acceptance list is the best guide. Four of eight are met:
+
+| | criterion | state |
+| --- | --- | --- |
+| ✓ | all tracks render every recipe and stress fixture | done |
+| ✓ | zero forks of `core`, every change logged | **one** change, from track 02 |
+| ✓ | track 03 renders `reuse-split` with real connectors | done |
+| ✓ | `NOTES.md` per track, written during the build | done |
+| ~ | full feature surface including cook mode | cook mode everywhere; see the matrix |
+| ✗ | Phase 06's accessibility bar, or documented shortfall | **nothing outside track 01 audited** |
+| ✗ | track 03 exports a shareable image | not started |
+| ✗ | visual regression against Phase 03 baselines | each track has its own; no cross-track comparison |
 
 Where the tracks stand:
 
-| track | build | renders | also does |
-| --- | --- | --- | --- |
-| 01 CSS Grid | none | everything | the full surface |
-| 02 React + Tailwind | vite | chart | check-off, scaling |
-| 03 SVG dendrogram | none | chart | **I4 with real connectors** |
-| 04 Svelte / Solid | vite | chart | check-off, scaling |
+| | chart | cook | check-off | scaling | condensed | timers | units | keyboard | a11y |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 01 CSS Grid | ● | ● | ● | ● | ● | ● | ● | ● | ● |
+| 02 React | ● | ● | ● | ● | · | · | · | · | · |
+| 03 SVG | ● | ● | · | · | · | · | · | · | · |
+| 04 Svelte / Solid | ● | ● | ● | ● | · | · | · | · | · |
 
-**One core change requested across three new renderers** — track 02's `PlacedCell` discriminated
-union. The plan has survived a string builder, a component tree, a signal graph and a coordinate
-system without needing anything else, which is a stronger result than it looked like at the time.
+**Do the accessibility audit next.** It is the acceptance criterion with nothing done at all, the
+infrastructure already exists (`experiments/01-css-grid/a11y.visual.ts` runs axe, 400% zoom and
+forced-colors), and it is the one most likely to produce *findings* rather than just work. The
+tracks should diverge sharply: 02 and 04 are ordinary semantic HTML and ought to start near where
+track 01 does, while track 03 is a drawing whose accessibility rests almost entirely on
+`role="img"` and Phase 06's narrative. That asymmetry is exactly what a scorecard should report,
+and it is cheap to measure.
 
-Bundle, gzipped: tracks 01 and 03 ship **zero** JavaScript for a correct static chart; Solid 13 KB,
-Svelte 22 KB, React 64 KB.
+Then, in rough order of value per effort:
 
-Two things Phase 07 has already shown that are worth not losing:
-
-- **Track 04's equivalence premise was false within an hour**, and only a measurement caught it —
-  Svelte keeps template whitespace and JSX strips it, so the same row rendered 3.7px wider in one
-  variant. A geometry test now enforces it. Any "the tracks are identical except X" claim needs a
-  test, not an eye.
-- **Rule 4 has a real cost.** Track 02 repeated a testing mistake track 01 had already fixed,
-  because nothing is shared between the tracks' suites for the lesson to travel through. That is
-  the price of the no-sharing constraint, not an argument against it.
+1. **The scale-change measurement.** All four tracks already emit `recipe:render` around a scale
+   change — the interaction PHASE-07 calls "the sharpest test" and PHASE-08 calls the sharpest
+   discriminator between reactivity models. It is instrumented and has never been read. That is
+   the question track 04 exists to answer.
+2. **Track 03's image export.** Small, unique to that track, and the format's actual distribution
+   mechanism — `images/` is why this project exists.
+3. **Check-off and scaling in track 03**, which are the gaps that stop it being comparable on the
+   feature surface.
+4. **Timers and the condensed chart** everywhere else. Mechanical, and the least likely to teach
+   anything.
 
 Still carried forward, both cheap and both able to move the design:
 
-1. **Equipment contention (EDGE-CASES E4).** `Step.equipment` exists and nothing reads it. The BBQ
-   pulled chicken now gives it a recipe where it matters — one Dutch oven, one oven, one measuring
-   cup, all sequential.
-2. **Session splitting (EDGE-CASES E2).** `passive` steps mean bread and cures span days. Cook mode
-   has no notion of putting a recipe down and coming back.
+- **Equipment contention (EDGE-CASES E4).** `Step.equipment` exists and nothing reads it. The BBQ
+  pulled chicken now gives it a recipe where it matters — one Dutch oven, one oven, one measuring
+  cup, all sequential.
+- **Session splitting (EDGE-CASES E2).** `passive` steps mean bread and cures span days. Cook mode
+  has no notion of putting a recipe down and coming back.
+
+## What Phase 07 has shown so far
+
+- **The plan is renderer-agnostic, and that is now evidence rather than hope.** A string builder, a
+  component tree, a signal graph and a coordinate system have all consumed `GridPlan` unchanged.
+  One core change requested across three new renderers: track 02's `PlacedCell` discriminated
+  union, which TypeScript forced and which stated something already true.
+- **The store held.** Adapters: SVG 1 line, React 2, Svelte 4, Solid 4. All four depend on the
+  store handing out a fresh object on every change and the same one otherwise — a decision made in
+  Phase 05 for one consumer that four now rest on.
+- **Radix covers the shell, not the content.** A `ToggleGroup` for the view switcher arrives with
+  its keyboard behaviour correct; the chart and mini-map use nothing, because there is no
+  dependency-graph primitive. In an ordinary screen the shell is most of the app. Here it is the
+  controls.
+- **The mini-map is free in SVG.** Three tracks build a second thumbnail renderer; track 03 re-runs
+  the same layout at a tenth the size. The one place that substrate removes work.
+- **Bundles, gzipped, with cook mode:** tracks 01 and 03 ship **zero** JavaScript for a correct
+  static chart; Solid 16 KB, Svelte 25 KB, React 77 KB.
+- **Two process findings worth not losing.** Track 04's "identical except the framework" premise
+  was false within an hour — Svelte keeps template whitespace and JSX strips it, so the same row
+  rendered 3.7px wider — and only a measurement caught it; any such claim needs a test, not an eye.
+  And rule 4 has a real cost: track 02 repeated a testing mistake track 01 had already fixed,
+  because nothing is shared for the lesson to travel through.
 
 Already done and not worth redoing: the leader rule is drawn from `PlacedCell.leader`; the
 at-a-glance bar handles `parallelSaving: 0` by dropping the field and saying "nothing overlaps in

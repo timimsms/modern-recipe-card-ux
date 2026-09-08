@@ -41,6 +41,24 @@ mkdirSync(outDir, { recursive: true })
  */
 const PRINTABLE = { width: 1047, height: 718 }
 
+/**
+ * This drives the *served* page, so the server has to be up.
+ *
+ * Without this check the failure is a Playwright navigation stack trace, which reads like the
+ * print stylesheet broke rather than like nothing was listening — and that is a confusing five
+ * minutes for whoever runs it next after a restart.
+ */
+try {
+  const response = await fetch(`${base}/experiments/01-css-grid/`, {
+    signal: AbortSignal.timeout(2000),
+  })
+  if (!response.ok) throw new Error(String(response.status))
+} catch {
+  console.error(`Nothing is serving ${base}.\n`)
+  console.error('  pnpm serve        # in another terminal, then run this again')
+  process.exit(1)
+}
+
 const browser = await chromium.launch()
 const page = await browser.newPage({ colorScheme: 'light', viewport: PRINTABLE })
 let failures = 0
