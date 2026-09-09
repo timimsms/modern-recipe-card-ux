@@ -107,6 +107,23 @@ discriminant between `"med-low"` and `400°F`, and step text duplicating its own
 mixed-attention step — "simmer 15 min, stirring occasionally" — has now appeared often enough
 that EDGE-CASES' "revisit if common" condition is met; Phase 03 should answer it.
 
+## Pre-publication status
+
+The repo is prepared to go public; the strategy evaluation lives with the maintainer (open source
+now, gallery-first Pages site, PR-validated recipe submissions; a hosted/private-books layer stays
+possible later because core is MIT and the moat is ingestion, not code).
+
+Done: history scrubbed of the scanned NYT PDF and third-party screenshots (`git filter-repo`;
+originals preserved locally outside the repo; docs reworded to quote rather than point), MIT +
+CC BY licensing in place, README rewritten against reality, private artifact links replaced with
+the committed HTML, CONTRIBUTING + recipe-suggestion issue template + corpus-validation CI added.
+Rewritten history is force-pushed to the still-private origin.
+
+Before actually flipping public: **GitHub can retain force-push-orphaned objects until its own
+GC runs**, so either ask GitHub support to purge them, or — simpler and certain — push the clean
+history to a fresh repository and make *that* one public. Also still open: the Pages/gallery
+workflow, and optionally publishing `@recipe/core` to npm.
+
 ## Recommended next action
 
 Phase 07's own acceptance list is the best guide. Four of eight are met:
