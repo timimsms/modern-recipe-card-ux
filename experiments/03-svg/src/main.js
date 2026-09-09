@@ -125,8 +125,12 @@ function draw(which = slug) {
     .map((component, i) => {
       const geometry = layoutDendrogram(component, recipe.plans[i], measure)
       const title = recipe.components.length > 1 ? component.title : undefined
+      // tabindex, because the chart is wider than the card and scrolls: a scrollable region a
+      // keyboard cannot reach is content a keyboard user cannot see. Axe flags it as
+      // scrollable-region-focusable, and it was this track's one violation.
       return (
-        `<section class="component">` +
+        `<section class="component" tabindex="0" role="region" ` +
+        `aria-label="${escapeText(title ?? recipe.title)} chart">` +
         (title ? `<h3 class="component-title">${escapeText(title)}</h3>` : '') +
         renderDendrogram(component, geometry, { title: title ?? recipe.title }) +
         `</section>`

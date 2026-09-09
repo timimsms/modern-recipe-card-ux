@@ -104,3 +104,15 @@ and a real cost of the no-sharing constraint rather than an argument against it.
 - Condensed chart, timers, units toggle, keyboard navigation of the chart: not built.
 - Update cost on a scale change is instrumented (`recipe:render` around `setScale`) but not yet
   measured against anything.
+
+## Accessibility audit (Phase 07 criterion)
+
+Audited against the cross-track floor in `experiments/tracks-a11y.visual.ts`: **axe clean on the
+chart and in cook mode, no two-dimensional scrolling at the 400%-zoom-equivalent width, and all
+20 check-off controls carry accessible names** (the label-wraps-checkbox pattern does this for
+free).
+
+Documented shortfall against track 01's full bar: no keyboard navigation of the chart (arrows,
+edge traversal), no live-region announcements, no narrative mode, and forced-colors is untested.
+The chart itself is ordinary semantic HTML, so the floor came at no extra cost — the gap is the
+interaction layer that was never built, not the markup.

@@ -109,3 +109,15 @@ independent renderers and asked for exactly one change (track 02's `PlacedCell` 
 - The update-cost measurement is instrumented (`recipe:render` around a scale change) but not yet
   measured against anything. That comparison is the reason this track exists and it belongs in
   Phase 08 with a throttled profile, not in a single desktop sample here.
+
+## Accessibility audit (Phase 07 criterion)
+
+Audited against the cross-track floor in `experiments/tracks-a11y.visual.ts`: **axe clean on the
+chart and in cook mode, no two-dimensional scrolling at the 400%-zoom-equivalent width, and all
+20 check-off controls carry accessible names** (the label-wraps-checkbox pattern does this for
+free).
+
+Documented shortfall against track 01's full bar: no keyboard navigation of the chart (arrows,
+edge traversal), no live-region announcements, no narrative mode, and forced-colors is untested.
+The chart itself is ordinary semantic HTML, so the floor came at no extra cost — the gap is the
+interaction layer that was never built, not the markup.

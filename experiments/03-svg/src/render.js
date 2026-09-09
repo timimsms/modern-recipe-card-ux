@@ -76,7 +76,8 @@ export function renderDendrogram(component, geometry, options = {}) {
   const drawnRows = rows
     .map(
       (row) =>
-        `<g class="leaf" data-leaf="${esc(row.id)}">` +
+        `<g class="leaf" data-leaf="${esc(row.id)}" role="listitem" ` +
+        `aria-label="${esc(row.lines.join(' '))}">` +
         `<rect x="${row.x}" y="${row.y}" width="${row.width}" height="${row.height}" rx="3"/>` +
         `<text class="leaf-text">${lines(row).tspans}</text></g>`,
     )
@@ -104,15 +105,29 @@ export function renderDendrogram(component, geometry, options = {}) {
     .join('')
 
   const title = options.title ?? component.title ?? 'Recipe'
-  // `role="list"` over the steps and a title/description on the root are the whole of what SVG
-  // gives for free. Phase 06's narrative carries the rest, which is the honest position for this
-  // substrate rather than a shortfall to apologise for.
+  /**
+   * `role="group"` on the root, not `role="img"`.
+   *
+   * The first version was an img with `role="list"` children — contradictory, because an img is
+   * a *leaf*: declaring one promises assistive tech there is nothing inside. Chromium exposed
+   * the children anyway, which is worse than either behaviour alone, since other AT is entitled
+   * to prune them. Same class of bug as the mini-map that was `img` with buttons inside (Phase
+   * 06), one notch quieter — axe has no rule for non-interactive children, so only reading the
+   * tree found it.
+   *
+   * The mini-map keeps `img`: at thumbnail size it genuinely is a picture, and its children are
+   * hidden accordingly.
+   */
+  const isMap = Boolean(mini)
   const body =
     `<title>${esc(title)}</title>` +
     `<desc>${esc(`${rows.length} ingredients converging through ${steps.length} steps.`)}</desc>` +
     `<g class="edges" aria-hidden="true">${drawnEdges}</g>` +
-    `<g class="leaves">${drawnRows}</g>` +
-    `<g class="steps" role="list">${drawnSteps}</g>`
+    (isMap
+      ? `<g class="leaves" aria-hidden="true">${drawnRows}</g>` +
+        `<g class="steps" aria-hidden="true">${drawnSteps}</g>`
+      : `<g class="leaves" role="list" aria-label="ingredients">${drawnRows}</g>` +
+        `<g class="steps" role="list" aria-label="steps">${drawnSteps}</g>`)
 
   /**
    * As a mini-map this is the *same drawing*, scaled by `viewBox` alone.
@@ -128,7 +143,7 @@ export function renderDendrogram(component, geometry, options = {}) {
   const openTag =
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" ` +
     `width="${drawnWidth}" height="${drawnHeight}" ` +
-    `class="dendrogram${mini ? ' minimap' : ''}" role="img" ` +
+    `class="dendrogram${mini ? ' minimap' : ''}" role="${mini ? 'img' : 'group'}" ` +
     `aria-label="${esc(title)}">`
 
   // A standalone file carries its own styles, because an exported SVG that depends on the page's

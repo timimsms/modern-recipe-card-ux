@@ -58,10 +58,7 @@ label in every recipe and compares `getBBox()` against its rectangle.
 
 ## What is still unknown
 
-- **Accessibility.** The drawing carries `role="img"`, a `<title>`, a `<desc>` and `role="list"`
-  over the steps. That is close to all SVG gives for free, and Phase 06's structural narrative is
-  going to carry disproportionate weight here, exactly as the phase doc predicted. Not yet
-  audited.
+- **R8 / mobile** and **print** — see below; accessibility is now audited.
 - **R8 / mobile.** A fixed-size drawing scrolls rather than reflows. `deep-narrow` renders 2,198px
   wide. Track 01 answers this with the Phase 04 ladder; this track has nothing yet, and "zoom out"
   is not the same answer as "make it readable at 390px".
@@ -102,3 +99,27 @@ everything in between, which is why track 01 offers a chip, a connector, or a du
 three workarounds for a shape the substrate cannot express.
 
 That is I4 answered rather than mitigated, and it is this track's reason for existing.
+
+## Accessibility audit (Phase 07 criterion)
+
+The audit found two real problems, both fixed, and both of the same species as this track's other
+bugs: the substrate did exactly what it was told, and what it was told was contradictory.
+
+**The chart was `role="img"` with `role="list"` children.** An img is a *leaf* — declaring one
+promises assistive tech there is nothing inside. Chromium exposed the children anyway, which is
+the worst of both, since other AT is entitled to prune them. Same class of bug as the mini-map
+that was an img full of buttons in Phase 06, one notch quieter: axe has no rule for
+non-interactive children of an img, so only reading the accessibility tree found it. The chart is
+now a `group` holding two labelled lists — every ingredient and step a named `listitem` — and the
+mini-map, which genuinely is a picture, keeps `img` with its children hidden.
+
+**The scrollable chart region was not keyboard-focusable** (axe: `scrollable-region-focusable`,
+this track's one violation). A drawing wider than the card that a keyboard cannot scroll is
+content a keyboard user cannot see. The section is `tabindex="0"` with a region role and label.
+
+What a reader gets is now honest but *flat*: a list of ingredients and a list of steps, rebuilt
+from the tree — not the geometry, and not the convergence. That is the documented shortfall, and
+it is structural rather than unfinished: Phase 06's prediction that the narrative would carry
+disproportionate weight for this substrate is exactly how it turned out. The right long-term
+answer for this track is to ship the narrative alongside the drawing, not to annotate the drawing
+harder.
