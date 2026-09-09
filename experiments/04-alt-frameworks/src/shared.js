@@ -61,7 +61,10 @@ export const SCALES = [
 ]
 
 export async function load(slug) {
-  const response = await fetch(`/packages/corpus/${slug}.json`)
+  // Relative, not root-relative. The dist page sits at experiments/<track>/dist/, so this
+  // resolves to /packages/corpus/… on the local server *and* under a GitHub Pages project
+  // subpath — a root-relative URL would escape the subpath and 404 in production only.
+  const response = await fetch(`../../../packages/corpus/${slug}.json`)
   if (!response.ok) throw new Error(`${slug} → ${response.status}`)
   const recipe = normalizeRecipe(await response.json())
   return { slug, recipe, plans: recipe.components.map((c) => layout(c)) }

@@ -42,7 +42,10 @@ type Loaded = { slug: string; recipe: Recipe; plans: GridPlan[] }
  * measure the renderer rather than how much of the corpus each track happened to inline.
  */
 async function load(slug: string): Promise<Loaded> {
-  const response = await fetch(`/packages/corpus/${slug}.json`)
+  // Relative, not root-relative. The dist page sits at experiments/<track>/dist/, so this
+  // resolves to /packages/corpus/… on the local server *and* under a GitHub Pages project
+  // subpath — a root-relative URL would escape the subpath and 404 in production only.
+  const response = await fetch(`../../../packages/corpus/${slug}.json`)
   if (!response.ok) throw new Error(`${slug} → ${response.status}`)
   const recipe = normalizeRecipe(await response.json())
   return { slug, recipe, plans: recipe.components.map((c) => layout(c)) }

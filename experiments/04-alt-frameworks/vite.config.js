@@ -16,7 +16,10 @@ import solid from 'vite-plugin-solid'
  * anything JSX-shaped in the track.
  */
 export default defineConfig({
-  base: '/experiments/04-alt-frameworks/dist/',
+  // Relative base, so the built assets load from wherever the dist directory is mounted —
+  // the local server serves it at /experiments/<track>/dist/ and GitHub Pages under a project
+  // subpath, and an absolute base would break the second silently.
+  base: './',
   plugins: [svelte(), solid({ include: ['**/solid/**/*.jsx'] })],
   resolve: {
     alias: {

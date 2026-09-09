@@ -46,3 +46,4 @@ sources/*_files/
 # live outside the repo. The docs describe their substance instead of pointing at files.
 /images/
 /docs/sources/
+/_site/

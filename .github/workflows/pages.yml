@@ -1,0 +1,51 @@
+name: Deploy site
+
+# Publishes the showcase to GitHub Pages: the four tracks, the findings rendered as pages, and
+# the design studies — assembled by scripts/build-site.mjs into the repo's own directory shape,
+# so every relative path that works on `pnpm serve` works under the Pages subpath unchanged.
+#
+# `workflow_dispatch` so the first deploy can be run by hand; pushes to main keep it fresh after
+# that. On a private repo Pages needs a paid plan — this workflow simply fails cleanly until the
+# repo is public or the plan allows it.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm build:tracks
+      - run: node scripts/build-site.mjs
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
