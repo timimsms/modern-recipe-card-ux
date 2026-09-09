@@ -15,7 +15,7 @@ fixtures/   synthetic; see fixtures/README.md
 
 Source material that is not a web page lives in `docs/sources/`.
 
-Nine of the ten recipes are transcribed from a printed source alone. `bbq-pulled-chicken` is not:
+All but one of the recipes are transcribed from a printed source alone. `bbq-pulled-chicken` is not:
 it is a printed recipe plus a cook's notes that change the method substantially, and the notes
 win where they disagree. See [Q8](../../docs/findings/Q8-ingesting-a-cooks-version.md) for what
 that first non-pristine ingestion found — including the reuse split that gave `InputRef.portion`

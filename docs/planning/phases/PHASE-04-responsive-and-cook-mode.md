@@ -1,6 +1,6 @@
 # Phase 04 — Responsive Ladder & Cook Mode
 
-> The highest-value phase. Every screenshot in `images/` is a pinch-zoomed phone photo of a
+> The highest-value phase. Every screenshot in the source thread is a pinch-zoomed phone photo of a
 > desktop table — that is the unsolved problem.
 
 ## Goal

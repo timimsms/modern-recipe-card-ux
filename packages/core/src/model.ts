@@ -152,7 +152,7 @@ export type Quantity = {
   unit: Unit
   /**
    * Authored, never computed. The sources round deliberately and inconsistently —
-   * IMG_4231 has both `400°F (204°C)` and `400°F (205°C)` in one recipe. Preserving the
+   * the shepherd's pie source photo has both `400°F (204°C)` and `400°F (205°C)` in one recipe. Preserving the
    * author's rounding is more faithful than being arithmetically correct; the validator
    * surfaces the discrepancy as a warning rather than silently fixing it.
    */

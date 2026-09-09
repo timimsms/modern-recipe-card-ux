@@ -71,8 +71,8 @@ browser, no build step. **Read those rather than fetching the published copies.*
 
 | Local source                                                                   | Published                                                                        | What it is                                        |
 | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- | ------------------------------------------------- |
-| [`../design/resolved-card.html`](../design/resolved-card.html)                 | [artifact](https://claude.ai/code/artifact/0e465102-73e3-4731-be14-60f22daa7df2) | **The current design.** Phase 03's visual target. |
-| [`../design/q5-time-axis-variants.html`](../design/q5-time-axis-variants.html) | [artifact](https://claude.ai/code/artifact/8bedd288-18af-4b9d-a25a-5e2bd0c7b47f) | The six-variant study behind the Q5 finding.      |
+| [`../design/resolved-card.html`](../design/resolved-card.html)                 | | **The current design.** Phase 03's visual target. |
+| [`../design/q5-time-axis-variants.html`](../design/q5-time-axis-variants.html) | | The six-variant study behind the Q5 finding.      |
 
 The published artifacts are private to the user. To update one from a later session, pass its URL
 to the `Artifact` tool as `url` — otherwise a new URL is minted instead of updating in place.
@@ -146,7 +146,7 @@ Then, in rough order of value per effort:
    discriminator between reactivity models. It is instrumented and has never been read. That is
    the question track 04 exists to answer.
 2. **Track 03's image export.** Small, unique to that track, and the format's actual distribution
-   mechanism — `images/` is why this project exists.
+   mechanism — the format spread as screenshots of a viral thread, which is why this project exists.
 3. **Check-off and scaling in track 03**, which are the gaps that stop it being comparable on the
    feature surface.
 4. **Timers and the condensed chart** everywhere else. Mechanical, and the least likely to teach
@@ -220,8 +220,9 @@ after every edit — this cost real time twice.
 - The CFE source markup is decoded in `GAMEPLAN.md` §2.1, including the live DOM sample. The site
   returns **403 to WebFetch and curl**; it was read via the Chrome browser tool. Don't retry curl.
 - The Threads critique → requirements mapping (R1–R9) is in `GAMEPLAN.md` §2.2, with each row
-  citing the specific screenshot in `images/`. The images don't need re-reading.
-- **Every recipe in `images/` has been transcribed.** Don't re-read the photographs to check the
+  citing the specific source screenshot. The images were reviewed during planning and are not
+  distributed in the repo; GAMEPLAN §2.2 preserves their substance.
+- **Every recipe from the source screenshots has been transcribed.** Don't re-read them to check the
   corpus — the geometry was recovered at 2.5–4× zoom (twice, programmatically, by detecting grid
   rulings) and the judgement calls are recorded below.
 - Q5's answer and its reasoning are settled. Don't re-litigate the time axis.

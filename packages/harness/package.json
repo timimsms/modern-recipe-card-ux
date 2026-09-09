@@ -1,6 +1,7 @@
 {
   "name": "@recipe/harness",
   "version": "0.0.0",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "description": "Bake-off instrumentation: bundle size, perf, a11y, fidelity scoring. Dev-only.",

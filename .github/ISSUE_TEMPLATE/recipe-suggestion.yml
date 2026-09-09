@@ -1,0 +1,42 @@
+name: Recipe suggestion
+description: Suggest a recipe for the corpus — no JSON required.
+title: '[recipe] '
+labels: [corpus]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Transcription into the corpus format is done by a maintainer. What we need from you is
+        the recipe, its provenance, and — most valuable of all — how you *actually* cook it.
+        Please don't paste a copyrighted recipe's full text or attach scans/photos of one.
+  - type: input
+    id: source
+    attributes:
+      label: Where is it from?
+      description: A link, or book title + author. "Family recipe" is fine too.
+      placeholder: https://…  /  "Salt Fat Acid Heat, p. 214"  /  "my grandmother's"
+    validations:
+      required: true
+  - type: textarea
+    id: recipe
+    attributes:
+      label: The recipe, as facts
+      description: >
+        Ingredients with quantities, and the steps in your own words. Structure matters more than
+        prose — what feeds into what, what runs unattended, times and temperatures.
+    validations:
+      required: true
+  - type: textarea
+    id: adaptations
+    attributes:
+      label: How do you actually make it?
+      description: >
+        Substitutions, additions, corrections to the printed version. The corpus records the
+        cooked version, with the printed one as provenance.
+  - type: checkboxes
+    id: provenance
+    attributes:
+      label: Provenance
+      options:
+        - label: I've credited the source above, and the step text is my own wording, not pasted from it.
+          required: true

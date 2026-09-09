@@ -1,6 +1,7 @@
 {
   "name": "@experiment/react-shadcn",
   "version": "0.0.0",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "description": "React + Tailwind + shadcn/ui + Radix primitives, over the identical GridPlan.",

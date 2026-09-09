@@ -4,15 +4,14 @@ Self-contained HTML sources for the design studies referenced from
 [`../planning/GAMEPLAN.md`](../planning/GAMEPLAN.md) and [`../findings/`](../findings/).
 
 Each file is a single document with no external stylesheets, scripts, fonts, or images —
-**open it directly in a browser**, no build step and no network required. They are also the exact
-sources published as artifacts, so the published pages can be regenerated from these at any time.
+**open it directly in a browser**, no build step and no network required.
 
-| File | What it shows | Published |
-| --- | --- | --- |
-| [`q5-time-axis-variants.html`](q5-time-axis-variants.html) | Six treatments of step duration compared on the espresso brownies chart, with a missing-data matrix and a verdict. Resolved [Q5](../findings/Q5-time-axis.md). | [artifact](https://claude.ai/code/artifact/8bedd288-18af-4b9d-a25a-5e2bd0c7b47f) |
-| [`resolved-card.html`](resolved-card.html) | **The current reference design.** In-cell duration bar plus attended/unattended split, the derived at-a-glance bar, and the shorthand mark vocabulary. Shown on espresso brownies and shepherd's pie. | [artifact](https://claude.ai/code/artifact/0e465102-73e3-4731-be14-60f22daa7df2) |
-| [`q1-column-assignment.html`](q1-column-assignment.html) | Left-packed, right-packed and stretch-to-merge rendered from one layout function, with live-measured widths and a filler-reveal toggle. Resolved [Q1](../findings/Q1-column-assignment.md). | [artifact](https://claude.ai/code/artifact/cfba9c97-ffb0-47f0-aeee-84ccd512d123) |
-| [`i4-ingredient-reuse.html`](i4-ingredient-reuse.html) | Five reuse strategies × two cases (node reuse, leaf reuse), judged on kitchen safety first. Resolved [I4](../findings/I4-reuse.md). | [artifact](https://claude.ai/code/artifact/24f68ce2-5193-4443-9d01-29a1cfd8c42f) |
+| File | What it shows |
+| --- | --- |
+| [`q5-time-axis-variants.html`](q5-time-axis-variants.html) | Six treatments of step duration compared on the espresso brownies chart, with a missing-data matrix and a verdict. Resolved [Q5](../findings/Q5-time-axis.md). |
+| [`resolved-card.html`](resolved-card.html) | **The current reference design.** In-cell duration bar plus attended/unattended split, the derived at-a-glance bar, and the shorthand mark vocabulary. Shown on espresso brownies and shepherd's pie. |
+| [`q1-column-assignment.html`](q1-column-assignment.html) | Left-packed, right-packed and stretch-to-merge rendered from one layout function, with live-measured widths and a filler-reveal toggle. Resolved [Q1](../findings/Q1-column-assignment.md). |
+| [`i4-ingredient-reuse.html`](i4-ingredient-reuse.html) | Five reuse strategies × two cases (node reuse, leaf reuse), judged on kitchen safety first. Resolved [I4](../findings/I4-reuse.md). |
 
 `resolved-card.html` is the visual target for **Phase 03**. Where this file and the phase docs
 disagree, the phase docs win — these are explorations, not specifications.

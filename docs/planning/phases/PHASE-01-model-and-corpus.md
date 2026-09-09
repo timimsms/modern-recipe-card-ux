@@ -1,6 +1,6 @@
 # Phase 01 — Assembly Tree Model & Corpus
 
-> Define the data structure, then prove it by transcribing every recipe in `images/` and
+> Define the data structure, then prove it by transcribing every recipe from the source screenshots and
 > `sources/` into it.
 
 ## Goal

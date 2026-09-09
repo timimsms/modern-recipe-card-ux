@@ -1,6 +1,7 @@
 {
   "name": "@experiment/alt-frameworks",
   "version": "0.0.0",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "description": "Svelte / Solid / Vue on the identical GridPlan.",

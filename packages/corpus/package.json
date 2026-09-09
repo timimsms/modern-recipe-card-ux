@@ -1,6 +1,7 @@
 {
   "name": "@recipe/corpus",
   "version": "0.0.0",
+  "license": "(MIT AND CC-BY-4.0)",
   "private": true,
   "type": "module",
   "description": "Transcribed recipes and stress fixtures, validated against @recipe/core.",

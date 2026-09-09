@@ -41,3 +41,8 @@ test-results/
 sources/*.html
 sources/*_files/
 .print-check/
+
+# Source material that cannot be redistributed: third-party screenshots and scanned recipes
+# live outside the repo. The docs describe their substance instead of pointing at files.
+/images/
+/docs/sources/

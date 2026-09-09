@@ -20,7 +20,7 @@ Non-negotiable, or Phase 08 measures nothing:
 1. **No track may fork `core`.** Not the model, not the layout engine, not the store. If a track
    needs something core doesn't expose, it lands in core and every track gets it — and the
    request itself is recorded as a finding.
-2. **Same corpus, same requirements.** Every track renders all five recipes and all stress
+2. **Same corpus, same requirements.** Every track renders every corpus recipe and all stress
    fixtures, and meets R1–R9 plus Phase 06's accessibility bar.
 3. **Same feature surface.** Wall chart, condensed chart, cook mode, check-off, scaling, timers.
    A track that skips cook mode isn't comparable.
@@ -64,7 +64,7 @@ Treat it as a diagram-layout problem rather than a document-layout problem.
 - Canvas variant for the Phase 04 mini-map specifically, where hundreds of tiny regions render
   and text isn't drawn at all — likely SVG's clearest win.
 - Free benefits worth measuring: infinite zoom without reflow, trivially exportable to a shareable
-  image (which is *how this format actually spreads* — see `images/`).
+  image (which is *how this format actually spreads* — as screenshots of a viral thread).
 
 ## Track 04 — Alt frameworks: Svelte / Solid / Vue
 

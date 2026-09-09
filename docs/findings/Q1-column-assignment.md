@@ -1,7 +1,7 @@
 # Finding — Q1: Which column-assignment strategy should the layout engine default to?
 
 **Status:** resolved — design exploration, rendered and measured, not user-tested.
-**Artifact:** https://claude.ai/code/artifact/cfba9c97-ffb0-47f0-aeee-84ccd512d123
+**Rendered study:** [../design/q1-column-assignment.html](../design/q1-column-assignment.html)
 **Local source:** [`../design/q1-column-assignment.html`](../design/q1-column-assignment.html)
 **Prompt:** [`../planning/prompts/Q1-column-assignment-showcase.md`](../planning/prompts/Q1-column-assignment-showcase.md)
 **Test cases:** shepherd's pie (15 leaves, 12 steps, depth 10) and grilled artichokes (3 leaves, pure chain).

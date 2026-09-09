@@ -1,0 +1,29 @@
+name: Validate corpus
+
+on:
+  pull_request:
+    paths:
+      - 'packages/corpus/recipes/**'
+      - 'packages/corpus/fixtures/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+      # The validator's errors name the file and the step, so its output *is* the review comment.
+      - name: Validate every recipe
+        run: |
+          status=0
+          for f in packages/corpus/recipes/*.json packages/corpus/fixtures/valid/*.json; do
+            node scripts/check-recipe.mjs "$f" || status=1
+          done
+          exit $status

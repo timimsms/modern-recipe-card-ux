@@ -14,7 +14,8 @@ you can look at one and instantly see *what happens in parallel*, *what waits*, 
 merges into what*. That is the thing worth keeping.
 
 Everything else about the artifact is a 2004 HTML table, and it shows. The viral Threads
-discussion captured in `images/` is, read carefully, a crowd-sourced usability audit —
+discussion (screenshots reviewed during planning; not redistributed in this repo) is, read
+carefully, a crowd-sourced usability audit —
 and every complaint in it is a solvable rendering problem, not a flaw in the underlying idea.
 
 **This project's thesis:** separate the *idea* (the assembly tree) from the *rendering*
@@ -62,7 +63,7 @@ with geometry derived from it — never the reverse.
 
 ### 2.2 The crowd audit → requirements
 
-The screenshots in `images/` are three people independently redesigning the same brownie
+That thread is three people independently redesigning the same brownie
 recipe. Each complaint maps to a hard requirement.
 
 | Source | Complaint | Requirement |

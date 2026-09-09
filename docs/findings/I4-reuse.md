@@ -1,7 +1,7 @@
 # Finding — I4: How should the grid handle an ingredient or step used twice?
 
 **Status:** resolved — design exploration, rendered and measured, not kitchen-tested.
-**Artifact:** https://claude.ai/code/artifact/24f68ce2-5193-4443-9d01-29a1cfd8c42f
+**Rendered study:** [../design/i4-ingredient-reuse.html](../design/i4-ingredient-reuse.html)
 **Local source:** [`../design/i4-ingredient-reuse.html`](../design/i4-ingredient-reuse.html)
 **Prompt:** [`../planning/prompts/I4-ingredient-reuse-showcase.md`](../planning/prompts/I4-ingredient-reuse-showcase.md)
 **Test cases:** a vinaigrette diamond (node reuse) and a divided stick of butter (leaf reuse).

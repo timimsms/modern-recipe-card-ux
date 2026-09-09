@@ -1,6 +1,7 @@
 {
   "name": "@experiment/svg",
   "version": "0.0.0",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "description": "SVG/canvas dendrogram. Owns the non-planar-edge case (I4 connector strategy).",

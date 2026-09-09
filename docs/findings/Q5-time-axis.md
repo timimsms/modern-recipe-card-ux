@@ -1,7 +1,7 @@
 # Finding — Q5: Should column width encode step duration?
 
 **Status:** provisional — design exploration, not user-tested.
-**Artifact:** https://claude.ai/code/artifact/8bedd288-18af-4b9d-a25a-5e2bd0c7b47f
+**Rendered study:** [../design/q5-time-axis-variants.html](../design/q5-time-axis-variants.html)
 **Prompt:** [`../planning/prompts/Q5-time-axis-showcase.md`](../planning/prompts/Q5-time-axis-showcase.md)
 **Test recipe:** espresso brownies — 9 ingredients, 6 steps, ~7 min hands-on, 30–40 min unattended.
 
@@ -82,7 +82,7 @@ simmer you stir occasionally). Accept for now; revisit if the corpus shows it's 
 
 ## Follow-on — the at-a-glance bar
 
-**Resolved card design:** https://claude.ai/code/artifact/0e465102-73e3-4731-be14-60f22daa7df2
+**Resolved card design:** [../design/resolved-card.html](../design/resolved-card.html)
 
 Reviewing the comparison, the summary strip built as page furniture turned out to be a better idea
 than the thing it was labelling. Promoted to a Phase 03 component: a horizontal bar between the

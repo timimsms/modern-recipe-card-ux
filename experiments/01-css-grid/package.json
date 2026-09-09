@@ -1,6 +1,7 @@
 {
   "name": "@experiment/css-grid",
   "version": "0.0.0",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "description": "Reference renderer. Vanilla HTML/CSS: Grid, subgrid, container queries. No bundler.",

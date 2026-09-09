@@ -49,7 +49,7 @@ Encoded in a `formatQuantity` / `formatTemperature` utility in `core`, not left 
 
 A horizontal summary strip between the card title and the chart, rendering `GridPlan.timing`
 plus counts. **Design resolved — see [`../../findings/Q5-time-axis.md`](../../findings/Q5-time-axis.md)
-and the [reference rendering](https://claude.ai/code/artifact/0e465102-73e3-4731-be14-60f22daa7df2).**
+and the [reference rendering](../../design/resolved-card.html).**
 
 Fields: servings · ingredients · steps · start to finish · hands-on · longest walk-away ·
 saved in parallel. Only `servings` is authored; everything else is derived, so the component
@@ -114,7 +114,7 @@ for R5's non-color redundancy.
 - [ ] At-a-glance bar renders for every corpus recipe, with `start to finish` verified as the
       critical path against a hand-computed value — not the sum.
 - [ ] At-a-glance bar degrades to counts-only when duration data is incomplete.
-- [ ] All five corpus recipes render, screenshot-compared against `images/` for structural fidelity.
+- [ ] All corpus recipes render, screenshot-compared against the source photos for structural fidelity.
 - [ ] `espresso-brownies` visibly resolves R1, R2, R4, R5, and R6 relative to `IMG_4225`.
 - [ ] Greyscale print output remains fully interpretable.
 - [ ] Palette passes automated contrast checks and a simulated color-vision-deficiency check.
