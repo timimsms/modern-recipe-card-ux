@@ -158,10 +158,11 @@ and it is cheap to measure.
 
 Then, in rough order of value per effort:
 
-1. **The scale-change measurement.** All four tracks already emit `recipe:render` around a scale
-   change — the interaction PHASE-07 calls "the sharpest test" and PHASE-08 calls the sharpest
-   discriminator between reactivity models. It is instrumented and has never been read. That is
-   the question track 04 exists to answer.
+1. ~~The scale-change measurement~~ — **read, and answered:
+   [P03](../findings/P03-scale-change-cost.md).** At the mid-tier profile every approach is under
+   a frame, full-redraw included; the sharpest discriminator came back blunt at corpus scale.
+   What separates the tracks is bytes, testability and accessibility, not update cost —
+   Phase 08's scorecard should weight accordingly. (`scripts/measure-scale.mjs` to reproduce.)
 2. **Track 03's image export.** Small, unique to that track, and the format's actual distribution
    mechanism — the format spread as screenshots of a viral thread, which is why this project exists.
 3. **Check-off and scaling in track 03**, which are the gaps that stop it being comparable on the
