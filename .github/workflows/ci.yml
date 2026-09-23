@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Manual runs, because push events on the fresh public repo proved unreliable at launch —
+  # see the note in STATE.md. Dispatch also lets CI be re-run without an empty commit.
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
