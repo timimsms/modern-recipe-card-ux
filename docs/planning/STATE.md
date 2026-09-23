@@ -107,7 +107,15 @@ discriminant between `"med-low"` and `400°F`, and step text duplicating its own
 mixed-attention step — "simmer 15 min, stirring occasionally" — has now appeared often enough
 that EDGE-CASES' "revisit if common" condition is met; Phase 03 should answer it.
 
-## Pre-publication status
+## Published
+
+**The repo is public and the showcase is live: <https://timimsms.github.io/modern-recipe-card-ux/>.**
+Launched from a fresh repository containing only scrubbed history (the pre-scrub original is
+archived, private, as `modern-recipe-card-ux-pre-scrub-archive`). Pages deploys from
+`pages.yml` on every push to `main`; `scripts/go-public.sh` remains as a record of the launch
+order but has already been run.
+
+## Pre-publication status (historical)
 
 The repo is prepared to go public; the strategy evaluation lives with the maintainer (open source
 now, gallery-first Pages site, PR-validated recipe submissions; a hosted/private-books layer stays
